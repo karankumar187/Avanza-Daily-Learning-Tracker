@@ -36,20 +36,6 @@ const Objectives = () => {
   const [selectedObjective, setSelectedObjective] = useState(null);
   const [progressData, setProgressData] = useState([]);
 
-  // GSAP Animations
-  useGSAP(() => {
-    if (!loading && filteredObjectives.length > 0) {
-      gsap.from('.objective-card', {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.05,
-        ease: 'power3.out',
-        clearProps: 'all' // prevents GSAP from leaving inline opacity/transform styles that conflict with Tailwind hover
-      });
-    }
-  }, [loading, filteredObjectives.length]);
-
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -218,6 +204,20 @@ const Objectives = () => {
     const matchesPriority = filterPriority === 'all' || obj.priority === filterPriority;
     return matchesSearch && matchesCategory && matchesPriority;
   });
+
+  // GSAP Animations
+  useGSAP(() => {
+    if (!loading && filteredObjectives.length > 0) {
+      gsap.from('.objective-card', {
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.05,
+        ease: 'power3.out',
+        clearProps: 'all' // prevents GSAP from leaving inline opacity/transform styles that conflict with Tailwind hover
+      });
+    }
+  }, [loading, filteredObjectives.length]);
 
   if (loading) {
     return (
