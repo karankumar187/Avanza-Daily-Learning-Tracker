@@ -169,12 +169,9 @@ const Dashboard = () => {
   };
 
   const isToday = (dayItem) => {
+    if (!dayItem?.date) return false;
     const today = new Date();
-    return (
-      dayItem.date.getDate() === today.getDate() &&
-      dayItem.date.getMonth() === today.getMonth() &&
-      dayItem.date.getFullYear() === today.getFullYear()
-    );
+    return dayItem.date.toDateString() === today.toDateString();
   };
 
   const getDayStatus = (dateObj) => {

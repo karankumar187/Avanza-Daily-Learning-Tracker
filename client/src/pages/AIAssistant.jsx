@@ -255,16 +255,16 @@ const AIAssistant = () => {
         </form>
       </div>
 
-      {/* Suggestions Only (no scheduling) */}
+      {/* Chat-style suggestions (no scheduling) */}
       <div className="glass-card rounded-xl p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-amber-500" />
-              Ask for study suggestions
+              Chat with the AI
             </h3>
             <p className="text-sm text-gray-500">
-              Get ideas and strategies based on your current learning objectives. This will not create or apply any schedule.
+              Ask questions about how to study, what to focus on, or how to use your current objectives more effectively. This will not create or apply any schedule.
             </p>
           </div>
         </div>
@@ -295,7 +295,7 @@ const AIAssistant = () => {
           <textarea
             value={tipsPrompt}
             onChange={(e) => setTipsPrompt(e.target.value)}
-            placeholder="Ask the AI for focused suggestions. For example: 'How can I better retain concepts from my data science objectives this week?'"
+            placeholder="Ask anything about your learning. For example: 'How should I revise my math and programming objectives this week?'"
             rows={3}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
           />
@@ -312,7 +312,7 @@ const AIAssistant = () => {
             ) : (
               <>
                 <Lightbulb className="w-4 h-4" />
-                Get Suggestions Only
+                Send
               </>
             )}
           </button>
@@ -320,31 +320,17 @@ const AIAssistant = () => {
 
         {tipsResponse && (
           <div className="mt-6 space-y-3 border-t border-gray-100 pt-4">
-            <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-500" />
-              Suggested weekly focus
-            </h4>
-            <p className="text-sm text-gray-600">{tipsResponse.summary}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              {Array.isArray(tipsResponse.schedule) &&
-                tipsResponse.schedule.slice(0, 4).map((day) => (
-                  <div key={day.day} className="p-3 rounded-lg bg-gray-50">
-                    <div className="font-medium capitalize mb-1">{day.day}</div>
-                    <ul className="space-y-1">
-                      {(day.items || []).slice(0, 2).map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                          <div>
-                            <p className="font-medium text-gray-800 text-xs">
-                              {item.objectiveTitle}
-                            </p>
-                            <p className="text-xs text-gray-500">{item.description}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+            <div className="space-y-2">
+              <div className="flex items-start gap-3">
+                <div className="mt-1 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="flex-1 p-3 rounded-2xl bg-gray-50">
+                  <p className="text-sm text-gray-700 whitespace-pre-line">
+                    {tipsResponse.summary || 'The AI could not generate a detailed answer. Try asking again with a bit more detail.'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}

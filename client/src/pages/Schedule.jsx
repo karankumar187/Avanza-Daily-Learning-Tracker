@@ -154,21 +154,22 @@ const Schedule = () => {
       setSelectedProgress(response.data.data);
       setNotesForm({ notes: '' });
       setShowNotesModal(true);
-      fetchData();
 
       // Celebration animation on completion
       gsap.fromTo(
         `[data-objective-id="${objectiveId}"]`,
-        { scale: 0.95, boxShadow: '0 0 0 rgba(34,197,94,0)' },
+        { scale: 0.9, boxShadow: '0 0 0 rgba(34,197,94,0)' },
         {
-          scale: 1.02,
-          boxShadow: '0 0 40px rgba(34,197,94,0.6)',
-          duration: 0.4,
+          scale: 1.06,
+          boxShadow: '0 0 35px rgba(34,197,94,0.75)',
+          duration: 0.5,
           yoyo: true,
-          repeat: 1,
+          repeat: 2,
           ease: 'power3.out',
         }
       );
+
+      fetchData();
     } catch (error) {
       toast.error('Failed to update progress');
     }
