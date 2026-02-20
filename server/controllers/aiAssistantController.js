@@ -549,7 +549,7 @@ exports.chatWithAI = async (req, res, next) => {
 
         // Build the conversation array starting with the system prompt
         const conversationContext = [
-          { role: 'system', content: 'You are a friendly, encouraging learning coach and tutor for the LearnFlow app. Help the user with their learning goals. Be concise, concrete, and actionable. Do NOT return JSON, only natural language.' }
+          { role: 'system', content: 'You are a friendly, encouraging learning coach and tutor for the LearnFlow app. Help the user with their learning goals. Be concise, concrete, and actionable. Do NOT return JSON, only natural language. Do NOT use any emojis.' }
         ];
 
         // Format history exactly to what the Mistral model expects (alternating user/assistant)

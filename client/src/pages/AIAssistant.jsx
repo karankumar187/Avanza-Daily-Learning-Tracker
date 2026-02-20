@@ -38,6 +38,9 @@ const days = [
   "sunday",
 ];
 
+// Module-level cache to persist chat history during SPA routing navigation (resets on hard refresh)
+let cachedChatMessages = null;
+
 const AIAssistant = () => {
   const [prompt, setPrompt] = useState("");
   const [studyHours, setStudyHours] = useState(4);
@@ -52,14 +55,21 @@ const AIAssistant = () => {
   // Chat State
   const [activeTab, setActiveTab] = useState("schedule"); // 'schedule' or 'chat'
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
-    },
-  ]);
+  const [chatMessages, setChatMessages] = useState(
+    cachedChatMessages || [
+      {
+        role: "assistant",
+        content:
+          "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
+      },
+    ]
+  );
   const [chatLoading, setChatLoading] = useState(false);
+
+  // Sync state upward to module cache to survive unmounts
+  useEffect(() => {
+    cachedChatMessages = chatMessages;
+  }, [chatMessages]);
 
   // GSAP animations for tab switching
   useGSAP(() => {
@@ -249,8 +259,8 @@ const AIAssistant = () => {
         <button
           onClick={() => setActiveTab("schedule")}
           className={`px-6 py-3 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "schedule"
-              ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
-              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             }`}
         >
           <Calendar className="w-4 h-4" />
@@ -259,8 +269,8 @@ const AIAssistant = () => {
         <button
           onClick={() => setActiveTab("chat")}
           className={`px-6 py-3 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "chat"
-              ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
-              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             }`}
         >
           <MessageSquare className="w-4 h-4" />
@@ -539,8 +549,8 @@ const AIAssistant = () => {
                 >
                   <div
                     className={`max-w-[80%] rounded-2xl px-5 py-3 ${msg.role === "user"
-                        ? "bg-indigo-600 text-white rounded-br-none"
-                        : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-100 rounded-bl-none"
+                      ? "bg-indigo-600 text-white rounded-br-none"
+                      : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-100 rounded-bl-none"
                       }`}
                   >
                     {msg.role === "assistant" && (
