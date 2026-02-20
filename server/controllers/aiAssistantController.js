@@ -5,8 +5,9 @@ const Schedule = require('../models/Schedule');
 const LearningObjective = require('../models/LearningObjective');
 const { HUGGINGFACE_API_KEY } = require('../config/config');
 
-// Hugging Face API configuration
-const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2';
+const { HfInference } = require('@huggingface/inference');
+
+// The official HF SDK automatically resolves the correct router endpoints
 
 // @desc    Get AI schedule suggestion
 // @route   POST /api/ai/suggest-schedule
@@ -77,31 +78,23 @@ Important:
     // Try Hugging Face API if key is available
     if (HUGGINGFACE_API_KEY) {
       try {
-        const response = await axios.post(
-          HUGGINGFACE_API_URL,
-          {
-            inputs: systemPrompt,
-            parameters: {
-              max_new_tokens: 2000,
-              return_full_text: false,
-              temperature: 0.7
-            }
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            timeout: 30000
-          }
-        );
+        const hf = new HfInference(HUGGINGFACE_API_KEY);
 
-        if (response.data && Array.isArray(response.data) && response.data[0] && response.data[0].generated_text) {
-          aiResponse = response.data[0].generated_text;
+        const response = await hf.chatCompletion({
+          model: 'mistralai/Mistral-7B-Instruct-v0.2',
+          messages: [
+            { role: 'user', content: systemPrompt }
+          ],
+          max_tokens: 2000,
+          temperature: 0.7
+        });
+
+        if (response && response.choices && response.choices.length > 0) {
+          aiResponse = response.choices[0].message.content;
           console.log('AI Response:', aiResponse);
         }
       } catch (apiError) {
-        console.log('Hugging Face API error, using fallback:', apiError.message);
+        console.log('Hugging Face schedule API error, using fallback:', apiError.message);
       }
     }
 
@@ -552,37 +545,20 @@ exports.chatWithAI = async (req, res, next) => {
 
     if (HUGGINGFACE_API_KEY) {
       try {
-        const systemPrompt = `<s>[INST] You are a friendly, encouraging learning coach and tutor for the LearnFlow app.
-Help the user with their learning goals. Be concise, concrete, and actionable. Do NOT return JSON, only natural language.
+        const hf = new HfInference(HUGGINGFACE_API_KEY);
 
-User: "${prompt}" [/INST]`;
+        const response = await hf.chatCompletion({
+          model: 'mistralai/Mistral-7B-Instruct-v0.2',
+          messages: [
+            { role: 'system', content: 'You are a friendly, encouraging learning coach and tutor for the LearnFlow app. Help the user with their learning goals. Be concise, concrete, and actionable. Do NOT return JSON, only natural language.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 250,
+          temperature: 0.7
+        });
 
-        const response = await axios.post(
-          HUGGINGFACE_API_URL,
-          {
-            inputs: systemPrompt,
-            parameters: {
-              max_new_tokens: 250,
-              return_full_text: false,
-              temperature: 0.7
-            }
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            timeout: 30000
-          }
-        );
-
-        if (response.data && Array.isArray(response.data) && response.data[0] && response.data[0].generated_text) {
-          let raw = response.data[0].generated_text.trim();
-          // Fallback cleanup if return_full_text: false is ignored by the specific model endpoint
-          if (raw.includes('[/INST]')) {
-            raw = raw.split('[/INST]')[1].trim();
-          }
-          reply = raw;
+        if (response.choices && response.choices.length > 0) {
+          reply = response.choices[0].message.content.trim();
         }
       } catch (apiError) {
         console.log('Hugging Face chat API error, using fallback:', apiError.message);
