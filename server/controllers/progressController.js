@@ -35,14 +35,15 @@ exports.createOrUpdateProgress = async (req, res, next) => {
       });
     }
 
-    const progressDate = moment.tz(date || new Date(), TIMEZONE).startOf('day').toDate();
+    const progressDateStart = moment.tz(date || new Date(), TIMEZONE).startOf('day').toDate();
+    const progressDateEnd = moment.tz(date || new Date(), TIMEZONE).endOf('day').toDate();
 
     let progress = await DailyProgress.findOne({
       user: req.user.id,
       learningObjective: learningObjectiveId,
       date: {
-        $gte: moment(progressDate).startOf('day').toDate(),
-        $lte: moment(progressDate).endOf('day').toDate()
+        $gte: progressDateStart,
+        $lte: progressDateEnd
       }
     });
 
@@ -81,7 +82,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
       progress = await DailyProgress.create({
         user: req.user.id,
         learningObjective: learningObjectiveId,
-        date: progressDate,
+        date: progressDateStart,
         ...updateData
       });
 
@@ -108,21 +109,25 @@ exports.getDailyProgress = async (req, res, next) => {
     // Sync before fetching
     await syncProgress(req.user.id);
 
-    const queryDate = date
+    const queryDateStart = date
       ? moment.tz(date, TIMEZONE).startOf('day').toDate()
       : moment.tz(TIMEZONE).startOf('day').toDate();
+
+    const queryDateEnd = date
+      ? moment.tz(date, TIMEZONE).endOf('day').toDate()
+      : moment.tz(TIMEZONE).endOf('day').toDate();
 
     const progress = await DailyProgress.find({
       user: req.user.id,
       date: {
-        $gte: moment(queryDate).startOf('day').toDate(),
-        $lte: moment(queryDate).endOf('day').toDate()
+        $gte: queryDateStart,
+        $lte: queryDateEnd
       }
     }).populate('learningObjective', 'title color icon category estimatedTime');
 
     res.status(200).json({
       success: true,
-      date: queryDate,
+      date: queryDateStart,
       data: progress
     });
   } catch (error) {
