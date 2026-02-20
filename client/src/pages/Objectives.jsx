@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { objectivesAPI, progressAPI } from '../services/api';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker, X, FileText, BookOpen } from 'lucide-react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
