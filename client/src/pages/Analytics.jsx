@@ -17,6 +17,8 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 import {
   Calendar,
   TrendingUp,
@@ -48,6 +50,19 @@ const Analytics = () => {
   const [weeklyChartData, setWeeklyChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedObjective, setSelectedObjective] = useState(null);
+
+  useGSAP(() => {
+    if (!loading && overallStats) {
+      gsap.from('.stagger-item', {
+        y: 20,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power3.out',
+        clearProps: 'all'
+      });
+    }
+  }, [loading, overallStats]);
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -125,7 +140,7 @@ const Analytics = () => {
       {/* Stats Overview */}
       {overallStats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="stat-card">
+          <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
                 <Target className="w-5 h-5 text-indigo-600" />
@@ -136,7 +151,7 @@ const Analytics = () => {
             <div className="text-sm text-gray-500">Tasks</div>
           </div>
 
-          <div className="stat-card">
+          <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-green-600" />
@@ -147,7 +162,7 @@ const Analytics = () => {
             <div className="text-sm text-gray-500">Completed</div>
           </div>
 
-          <div className="stat-card">
+          <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-purple-600" />
@@ -158,7 +173,7 @@ const Analytics = () => {
             <div className="text-sm text-gray-500">Completion</div>
           </div>
 
-          <div className="stat-card">
+          <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-orange-600" />
@@ -173,7 +188,7 @@ const Analytics = () => {
 
       {/* Streak Card */}
       {streakInfo && (
-        <div className="glass-card rounded-xl p-6">
+        <div className="stagger-item glass-card rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-200">
@@ -198,7 +213,7 @@ const Analytics = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Progress Chart */}
-        <div className="glass-card rounded-xl p-6">
+        <div className="stagger-item glass-card rounded-xl p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Weekly Activity</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -224,7 +239,7 @@ const Analytics = () => {
         </div>
 
         {/* Status Distribution */}
-        <div className="glass-card rounded-xl p-6">
+        <div className="stagger-item glass-card rounded-xl p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Status Distribution</h3>
           <div className="h-64 flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -261,7 +276,7 @@ const Analytics = () => {
       </div>
 
       {/* Objective Performance */}
-      <div className="glass-card rounded-xl p-6">
+      <div className="stagger-item glass-card rounded-xl p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-6">Objective Performance</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -298,8 +313,8 @@ const Analytics = () => {
                   <td className="text-center py-3 px-4 text-red-600">{stat.stats.missed}</td>
                   <td className="text-center py-3 px-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${stat.stats.completionRate >= 80 ? 'bg-green-100 text-green-700' :
-                        stat.stats.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
+                      stat.stats.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
                       }`}>
                       {stat.stats.completionRate}%
                     </span>
@@ -323,8 +338,8 @@ const Analytics = () => {
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-medium text-gray-800">{cat.category}</h4>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${cat.completionRate >= 80 ? 'bg-green-100 text-green-700' :
-                    cat.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
+                  cat.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
                   }`}>
                   {cat.completionRate}%
                 </span>

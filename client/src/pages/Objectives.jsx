@@ -1,34 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { objectivesAPI, progressAPI } from '../services/api';
 import { toast } from 'sonner';
-import {
-  Plus,
-  Search,
-  Filter,
-  MoreVertical,
-  Edit2,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Target,
-  BookOpen,
-  Code,
-  Music,
-  Palette,
-  Dumbbell,
-  Languages,
-  Calculator,
-  Beaker,
-  Globe,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  FileText
-} from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker } from 'lucide-react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const iconOptions = [
-  { value: 'Book', icon: BookOpen, label: 'Book' },
+  { value: 'Book', icon: Book, label: 'Book' },
   { value: 'Code', icon: Code, label: 'Code' },
   { value: 'Music', icon: Music, label: 'Music' },
   { value: 'Art', icon: Palette, label: 'Art' },
@@ -57,6 +35,20 @@ const Objectives = () => {
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [selectedObjective, setSelectedObjective] = useState(null);
   const [progressData, setProgressData] = useState([]);
+
+  // GSAP Animations
+  useGSAP(() => {
+    if (!loading && filteredObjectives.length > 0) {
+      gsap.from('.objective-card', {
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.05,
+        ease: 'power3.out',
+        clearProps: 'all' // prevents GSAP from leaving inline opacity/transform styles that conflict with Tailwind hover
+      });
+    }
+  }, [loading, filteredObjectives.length]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -121,7 +113,15 @@ const Objectives = () => {
     try {
       await objectivesAPI.delete(id);
       toast.success('Objective deleted successfully');
-      fetchObjectives();
+
+      // Animate deletion
+      gsap.to(`[data-objective-id="${id}"]`, {
+        scale: 0.8,
+        opacity: 0,
+        duration: 0.3,
+        ease: 'power2.in',
+        onComplete: () => fetchObjectives()
+      });
     } catch (error) {
       toast.error('Failed to delete objective');
     }
@@ -294,22 +294,17 @@ const Objectives = () => {
             return (
               <div
                 key={objective._id}
-                className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl cursor-pointer border-2"
-                style={{
-                  borderColor: `${objective.color}30`,
-                  boxShadow: `0 4px 20px -5px ${objective.color}20`
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = objective.color;
-                  e.currentTarget.style.boxShadow = `0 20px 25px -5px ${objective.color}40, 0 8px 10px -6px ${objective.color}20`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = `${objective.color}30`;
-                  e.currentTarget.style.boxShadow = `0 4px 20px -5px ${objective.color}20`;
-                }}
+                data-objective-id={objective._id}
+                className="objective-card group relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer border border-gray-100 dark:border-slate-800"
                 onClick={() => handleViewProgress(objective)}
               >
-                <div className="flex items-start justify-between mb-5">
+                {/* Subtle side accent line */}
+                <div
+                  className="absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-all duration-300 group-hover:w-1.5"
+                  style={{ backgroundColor: objective.color }}
+                />
+
+                <div className="flex items-start justify-between mb-5 pl-3">
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: objective.color + '20' }}
@@ -332,10 +327,10 @@ const Objectives = () => {
                   </div>
                 </div>
 
-                <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{objective.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 line-clamp-2 leading-relaxed">{objective.description}</p>
+                <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pl-3">{objective.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 line-clamp-2 leading-relaxed pl-3">{objective.description}</p>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pl-3">
                   <span className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide ${getPriorityClass(objective.priority)}`}>
                     {objective.priority.toUpperCase()}
                   </span>
@@ -345,11 +340,11 @@ const Objectives = () => {
                   </div>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                <div className="mt-5 pt-4 border-t border-gray-50 dark:border-slate-800/50 flex justify-between items-center pl-3">
                   <span className="px-3 py-1 bg-gray-50 dark:bg-slate-800 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400">
                     {objective.category}
                   </span>
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: objective.color }} />
+                  <div className="w-2 h-2 rounded-full opacity-60 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: objective.color }} />
                 </div>
               </div>
             );

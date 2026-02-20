@@ -27,9 +27,9 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
 } from 'recharts';
 import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const getTodayInIST = () => {
   const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -57,6 +57,19 @@ const Dashboard = () => {
   const [dailyAnalytics, setDailyAnalytics] = useState({});
 
   const welcomeRef = useRef(null);
+
+  useGSAP(() => {
+    if (!loading && stats) {
+      gsap.from('.stagger-item', {
+        y: 20,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power3.out',
+        clearProps: 'all'
+      });
+    }
+  }, [loading, stats]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -301,7 +314,7 @@ const Dashboard = () => {
         <div className="xl:col-span-2 space-y-6">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="stat-card">
+            <div className="stagger-item stat-card">
               <div className="stat-icon blue">
                 <Target className="w-6 h-6" />
               </div>
@@ -309,7 +322,7 @@ const Dashboard = () => {
               <div className="stat-label">Total Tasks</div>
             </div>
 
-            <div className="stat-card">
+            <div className="stagger-item stat-card">
               <div className="stat-icon green">
                 <CheckCircle className="w-6 h-6" />
               </div>
@@ -317,7 +330,7 @@ const Dashboard = () => {
               <div className="stat-label">Completed</div>
             </div>
 
-            <div className="stat-card">
+            <div className="stagger-item stat-card">
               <div className="stat-icon purple">
                 <TrendingUp className="w-6 h-6" />
               </div>
@@ -325,7 +338,7 @@ const Dashboard = () => {
               <div className="stat-label">Completion</div>
             </div>
 
-            <div className="stat-card">
+            <div className="stagger-item stat-card">
               <div className="stat-icon orange">
                 <Flame className="w-6 h-6" />
               </div>
@@ -337,7 +350,7 @@ const Dashboard = () => {
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Weekly Progress Chart */}
-            <div className="glass-card rounded-xl p-6">
+            <div className="stagger-item glass-card rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">Weekly Progress</h3>
                 <Link to="/analytics" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
@@ -366,7 +379,7 @@ const Dashboard = () => {
             </div>
 
             {/* Status Distribution */}
-            <div className="glass-card rounded-xl p-6">
+            <div className="stagger-item glass-card rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">Status Distribution</h3>
               </div>
@@ -409,7 +422,7 @@ const Dashboard = () => {
           </div>
 
           {/* Today's Progress */}
-          <div className="glass-card rounded-xl p-6">
+          <div className="stagger-item glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
@@ -478,7 +491,7 @@ const Dashboard = () => {
         {/* Right Column - Calendar & Incomplete */}
         <div className="space-y-6">
           {/* Calendar */}
-          <div className="glass-card rounded-xl p-6">
+          <div className="stagger-item glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                 {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -524,7 +537,7 @@ const Dashboard = () => {
           </div>
 
           {/* Incomplete Tasks */}
-          <div className="glass-card rounded-xl p-6">
+          <div className="stagger-item glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800">Incomplete</h3>
               <MoreHorizontal className="w-5 h-5 text-gray-400" />
@@ -558,7 +571,7 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="space-y-3">
+          <div className="stagger-item space-y-3">
             <Link
               to="/objectives"
               className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow"

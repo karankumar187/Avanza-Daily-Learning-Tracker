@@ -14,6 +14,7 @@ import {
   FileText
 } from 'lucide-react';
 import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
@@ -37,6 +38,22 @@ const Schedule = () => {
   const [notesForm, setNotesForm] = useState({
     notes: ''
   });
+
+  useGSAP(() => {
+    if (!loading && selectedSchedule) {
+      gsap.fromTo('.stagger-item',
+        { y: 20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'power2.out',
+          clearProps: 'all'
+        }
+      );
+    }
+  }, [loading, selectedSchedule, selectedDay]);
 
   useEffect(() => {
     fetchData();
@@ -262,7 +279,7 @@ const Schedule = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="stagger-item flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Weekly Schedule</h2>
           <p className="text-gray-500 dark:text-gray-400">Plan and manage your learning schedule</p>
@@ -323,7 +340,7 @@ const Schedule = () => {
 
           {/* Day Selector */}
           <div className="glass-card rounded-xl p-4">
-            <div className="flex flex-wrap gap-2">
+            <div className="stagger-item flex overflow-x-auto hide-scrollbar gap-2 mb-6 pb-2">
               {days.map(day => (
                 <button
                   key={day}
@@ -365,18 +382,17 @@ const Schedule = () => {
             {getDaySchedule().length > 0 ? (
               <div className="space-y-3">
                 {getDaySchedule().map((item, index) => {
-                  const objective = getObjectiveById(item.learningObjective?._id || item.learningObjective);
-                  const progress = getProgressForObjective(item.learningObjective?._id || item.learningObjective);
+                  const objectiveId = item.learningObjective?._id || item.learningObjective;
+                  const objective = getObjectiveById(objectiveId);
+                  const progress = getProgressForObjective(objectiveId);
 
                   if (!objective) return null;
 
-                  const hasStatus = progress && (progress.status === 'completed' || progress.status === 'skipped' || progress.status === 'missed');
-
                   return (
                     <div
-                      key={index}
-                      data-objective-id={objective._id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-gray-50 dark:bg-slate-900 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                      key={`${item._id}-${index}`}
+                      data-objective-id={objectiveId}
+                      className="stagger-item flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
                     >
                       <div className="flex items-center gap-4">
                         <div
