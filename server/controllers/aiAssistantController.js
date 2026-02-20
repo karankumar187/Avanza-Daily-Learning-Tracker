@@ -539,7 +539,7 @@ exports.chatWithAI = async (req, res, next) => {
       });
     }
 
-    const { prompt } = req.body;
+    const { prompt, messages = [] } = req.body;
 
     let reply = null;
 
@@ -547,13 +547,29 @@ exports.chatWithAI = async (req, res, next) => {
       try {
         const hf = new HfInference(HUGGINGFACE_API_KEY);
 
+        // Build the conversation array starting with the system prompt
+        const conversationContext = [
+          { role: 'system', content: 'You are a friendly, encouraging learning coach and tutor for the LearnFlow app. Help the user with their learning goals. Be concise, concrete, and actionable. Do NOT return JSON, only natural language.' }
+        ];
+
+        // Format history exactly to what the Mistral model expects (alternating user/assistant)
+        if (messages && messages.length > 0) {
+          messages.forEach(msg => {
+            // Ensure roles match the specification 
+            conversationContext.push({
+              role: msg.role === 'assistant' ? 'assistant' : 'user',
+              content: msg.content
+            });
+          });
+        }
+
+        // Push the newest prompt
+        conversationContext.push({ role: 'user', content: prompt });
+
         const response = await hf.chatCompletion({
           model: 'mistralai/Mistral-7B-Instruct-v0.2',
-          messages: [
-            { role: 'system', content: 'You are a friendly, encouraging learning coach and tutor for the LearnFlow app. Help the user with their learning goals. Be concise, concrete, and actionable. Do NOT return JSON, only natural language.' },
-            { role: 'user', content: prompt }
-          ],
-          max_tokens: 250,
+          messages: conversationContext,
+          max_tokens: 1200,
           temperature: 0.7
         });
 
