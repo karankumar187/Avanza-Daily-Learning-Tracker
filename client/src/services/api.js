@@ -101,7 +101,8 @@ export const aiAPI = {
   getSuggestions: () => api.get('/ai/suggestions'),
   getSuggestion: (id) => api.get(`/ai/suggestions/${id}`),
   updateSuggestion: (id, data) => api.put(`/ai/suggestions/${id}`, data),
-  deleteSuggestion: (id) => api.delete(`/ai/suggestions/${id}`)
+  deleteSuggestion: (id) => api.delete(`/ai/suggestions/${id}`),
+  chat: (data) => api.post('/ai/chat', data)
 };
 
 export default api;

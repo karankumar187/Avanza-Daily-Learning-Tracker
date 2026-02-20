@@ -49,6 +49,7 @@ const Layout = () => {
     { path: '/schedule', label: 'Schedule', icon: Calendar },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
+    { path: '/chat', label: 'Chatbot', icon: Sparkles },
   ];
 
   const isActive = (path) => location.pathname === path;

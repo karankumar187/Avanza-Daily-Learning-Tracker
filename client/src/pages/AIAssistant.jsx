@@ -35,9 +35,6 @@ const AIAssistant = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [expandedDay, setExpandedDay] = useState(null);
   const [applying, setApplying] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
   const [objectives, setObjectives] = useState([]);
 
   useEffect(() => {
@@ -88,38 +85,7 @@ const AIAssistant = () => {
     }
   };
 
-  const handleChatSubmit = async (e) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-
-    const userMessage = { role: 'user', content: chatInput };
-    setChatMessages(prev => [...prev, userMessage]);
-    setChatInput('');
-    setChatLoading(true);
-
-    try {
-      const response = await aiAPI.suggestSchedule({
-        prompt: chatInput,
-        studyHoursPerDay: studyHours,
-        preferredTime,
-      });
-
-      const aiMessage = {
-        role: 'assistant',
-        content: response.data.data.summary || 'I understand your question. Based on your learning objectives, here are some suggestions...'
-      };
-      setChatMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      const errorMessage = {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.'
-      };
-      setChatMessages(prev => [...prev, errorMessage]);
-      toast.error('Failed to get response');
-    } finally {
-      setChatLoading(false);
-    }
-  };
+  // Chat functionality has been removed per requirements
 
   const handleApplySuggestion = async () => {
     if (!suggestion) return;
@@ -267,101 +233,7 @@ const AIAssistant = () => {
         </form>
       </div>
 
-      {/* Chat Interface */}
-      <div className="glass-card rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-            Chat with AI
-          </h3>
-          {chatMessages.length > 0 && (
-            <button
-              onClick={() => setChatMessages([])}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              Clear chat
-            </button>
-          )}
-        </div>
-
-        {/* Chat Messages */}
-        <div className="h-96 overflow-y-auto mb-4 space-y-4 pr-2">
-          {chatMessages.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
-              <div className="text-center">
-                <Sparkles className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Start a conversation with the AI</p>
-              </div>
-            </div>
-          ) : (
-            chatMessages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex items-start gap-3 ${
-                  msg.role === 'user' ? 'flex-row-reverse' : ''
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user'
-                      ? 'bg-indigo-500'
-                      : 'bg-indigo-100 dark:bg-indigo-900/30'
-                  }`}
-                >
-                  {msg.role === 'user' ? (
-                    <BookOpen className="w-4 h-4 text-white" />
-                  ) : (
-                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex-1 rounded-2xl px-4 py-3 ${
-                    msg.role === 'user'
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-line">{msg.content}</p>
-                </div>
-              </div>
-            ))
-          )}
-          {chatLoading && (
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div className="flex-1 rounded-2xl px-4 py-3 bg-gray-100 dark:bg-slate-800">
-                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Chat Input */}
-        <form onSubmit={handleChatSubmit} className="flex gap-2">
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Ask anything about your learning..."
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-            disabled={chatLoading}
-          />
-          <button
-            type="submit"
-            disabled={chatLoading || !chatInput.trim()}
-            className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
-          >
-            {chatLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Sparkles className="w-4 h-4" />
-            )}
-            Send
-          </button>
-        </form>
-      </div>
+      {/* Chat with AI removed as per requirements */}
 
       {/* Generated Schedule */}
       {suggestion && (

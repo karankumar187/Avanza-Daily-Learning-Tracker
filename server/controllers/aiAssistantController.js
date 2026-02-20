@@ -493,3 +493,62 @@ function parseAIResponse(aiResponse, originalPrompt) {
   
   return null;
 }
+
+// @desc    General AI chat (conversational)
+// @route   POST /api/ai/chat
+// @access  Private
+exports.chatWithAI = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { prompt } = req.body;
+
+    let reply = null;
+
+    if (HUGGINGFACE_API_KEY) {
+      try {
+        const systemPrompt = `You are a friendly learning coach and tutor for the LearnFlow app.
+
+User: "${prompt}"
+
+Answer as a short, focused paragraph. Be concrete and actionable. Do NOT return JSON, only natural language.`;
+
+        const response = await axios.post(
+          HUGGINGFACE_API_URL,
+          { inputs: systemPrompt },
+          {
+            headers: {
+              'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 30000
+          }
+        );
+
+        if (response.data && Array.isArray(response.data) && response.data[0] && response.data[0].generated_text) {
+          const raw = response.data[0].generated_text.trim();
+          reply = raw;
+        }
+      } catch (apiError) {
+        console.log('Hugging Face chat API error, using fallback:', apiError.message);
+      }
+    }
+
+    if (!reply) {
+      reply = `Here's a quick suggestion based on what you asked: ${prompt}\n\nBreak this into small sessions, focus on one clear objective at a time, and always finish by writing down what you learned or what you'll do next.`;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { reply }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
