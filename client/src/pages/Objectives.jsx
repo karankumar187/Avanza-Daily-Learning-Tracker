@@ -117,7 +117,7 @@ const Objectives = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this objective?')) return;
-    
+
     try {
       await objectivesAPI.delete(id);
       toast.success('Objective deleted successfully');
@@ -144,8 +144,8 @@ const Objectives = () => {
   const handleViewProgress = async (objective) => {
     try {
       const response = await objectivesAPI.getWithProgress(objective._id, {
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0]
+        startDate: (() => { const d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+        endDate: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })()
       });
       setSelectedObjective(response.data.data.objective);
       setProgressData(response.data.data.progress);
@@ -213,7 +213,7 @@ const Objectives = () => {
 
   const filteredObjectives = objectives.filter(obj => {
     const matchesSearch = obj.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         obj.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      obj.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === 'all' || obj.category === filterCategory;
     const matchesPriority = filterPriority === 'all' || obj.priority === filterPriority;
     return matchesSearch && matchesCategory && matchesPriority;
@@ -440,11 +440,10 @@ const Objectives = () => {
                         key={option.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, icon: option.value })}
-                        className={`p-3 rounded-lg border-2 transition-all ${
-                          formData.icon === option.value
+                        className={`p-3 rounded-lg border-2 transition-all ${formData.icon === option.value
                             ? 'border-indigo-500 bg-indigo-50'
                             : 'border-gray-200 hover:bg-gray-50'
-                        }`}
+                          }`}
                       >
                         <Icon className="w-5 h-5 mx-auto" />
                       </button>
@@ -461,9 +460,8 @@ const Objectives = () => {
                       key={color}
                       type="button"
                       onClick={() => setFormData({ ...formData, color })}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        formData.color === color ? 'border-gray-800 scale-110' : 'border-transparent'
-                      }`}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${formData.color === color ? 'border-gray-800 scale-110' : 'border-transparent'
+                        }`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
@@ -542,7 +540,7 @@ const Objectives = () => {
                         {progress.status}
                       </span>
                     </div>
-                    
+
                     {progress.notes && (
                       <div className="mt-3 p-3 bg-white rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 text-gray-500 mb-1">
@@ -552,7 +550,7 @@ const Objectives = () => {
                         <p className="text-sm text-gray-700">{progress.notes}</p>
                       </div>
                     )}
-                    
+
                     {progress.remarks && !progress.notes && (
                       <p className="text-sm text-gray-500 mt-2">{progress.remarks}</p>
                     )}

@@ -154,7 +154,8 @@ const Schedule = () => {
         toast.error('You can only complete objectives for today from this view.');
         return;
       }
-      const today = new Date().toISOString().split('T')[0];
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const response = await progressAPI.createOrUpdate({
         learningObjectiveId: objectiveId,
         date: today,
@@ -189,7 +190,8 @@ const Schedule = () => {
     try {
       if (!selectedProgress) return;
 
-      const today = new Date().toISOString().split('T')[0];
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       await progressAPI.createOrUpdate({
         learningObjectiveId: selectedProgress.learningObjective?._id || selectedProgress.learningObjective,
         date: today,
@@ -213,7 +215,8 @@ const Schedule = () => {
         toast.error('You can only skip objectives for today from this view.');
         return;
       }
-      const today = new Date().toISOString().split('T')[0];
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       await progressAPI.skip({
         learningObjectiveId: objectiveId,
         date: today,
@@ -282,8 +285,8 @@ const Schedule = () => {
                 key={schedule._id}
                 onClick={() => setSelectedSchedule(schedule)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSchedule?._id === schedule._id
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 {schedule.name}
@@ -326,8 +329,8 @@ const Schedule = () => {
                   key={day}
                   onClick={() => setSelectedDay(day)}
                   className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${selectedDay === day
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   {day}

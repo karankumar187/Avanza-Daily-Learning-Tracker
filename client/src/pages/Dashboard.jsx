@@ -67,7 +67,8 @@ const Dashboard = () => {
   }, [calendarDate]);
 
   useEffect(() => {
-    const todayKey = new Date().toISOString().split('T')[0];
+    const d = new Date();
+    const todayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const lastPlayed = localStorage.getItem('learnflow:lastWelcomeAnimDate');
     if (lastPlayed === todayKey || !welcomeRef.current) return;
 
@@ -509,10 +510,10 @@ const Dashboard = () => {
                     {status && (
                       <span
                         className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${status === 'success'
-                            ? 'bg-green-500'
-                            : status === 'danger'
-                              ? 'bg-red-500'
-                              : 'bg-yellow-500'
+                          ? 'bg-green-500'
+                          : status === 'danger'
+                            ? 'bg-red-500'
+                            : 'bg-yellow-500'
                           }`}
                       />
                     )}
