@@ -37,7 +37,12 @@ const Footer = () => {
             toast.success(`${feedbackType === 'bug' ? 'Bug report' : 'Feedback'} submitted successfully. Thank you!`);
             closeModal();
         } catch (error) {
-            toast.error(error.response?.data?.errors?.[0]?.msg || 'Failed to submit. Please try again.');
+            toast.error(
+                error.response?.data?.errors?.[0]?.msg ||
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to submit. Please try again.'
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -125,8 +130,8 @@ const Footer = () => {
                                         type="submit"
                                         disabled={!message.trim() || isSubmitting}
                                         className={`flex items-center gap-2 px-6 py-2 rounded-xl text-white transition-all ${feedbackType === 'bug'
-                                                ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-400'
-                                                : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400'
+                                            ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-400'
+                                            : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400'
                                             }`}
                                     >
                                         {isSubmitting ? (
