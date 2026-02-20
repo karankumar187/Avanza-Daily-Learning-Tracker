@@ -43,10 +43,12 @@ exports.getOverallAnalytics = async (req, res, next) => {
     await syncProgress(req.user.id);
 
     // Get all progress for the period
-    const progress = await DailyProgress.find({
-      user: req.user.id,
-      ...dateFilter
-    });
+    const query = { user: req.user.id };
+    if (Object.keys(dateFilter).length > 0) {
+      query.date = dateFilter.date;
+    }
+
+    const progress = await DailyProgress.find(query);
 
     // Calculate statistics
     const total = progress.length;

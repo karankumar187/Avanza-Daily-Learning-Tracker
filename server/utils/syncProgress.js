@@ -59,7 +59,10 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
             // Fetch all progress for this user on this day
             const existingProgress = await DailyProgress.find({
                 user: userId,
-                date: targetDate.toDate()
+                date: {
+                    $gte: targetDate.clone().startOf('day').toDate(),
+                    $lte: targetDate.clone().endOf('day').toDate()
+                }
             });
 
             const existingObjectiveIds = existingProgress.map(p => p.learningObjective.toString());
@@ -75,7 +78,7 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
                     recordsToCreate.push({
                         user: userId,
                         learningObjective: item.learningObjective,
-                        date: targetDate.toDate(),
+                        date: targetDate.clone().startOf('day').toDate(),
                         status: isToday ? 'pending' : 'missed',
                         timeSpent: 0
                     });

@@ -40,7 +40,10 @@ exports.createOrUpdateProgress = async (req, res, next) => {
     let progress = await DailyProgress.findOne({
       user: req.user.id,
       learningObjective: learningObjectiveId,
-      date: progressDate
+      date: {
+        $gte: moment(progressDate).startOf('day').toDate(),
+        $lte: moment(progressDate).endOf('day').toDate()
+      }
     });
 
     const updateData = {
@@ -111,7 +114,10 @@ exports.getDailyProgress = async (req, res, next) => {
 
     const progress = await DailyProgress.find({
       user: req.user.id,
-      date: queryDate
+      date: {
+        $gte: moment(queryDate).startOf('day').toDate(),
+        $lte: moment(queryDate).endOf('day').toDate()
+      }
     }).populate('learningObjective', 'title color icon category estimatedTime');
 
     res.status(200).json({
