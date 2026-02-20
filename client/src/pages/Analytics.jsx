@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { analyticsAPI } from '../services/api';
 import { toast } from 'sonner';
 import {
-  BarChart,
+  ComposedChart,
   Bar,
   XAxis,
   YAxis,
@@ -202,10 +202,11 @@ const Analytics = () => {
           <h3 className="text-lg font-semibold text-gray-800 mb-6">Weekly Activity</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyChartData}>
+              <ComposedChart data={weeklyChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                 <XAxis dataKey="day" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis yAxisId="left" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis yAxisId="right" orientation="right" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{
                     background: 'white',
@@ -214,9 +215,10 @@ const Analytics = () => {
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
                 />
-                <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} name="Completed" />
-                <Bar dataKey="missed" fill="#ef4444" radius={[4, 4, 0, 0]} name="Missed" />
-              </BarChart>
+                <Bar yAxisId="left" dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} name="Completed" />
+                <Bar yAxisId="left" dataKey="missed" fill="#ef4444" radius={[4, 4, 0, 0]} name="Missed" />
+                <Line yAxisId="right" type="monotone" dataKey="timeSpent" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Time (hrs)" />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -295,11 +297,10 @@ const Analytics = () => {
                   <td className="text-center py-3 px-4 text-green-600">{stat.stats.completed}</td>
                   <td className="text-center py-3 px-4 text-red-600">{stat.stats.missed}</td>
                   <td className="text-center py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      stat.stats.completionRate >= 80 ? 'bg-green-100 text-green-700' :
-                      stat.stats.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${stat.stats.completionRate >= 80 ? 'bg-green-100 text-green-700' :
+                        stat.stats.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                      }`}>
                       {stat.stats.completionRate}%
                     </span>
                   </td>
@@ -321,11 +322,10 @@ const Analytics = () => {
             <div key={cat.category} className="p-4 rounded-xl bg-gray-50">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-medium text-gray-800">{cat.category}</h4>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  cat.completionRate >= 80 ? 'bg-green-100 text-green-700' :
-                  cat.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${cat.completionRate >= 80 ? 'bg-green-100 text-green-700' :
+                    cat.completionRate >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                  }`}>
                   {cat.completionRate}%
                 </span>
               </div>
