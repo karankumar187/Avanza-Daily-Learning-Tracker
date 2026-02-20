@@ -186,15 +186,18 @@ const Dashboard = () => {
 
     const { completed, missed, pending, partial, total } = data;
 
+    // All completed
     if (completed === total && missed === 0 && pending === 0 && partial === 0) {
       return 'success';
     }
 
+    // All missed
     if (missed === total) {
       return 'danger';
     }
 
-    if (missed > 0) {
+    // Partial (some completed but also some missed or partial)
+    if (partial > 0 || (completed > 0 && (missed > 0 || pending > 0))) {
       return 'warning';
     }
 
@@ -490,13 +493,23 @@ const Dashboard = () => {
               ))}
               {getDaysInMonth(calendarDate).map((item, index) => {
                 const status = getDayStatus(item.date);
-                const statusClass = status ? `calendar-day--${status}` : '';
                 return (
                   <div
                     key={index}
-                    className={`calendar-day ${item.currentMonth ? '' : 'other-month'} ${isToday(item) ? 'today' : ''} ${statusClass}`}
+                    className={`calendar-day ${item.currentMonth ? '' : 'other-month'} ${isToday(item) ? 'today' : ''} relative`}
                   >
                     {item.day}
+                    {status && (
+                      <span
+                        className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
+                          status === 'success'
+                            ? 'bg-green-500'
+                            : status === 'danger'
+                            ? 'bg-red-500'
+                            : 'bg-yellow-500'
+                        }`}
+                      />
+                    )}
                   </div>
                 );
               })}

@@ -35,9 +35,9 @@ const AIAssistant = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [expandedDay, setExpandedDay] = useState(null);
   const [applying, setApplying] = useState(false);
-  const [tipsPrompt, setTipsPrompt] = useState('');
-  const [tipsLoading, setTipsLoading] = useState(false);
-  const [tipsResponse, setTipsResponse] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
   const [objectives, setObjectives] = useState([]);
 
   useEffect(() => {
@@ -88,27 +88,36 @@ const AIAssistant = () => {
     }
   };
 
-  const handleTipsSubmit = async (e) => {
+  const handleChatSubmit = async (e) => {
     e.preventDefault();
-    if (!tipsPrompt.trim()) {
-      toast.error('Please enter a question for suggestions');
-      return;
-    }
+    if (!chatInput.trim()) return;
+
+    const userMessage = { role: 'user', content: chatInput };
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatInput('');
+    setChatLoading(true);
 
     try {
-      setTipsLoading(true);
       const response = await aiAPI.suggestSchedule({
-        prompt: tipsPrompt,
+        prompt: chatInput,
         studyHoursPerDay: studyHours,
         preferredTime,
       });
 
-      setTipsResponse(response.data.data);
-      toast.success('AI suggestions generated!');
+      const aiMessage = {
+        role: 'assistant',
+        content: response.data.data.summary || 'I understand your question. Based on your learning objectives, here are some suggestions...'
+      };
+      setChatMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      toast.error('Failed to generate suggestions');
+      const errorMessage = {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+      toast.error('Failed to get response');
     } finally {
-      setTipsLoading(false);
+      setChatLoading(false);
     }
   };
 
@@ -255,85 +264,100 @@ const AIAssistant = () => {
         </form>
       </div>
 
-      {/* Chat-style suggestions (no scheduling) */}
+      {/* Chat Interface */}
       <div className="glass-card rounded-xl p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-amber-500" />
-              Chat with the AI
-            </h3>
-            <p className="text-sm text-gray-500">
-              Ask questions about how to study, what to focus on, or how to use your current objectives more effectively. This will not create or apply any schedule.
-            </p>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-indigo-500" />
+            Chat with AI
+          </h3>
+          {chatMessages.length > 0 && (
+            <button
+              onClick={() => setChatMessages([])}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              Clear chat
+            </button>
+          )}
         </div>
 
-        {objectives.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {objectives.slice(0, 8).map((obj) => (
-              <button
-                key={obj._id}
-                type="button"
-                onClick={() =>
-                  setTipsPrompt((prev) =>
-                    prev
-                      ? `${prev}\nAlso consider my objective "${obj.title}" in ${obj.category}.`
-                      : `Give me suggestions to improve on "${obj.title}" in ${obj.category}.`
-                  )
-                }
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-gray-100 hover:bg-indigo-50 text-gray-700 transition-colors"
+        {/* Chat Messages */}
+        <div className="h-96 overflow-y-auto mb-4 space-y-4 pr-2">
+          {chatMessages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+              <div className="text-center">
+                <Sparkles className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Start a conversation with the AI</p>
+              </div>
+            </div>
+          ) : (
+            chatMessages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex items-start gap-3 ${
+                  msg.role === 'user' ? 'flex-row-reverse' : ''
+                }`}
               >
-                <BookOpen className="w-3 h-3" />
-                <span className="line-clamp-1">{obj.title}</span>
-              </button>
-            ))}
-          </div>
-        )}
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user'
+                      ? 'bg-indigo-500'
+                      : 'bg-indigo-100 dark:bg-indigo-900/30'
+                  }`}
+                >
+                  {msg.role === 'user' ? (
+                    <BookOpen className="w-4 h-4 text-white" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  )}
+                </div>
+                <div
+                  className={`flex-1 rounded-2xl px-4 py-3 ${
+                    msg.role === 'user'
+                      ? 'bg-indigo-500 text-white'
+                      : 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200'
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-line">{msg.content}</p>
+                </div>
+              </div>
+            ))
+          )}
+          {chatLoading && (
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div className="flex-1 rounded-2xl px-4 py-3 bg-gray-100 dark:bg-slate-800">
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+              </div>
+            </div>
+          )}
+        </div>
 
-        <form onSubmit={handleTipsSubmit} className="space-y-3">
-          <textarea
-            value={tipsPrompt}
-            onChange={(e) => setTipsPrompt(e.target.value)}
-            placeholder="Ask anything about your learning. For example: 'How should I revise my math and programming objectives this week?'"
-            rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
+        {/* Chat Input */}
+        <form onSubmit={handleChatSubmit} className="flex gap-2">
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder="Ask anything about your learning..."
+            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+            disabled={chatLoading}
           />
           <button
             type="submit"
-            disabled={tipsLoading || !tipsPrompt.trim()}
-            className="w-full py-2.5 px-4 rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:bg-black transition-all"
+            disabled={chatLoading || !chatInput.trim()}
+            className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
           >
-            {tipsLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Thinking...
-              </>
+            {chatLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <>
-                <Lightbulb className="w-4 h-4" />
-                Send
-              </>
+              <Sparkles className="w-4 h-4" />
             )}
+            Send
           </button>
         </form>
-
-        {tipsResponse && (
-          <div className="mt-6 space-y-3 border-t border-gray-100 pt-4">
-            <div className="space-y-2">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-indigo-600" />
-                </div>
-                <div className="flex-1 p-3 rounded-2xl bg-gray-50">
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
-                    {tipsResponse.summary || 'The AI could not generate a detailed answer. Try asking again with a bit more detail.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Generated Schedule */}
@@ -341,16 +365,16 @@ const AIAssistant = () => {
         <div className="glass-card rounded-xl p-6 animate-fadeIn">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-indigo-500" />
                 AI Generated Schedule
               </h3>
-              <p className="text-sm text-gray-500 mt-1">{suggestion.summary}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{suggestion.summary}</p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setSuggestion(null)}
-                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
               >
                 Discard
               </button>
@@ -375,42 +399,42 @@ const AIAssistant = () => {
               const isExpanded = expandedDay === day;
 
               return (
-                <div key={day} className="border border-gray-200 rounded-xl overflow-hidden">
+                <div key={day} className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
                   <button
                     onClick={() => setExpandedDay(isExpanded ? null : day)}
-                    className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                    className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-500" />
-                      <span className="font-medium text-gray-800 capitalize">{day}</span>
-                      <span className="text-sm text-gray-500">({items.length} items)</span>
+                      <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <span className="font-medium text-gray-800 dark:text-gray-100 capitalize">{day}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">({items.length} items)</span>
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500" />
+                      <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500" />
+                      <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     )}
                   </button>
 
                   {isExpanded && (
-                    <div className="p-4 space-y-3 bg-white">
+                    <div className="p-4 space-y-3 bg-white dark:bg-slate-900">
                       {items.length > 0 ? (
                         items.map((item, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-800"
                           >
                             <div>
-                              <h4 className="font-medium text-gray-800">{item.objectiveTitle}</h4>
-                              <p className="text-sm text-gray-500">{item.description}</p>
+                              <h4 className="font-medium text-gray-800 dark:text-gray-100">{item.objectiveTitle}</h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
                             </div>
-                            <span className="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs">
+                            <span className="px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs">
                               {item.category}
                             </span>
                           </div>
                         ))
                       ) : (
-                        <p className="text-center text-gray-500 py-4">No items scheduled</p>
+                        <p className="text-center text-gray-500 dark:text-gray-400 py-4">No items scheduled</p>
                       )}
                     </div>
                   )}
@@ -424,20 +448,20 @@ const AIAssistant = () => {
       {/* Previous Suggestions */}
       {suggestions.length > 0 && (
         <div className="glass-card rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Previous Suggestions</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Previous Suggestions</h3>
           <div className="space-y-3">
             {suggestions.slice(0, 5).map((sugg) => (
               <div
                 key={sugg._id}
-                className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-800 truncate">{sugg.prompt}</p>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                  <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{sugg.prompt}</p>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
                     <Calendar className="w-4 h-4" />
                     {new Date(sugg.createdAt).toLocaleDateString()}
                     {sugg.isApplied && (
-                      <span className="ml-2 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs">
                         Applied
                       </span>
                     )}
@@ -445,9 +469,9 @@ const AIAssistant = () => {
                 </div>
                 <button
                   onClick={() => handleDeleteSuggestion(sugg._id)}
-                  className="p-2 rounded-lg hover:bg-red-50 transition-colors ml-4"
+                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors ml-4"
                 >
-                  <Trash2 className="w-4 h-4 text-red-500" />
+                  <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
                 </button>
               </div>
             ))}
@@ -461,28 +485,28 @@ const AIAssistant = () => {
           <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center mb-3">
             <Target className="w-5 h-5 text-indigo-600" />
           </div>
-          <h4 className="font-semibold text-gray-800 mb-2">Be Specific</h4>
-          <p className="text-sm text-gray-500">
+          <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">Be Specific</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Describe your learning goals in detail for better schedule recommendations.
           </p>
         </div>
 
         <div className="glass-card rounded-xl p-5">
-          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3">
-            <Calendar className="w-5 h-5 text-green-600" />
+          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
+            <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
           </div>
-          <h4 className="font-semibold text-gray-800 mb-2">Set Realistic Goals</h4>
-          <p className="text-sm text-gray-500">
+          <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">Set Realistic Goals</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Start with manageable study hours and gradually increase as you build habits.
           </p>
         </div>
 
         <div className="glass-card rounded-xl p-5">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+          <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-3">
+            <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
-          <h4 className="font-semibold text-gray-800 mb-2">Iterate & Improve</h4>
-          <p className="text-sm text-gray-500">
+          <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">Iterate & Improve</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Regenerate schedules based on your progress and adjust as needed.
           </p>
         </div>
