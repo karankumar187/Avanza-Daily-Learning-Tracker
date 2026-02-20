@@ -50,11 +50,11 @@ const Schedule = () => {
         objectivesAPI.getAll({ isActive: true }),
         progressAPI.getDaily()
       ]);
-      
+
       setSchedules(schedulesRes.data.data);
       setObjectives(objectivesRes.data.data);
       setTodayProgress(todayRes.data.data || []);
-      
+
       const defaultSchedule = schedulesRes.data.data.find(s => s.isDefault);
       if (defaultSchedule) {
         setSelectedSchedule(defaultSchedule);
@@ -82,7 +82,7 @@ const Schedule = () => {
         weeklySchedule,
         isDefault: schedules.length === 0
       });
-      
+
       toast.success('Schedule created successfully');
       setShowCreateModal(false);
       setScheduleForm({ name: '', description: '' });
@@ -99,7 +99,7 @@ const Schedule = () => {
       await scheduleAPI.addItemToDay(selectedSchedule._id, selectedDay, {
         learningObjectiveId: objectiveId
       });
-      
+
       toast.success('Objective added to schedule');
       setShowAddItemModal(false);
       fetchData();
@@ -132,7 +132,7 @@ const Schedule = () => {
 
   const handleDeleteSchedule = async (scheduleId) => {
     if (!window.confirm('Are you sure you want to delete this schedule?')) return;
-    
+
     try {
       await scheduleAPI.delete(scheduleId);
       toast.success('Schedule deleted');
@@ -160,7 +160,7 @@ const Schedule = () => {
         date: today,
         status: 'completed'
       });
-      
+
       setSelectedProgress(response.data.data);
       setNotesForm({ notes: '' });
       setShowNotesModal(true);
@@ -196,7 +196,7 @@ const Schedule = () => {
         status: 'completed',
         notes: notesForm.notes
       });
-      
+
       toast.success('Notes saved!');
       setShowNotesModal(false);
       setSelectedProgress(null);
@@ -219,32 +219,11 @@ const Schedule = () => {
         date: today,
         remarks: 'Skipped by user'
       });
-      
+
       toast.success('Marked as skipped');
       fetchData();
     } catch (error) {
       toast.error('Failed to skip');
-    }
-  };
-
-  const handleMarkMissed = async (objectiveId) => {
-    try {
-      if (!isTodayTab()) {
-        toast.error('You can only mark missed objectives for today from this view.');
-        return;
-      }
-      const today = new Date().toISOString().split('T')[0];
-      await progressAPI.createOrUpdate({
-        learningObjectiveId: objectiveId,
-        date: today,
-        status: 'missed',
-        remarks: 'Marked as missed by user'
-      });
-      
-      toast.success('Marked as missed');
-      fetchData();
-    } catch (error) {
-      toast.error('Failed to mark as missed');
     }
   };
 
@@ -302,11 +281,10 @@ const Schedule = () => {
               <button
                 key={schedule._id}
                 onClick={() => setSelectedSchedule(schedule)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  selectedSchedule?._id === schedule._id
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSchedule?._id === schedule._id
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {schedule.name}
                 {schedule.isDefault && (
@@ -347,11 +325,10 @@ const Schedule = () => {
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${
-                    selectedDay === day
+                  className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${selectedDay === day
                       ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {day}
                 </button>
@@ -387,7 +364,7 @@ const Schedule = () => {
                 {getDaySchedule().map((item, index) => {
                   const objective = getObjectiveById(item.learningObjective?._id || item.learningObjective);
                   const progress = getProgressForObjective(item.learningObjective?._id || item.learningObjective);
-                  
+
                   if (!objective) return null;
 
                   const hasStatus = progress && (progress.status === 'completed' || progress.status === 'skipped' || progress.status === 'missed');
@@ -479,12 +456,6 @@ const Schedule = () => {
                               Skip
                             </button>
                             <button
-                              onClick={() => handleMarkMissed(objective._id)}
-                              className="px-3 py-1.5 rounded-lg bg-red-100 text-red-700 text-sm font-medium hover:bg-red-200 transition-colors"
-                            >
-                              Missed
-                            </button>
-                            <button
                               onClick={() => handleRemoveItem(objective._id)}
                               className="p-2 rounded-lg hover:bg-red-50 transition-colors"
                             >
@@ -532,7 +503,7 @@ const Schedule = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 w-full max-w-md">
             <h3 className="text-xl font-bold text-gray-800 mb-6">Create New Schedule</h3>
-            
+
             <form onSubmit={handleCreateSchedule} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Schedule Name</label>
@@ -545,7 +516,7 @@ const Schedule = () => {
                   placeholder="e.g., My Learning Plan"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Description (optional)</label>
                 <textarea
@@ -556,7 +527,7 @@ const Schedule = () => {
                   placeholder="Brief description of your schedule"
                 />
               </div>
-              
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
@@ -582,7 +553,7 @@ const Schedule = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-auto">
             <h3 className="text-xl font-bold text-gray-800 mb-6">Add Objective to {selectedDay}</h3>
-            
+
             <div className="space-y-2">
               {getAvailableObjectives().length > 0 ? (
                 getAvailableObjectives().map((objective) => (
@@ -613,7 +584,7 @@ const Schedule = () => {
                 </div>
               )}
             </div>
-            
+
             <button
               onClick={() => setShowAddItemModal(false)}
               className="w-full mt-4 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
@@ -637,7 +608,7 @@ const Schedule = () => {
                 <p className="text-sm text-gray-500">What did you learn today?</p>
               </div>
             </div>
-            
+
             <textarea
               value={notesForm.notes}
               onChange={(e) => setNotesForm({ notes: e.target.value })}
@@ -645,7 +616,7 @@ const Schedule = () => {
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none mb-4"
               placeholder="Write about what you learned, key takeaways, or any notes you want to remember..."
             />
-            
+
             <div className="flex gap-3">
               <button
                 onClick={() => {

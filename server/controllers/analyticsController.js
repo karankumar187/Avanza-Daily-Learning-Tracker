@@ -1,6 +1,8 @@
 const moment = require('moment-timezone');
 const DailyProgress = require('../models/DailyProgress');
 const LearningObjective = require('../models/LearningObjective');
+const Schedule = require('../models/Schedule');
+const syncProgress = require('../utils/syncProgress');
 
 const TIMEZONE = 'Asia/Kolkata';
 
@@ -10,10 +12,10 @@ const TIMEZONE = 'Asia/Kolkata';
 exports.getOverallAnalytics = async (req, res, next) => {
   try {
     const { period } = req.query; // 'daily', 'weekly', 'monthly', 'all'
-    
+
     let dateFilter = {};
     const now = moment.tz(TIMEZONE);
-    
+
     if (period === 'daily') {
       dateFilter = {
         date: {
@@ -36,6 +38,9 @@ exports.getOverallAnalytics = async (req, res, next) => {
         }
       };
     }
+
+    // Sync before fetching analytics
+    await syncProgress(req.user.id);
 
     // Get all progress for the period
     const progress = await DailyProgress.find({
@@ -78,7 +83,7 @@ exports.getOverallAnalytics = async (req, res, next) => {
 exports.getAnalyticsByObjective = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     let dateFilter = {};
     if (startDate && endDate) {
       dateFilter = {
@@ -88,6 +93,9 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
         }
       };
     }
+
+    // Sync before fetching
+    await syncProgress(req.user.id);
 
     // Get all active objectives
     const objectives = await LearningObjective.find({
@@ -154,12 +162,15 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
 exports.getDailyAnalytics = async (req, res, next) => {
   try {
     const { month, year } = req.query;
-    
+
     const targetMonth = month ? parseInt(month) - 1 : moment.tz(TIMEZONE).month();
     const targetYear = year ? parseInt(year) : moment.tz(TIMEZONE).year();
 
     const startOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).startOf('month');
     const endOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).endOf('month');
+
+    // Sync before fetching
+    await syncProgress(req.user.id, 14); // slightly longer sync for calendar context
 
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -171,7 +182,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
 
     // Group by date
     const dailyData = {};
-    
+
     // Initialize all days of the month
     for (let day = 1; day <= endOfMonth.date(); day++) {
       const dateKey = moment.tz({ year: targetYear, month: targetMonth, day }, TIMEZONE).format('YYYY-MM-DD');
@@ -221,6 +232,9 @@ exports.getDailyAnalytics = async (req, res, next) => {
 // @access  Private
 exports.getStreakInfo = async (req, res, next) => {
   try {
+    // Sync before fetching
+    await syncProgress(req.user.id, 14);
+
     // Get all completed progress ordered by date
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -239,7 +253,7 @@ exports.getStreakInfo = async (req, res, next) => {
     }
 
     // Get unique dates with completions
-    const completedDates = [...new Set(progress.map(p => 
+    const completedDates = [...new Set(progress.map(p =>
       moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD')
     ))].sort().reverse();
 
@@ -254,7 +268,7 @@ exports.getStreakInfo = async (req, res, next) => {
       for (let i = 1; i < completedDates.length; i++) {
         const prevDate = moment.tz(completedDates[i - 1], TIMEZONE);
         const currDate = moment.tz(completedDates[i], TIMEZONE);
-        
+
         if (prevDate.diff(currDate, 'days') === 1) {
           currentStreak++;
         } else {
@@ -266,12 +280,12 @@ exports.getStreakInfo = async (req, res, next) => {
     // Calculate longest streak
     let longestStreak = 1;
     let currentLongest = 1;
-    
+
     const sortedDates = [...completedDates].sort();
     for (let i = 1; i < sortedDates.length; i++) {
       const prevDate = moment.tz(sortedDates[i - 1], TIMEZONE);
       const currDate = moment.tz(sortedDates[i], TIMEZONE);
-      
+
       if (currDate.diff(prevDate, 'days') === 1) {
         currentLongest++;
         longestStreak = Math.max(longestStreak, currentLongest);
@@ -303,6 +317,9 @@ exports.getWeeklyChartData = async (req, res, next) => {
     const startOfWeek = now.clone().startOf('week');
     const endOfWeek = now.clone().endOf('week');
 
+    // Sync before fetching
+    await syncProgress(req.user.id);
+
     const progress = await DailyProgress.find({
       user: req.user.id,
       date: {
@@ -315,7 +332,7 @@ exports.getWeeklyChartData = async (req, res, next) => {
     const chartData = days.map((day, index) => {
       const dayStart = startOfWeek.clone().add(index, 'days').startOf('day');
       const dayEnd = startOfWeek.clone().add(index, 'days').endOf('day');
-      
+
       const dayProgress = progress.filter(p => {
         const pDate = moment.tz(p.date, TIMEZONE);
         return pDate.isBetween(dayStart, dayEnd, null, '[]');
@@ -346,7 +363,7 @@ exports.getWeeklyChartData = async (req, res, next) => {
 exports.getCategoryAnalytics = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     let dateFilter = {};
     if (startDate && endDate) {
       dateFilter = {
@@ -357,6 +374,9 @@ exports.getCategoryAnalytics = async (req, res, next) => {
       };
     }
 
+    // Sync before fetching
+    await syncProgress(req.user.id);
+
     // Get all objectives with their categories
     const objectives = await LearningObjective.find({
       user: req.user.id,
@@ -365,10 +385,10 @@ exports.getCategoryAnalytics = async (req, res, next) => {
 
     // Group by category
     const categoryMap = {};
-    
+
     for (const objective of objectives) {
       const category = objective.category || 'Uncategorized';
-      
+
       if (!categoryMap[category]) {
         categoryMap[category] = {
           category,

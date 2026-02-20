@@ -2,6 +2,8 @@ const { validationResult } = require('express-validator');
 const moment = require('moment-timezone');
 const DailyProgress = require('../models/DailyProgress');
 const LearningObjective = require('../models/LearningObjective');
+const Schedule = require('../models/Schedule');
+const syncProgress = require('../utils/syncProgress');
 
 const TIMEZONE = 'Asia/Kolkata';
 
@@ -34,7 +36,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
     }
 
     const progressDate = moment.tz(date || new Date(), TIMEZONE).startOf('day').toDate();
-    
+
     let progress = await DailyProgress.findOne({
       user: req.user.id,
       learningObjective: learningObjectiveId,
@@ -79,7 +81,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
         date: progressDate,
         ...updateData
       });
-      
+
       progress = await DailyProgress.findById(progress._id)
         .populate('learningObjective', 'title color icon category');
     }
@@ -99,8 +101,11 @@ exports.createOrUpdateProgress = async (req, res, next) => {
 exports.getDailyProgress = async (req, res, next) => {
   try {
     const { date } = req.query;
-    
-    const queryDate = date 
+
+    // Sync before fetching
+    await syncProgress(req.user.id);
+
+    const queryDate = date
       ? moment.tz(date, TIMEZONE).startOf('day').toDate()
       : moment.tz(TIMEZONE).startOf('day').toDate();
 
@@ -125,13 +130,16 @@ exports.getDailyProgress = async (req, res, next) => {
 exports.getProgressRange = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     if (!startDate || !endDate) {
       return res.status(400).json({
         success: false,
         message: 'Please provide startDate and endDate'
       });
     }
+
+    // Sync before fetching
+    await syncProgress(req.user.id);
 
     const start = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
     const end = moment.tz(endDate, TIMEZONE).endOf('day').toDate();
@@ -158,7 +166,10 @@ exports.getProgressRange = async (req, res, next) => {
 exports.getObjectiveProgress = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
+    // Sync before fetching
+    await syncProgress(req.user.id);
+
     let query = {
       user: req.user.id,
       learningObjective: req.params.objectiveId
@@ -192,7 +203,7 @@ exports.skipProgress = async (req, res, next) => {
     const { learningObjectiveId, date, remarks } = req.body;
 
     const progressDate = moment.tz(date || new Date(), TIMEZONE).startOf('day').toDate();
-    
+
     let progress = await DailyProgress.findOne({
       user: req.user.id,
       learningObjective: learningObjectiveId,
@@ -219,7 +230,7 @@ exports.skipProgress = async (req, res, next) => {
         date: progressDate,
         ...updateData
       });
-      
+
       progress = await DailyProgress.findById(progress._id)
         .populate('learningObjective', 'title color icon category');
     }

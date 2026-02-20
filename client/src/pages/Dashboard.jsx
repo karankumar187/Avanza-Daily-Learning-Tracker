@@ -92,9 +92,9 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       const [overallRes, streakRes, dailyRes, objectivesRes, weeklyRes] = await Promise.all([
-        analyticsAPI.getOverall('weekly'),
+        analyticsAPI.getOverall('daily'),
         analyticsAPI.getStreak(),
         progressAPI.getDaily(),
         objectivesAPI.getAll({ isActive: true }),
@@ -137,9 +137,9 @@ const Dashboard = () => {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDay = firstDay.getDay();
-    
+
     const days = [];
-    
+
     // Previous month days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDay - 1; i >= 0; i--) {
@@ -150,7 +150,7 @@ const Dashboard = () => {
         date: new Date(year, month - 1, day),
       });
     }
-    
+
     // Current month days
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({
@@ -159,7 +159,7 @@ const Dashboard = () => {
         date: new Date(year, month, i),
       });
     }
-    
+
     // Next month days
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
@@ -169,7 +169,7 @@ const Dashboard = () => {
         date: new Date(year, month + 1, i),
       });
     }
-    
+
     return days;
   };
 
@@ -491,7 +491,7 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="calendar-grid">
               {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
                 <div key={day} className="text-center text-xs font-medium text-gray-400 dark:text-gray-500 py-2">
@@ -508,13 +508,12 @@ const Dashboard = () => {
                     {item.day}
                     {status && (
                       <span
-                        className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
-                          status === 'success'
+                        className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${status === 'success'
                             ? 'bg-green-500'
                             : status === 'danger'
-                            ? 'bg-red-500'
-                            : 'bg-yellow-500'
-                        }`}
+                              ? 'bg-red-500'
+                              : 'bg-yellow-500'
+                          }`}
                       />
                     )}
                   </div>
