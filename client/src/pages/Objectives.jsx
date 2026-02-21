@@ -19,7 +19,7 @@ const iconOptions = [
 ];
 
 const colorOptions = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981',
+  '#4A7C59', '#6FAF82', '#B5895A', '#f59e0b', '#10b981',
   '#ef4444', '#06b6d4', '#84cc16', '#f97316', '#3b82f6'
 ];
 
@@ -42,7 +42,7 @@ const Objectives = () => {
     category: '',
     priority: 'medium',
     estimatedTime: 60,
-    color: '#6366f1',
+    color: '#4A7C59',
     icon: 'Book'
   });
 
@@ -148,7 +148,7 @@ const Objectives = () => {
       category: '',
       priority: 'medium',
       estimatedTime: 60,
-      color: '#6366f1',
+      color: '#4A7C59',
       icon: 'Book'
     });
   };
@@ -178,7 +178,7 @@ const Objectives = () => {
       case 'missed':
         return <XCircle className="w-5 h-5 text-red-500" />;
       case 'skipped':
-        return <Clock className="w-5 h-5 text-purple-500" />;
+        return <Clock className="w-5 h-5 text-green-700" />;
       default:
         return <Clock className="w-5 h-5 text-amber-500" />;
     }
@@ -191,7 +191,7 @@ const Objectives = () => {
       case 'missed':
         return 'bg-red-100 text-red-700';
       case 'skipped':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-amber-100 text-amber-700';
     }
@@ -222,7 +222,7 @@ const Objectives = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
       </div>
     );
   }
@@ -241,7 +241,7 @@ const Objectives = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-indigo-200 transition-all"
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
         >
           <Plus className="w-5 h-5" />
           Add Objective
@@ -258,14 +258,14 @@ const Objectives = () => {
               placeholder="Search objectives..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all"
             />
           </div>
           <div className="flex gap-4">
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+              className="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all"
             >
               <option value="all">All Categories</option>
               {categories.map(cat => (
@@ -275,7 +275,7 @@ const Objectives = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+              className="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all"
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -327,7 +327,7 @@ const Objectives = () => {
                   </div>
                 </div>
 
-                <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pl-3">{objective.title}</h3>
+                <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2 line-clamp-1 group-hover:text-green-800 dark:group-hover:text-green-400 transition-colors pl-3">{objective.title}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 line-clamp-2 leading-relaxed pl-3">{objective.description}</p>
 
                 <div className="flex items-center justify-between pl-3">
@@ -357,7 +357,7 @@ const Objectives = () => {
           <p className="text-gray-500 mb-4">Create your first learning objective to get started</p>
           <button
             onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Objective
@@ -454,7 +454,7 @@ const Objectives = () => {
                         type="button"
                         onClick={() => setFormData({ ...formData, icon: option.value })}
                         className={`p-3 rounded-lg border-2 transition-all ${formData.icon === option.value
-                          ? 'border-indigo-500 bg-indigo-50'
+                          ? 'border-green-700 bg-green-50'
                           : 'border-gray-200 hover:bg-gray-50'
                           }`}
                       >
@@ -491,7 +491,7 @@ const Objectives = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
                 >
                   {editingObjective ? 'Update' : 'Create'}
                 </button>

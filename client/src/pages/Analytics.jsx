@@ -39,7 +39,7 @@ const periodOptions = [
   { value: 'all', label: 'All Time' }
 ];
 
-const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#3b82f6'];
+const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#6FAF82', '#3b82f6'];
 
 const Analytics = () => {
   const [period, setPeriod] = useState('weekly');
@@ -97,14 +97,14 @@ const Analytics = () => {
       { name: 'Completed', value: overallStats.completed, color: '#10b981' },
       { name: 'Missed', value: overallStats.missed, color: '#ef4444' },
       { name: 'Pending', value: overallStats.pending, color: '#f59e0b' },
-      { name: 'Partial', value: overallStats.partial, color: '#8b5cf6' }
+      { name: 'Partial', value: overallStats.partial, color: '#6FAF82' }
     ].filter(item => item.value > 0);
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
       </div>
     );
   }
@@ -121,7 +121,7 @@ const Analytics = () => {
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white"
+            className="px-4 py-2.5 rounded-lg border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all bg-white"
           >
             {periodOptions.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -142,8 +142,8 @@ const Analytics = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                <Target className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <Target className="w-5 h-5 text-green-800" />
               </div>
               <span className="text-xs text-gray-500">Total</span>
             </div>
@@ -164,8 +164,8 @@ const Analytics = () => {
 
           <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-green-800" />
               </div>
               <span className="text-xs text-gray-500">Rate</span>
             </div>
@@ -360,7 +360,7 @@ const Analytics = () => {
               </div>
               <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all"
+                  className="h-full bg-gradient-to-r from-green-700 to-green-600 transition-all"
                   style={{ width: `${cat.completionRate}%` }}
                 />
               </div>
@@ -401,7 +401,7 @@ const Analytics = () => {
                 <div className="text-sm text-gray-500">Completed</div>
               </div>
               <div className="p-4 rounded-xl bg-gray-50 text-center">
-                <div className="text-2xl font-bold text-purple-600">{selectedObjective.stats.completionRate}%</div>
+                <div className="text-2xl font-bold text-green-800">{selectedObjective.stats.completionRate}%</div>
                 <div className="text-sm text-gray-500">Completion Rate</div>
               </div>
               <div className="p-4 rounded-xl bg-gray-50 text-center">

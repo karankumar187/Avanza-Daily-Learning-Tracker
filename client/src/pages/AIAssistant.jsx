@@ -221,7 +221,7 @@ const AIAssistant = () => {
       {/* Header */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-200">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-700 to-green-600 flex items-center justify-center shadow-lg shadow-green-200">
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -235,11 +235,11 @@ const AIAssistant = () => {
         </div>
 
         <div className="flex flex-wrap gap-2 mt-4">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
             <Lightbulb className="w-4 h-4" />
             Smart Planning
           </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-sm">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
             <Target className="w-4 h-4" />
             Goal Oriented
           </span>
@@ -259,7 +259,7 @@ const AIAssistant = () => {
         <button
           onClick={() => setActiveTab("schedule")}
           className={`px-6 py-3 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "schedule"
-            ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+            ? "border-green-700 text-green-800 dark:text-green-400"
             : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             }`}
         >
@@ -269,7 +269,7 @@ const AIAssistant = () => {
         <button
           onClick={() => setActiveTab("chat")}
           className={`px-6 py-3 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "chat"
-            ? "border-indigo-500 text-indigo-600 dark:text-indigo-400"
+            ? "border-green-700 text-green-800 dark:text-green-400"
             : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             }`}
         >
@@ -293,7 +293,7 @@ const AIAssistant = () => {
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="e.g., I want to learn Python programming and web development in 3 months..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all resize-none"
                   />
                 </div>
 
@@ -311,7 +311,7 @@ const AIAssistant = () => {
                         onChange={(e) =>
                           setStudyHours(parseInt(e.target.value))
                         }
-                        className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-700"
                       />
                       <span className="w-12 text-center font-medium text-gray-700 dark:text-gray-200">
                         {studyHours}h
@@ -326,7 +326,7 @@ const AIAssistant = () => {
                     <select
                       value={preferredTime}
                       onChange={(e) => setPreferredTime(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all"
                     >
                       {timeOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -340,7 +340,7 @@ const AIAssistant = () => {
                 <button
                   type="submit"
                   disabled={loading || !prompt.trim()}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:shadow-lg hover:shadow-indigo-200 transition-all"
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:shadow-lg hover:shadow-green-200 transition-all"
                 >
                   {loading ? (
                     <>
@@ -363,7 +363,7 @@ const AIAssistant = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-indigo-500" />
+                      <Sparkles className="w-5 h-5 text-green-700" />
                       AI Generated Schedule
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -380,7 +380,7 @@ const AIAssistant = () => {
                     <button
                       onClick={handleApplySuggestion}
                       disabled={applying}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium flex items-center gap-2 disabled:opacity-70 hover:shadow-lg transition-all"
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium flex items-center gap-2 disabled:opacity-70 hover:shadow-lg transition-all"
                     >
                       {applying ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -440,7 +440,7 @@ const AIAssistant = () => {
                                       {item.description}
                                     </p>
                                   </div>
-                                  <span className="px-2 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs">
+                                  <span className="px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs">
                                     {item.category}
                                   </span>
                                 </div>
@@ -500,8 +500,8 @@ const AIAssistant = () => {
             {/* Tips Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="glass-card rounded-xl p-5">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center mb-3">
-                  <Target className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3">
+                  <Target className="w-5 h-5 text-green-800" />
                 </div>
                 <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">
                   Be Specific
@@ -526,8 +526,8 @@ const AIAssistant = () => {
               </div>
 
               <div className="glass-card rounded-xl p-5">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-3">
-                  <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
+                  <Sparkles className="w-5 h-5 text-green-800 dark:text-green-400" />
                 </div>
                 <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">
                   Iterate & Improve
@@ -549,12 +549,12 @@ const AIAssistant = () => {
                 >
                   <div
                     className={`max-w-[80%] rounded-2xl px-5 py-3 ${msg.role === "user"
-                      ? "bg-indigo-600 text-white rounded-br-none"
+                      ? "bg-green-700 text-white rounded-br-none"
                       : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-100 rounded-bl-none"
                       }`}
                   >
                     {msg.role === "assistant" && (
-                      <div className="flex items-center gap-2 mb-1 text-sm text-indigo-600 dark:text-indigo-400 font-medium">
+                      <div className="flex items-center gap-2 mb-1 text-sm text-green-800 dark:text-green-400 font-medium">
                         <Sparkles className="w-4 h-4" />
                         AI Coach
                       </div>
@@ -602,12 +602,12 @@ const AIAssistant = () => {
                   }}
                   placeholder="Ask me anything about your learning progress..."
                   rows={1}
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none min-h-[50px] max-h-[150px]"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all resize-none min-h-[50px] max-h-[150px]"
                 />
                 <button
                   type="submit"
                   disabled={!chatInput.trim() || chatLoading}
-                  className="p-3 rounded-xl bg-indigo-600 text-white disabled:opacity-50 hover:bg-indigo-700 transition-colors flex-shrink-0"
+                  className="p-3 rounded-xl bg-green-700 text-white disabled:opacity-50 hover:bg-green-800 transition-colors flex-shrink-0"
                 >
                   <Send className="w-5 h-5" />
                 </button>

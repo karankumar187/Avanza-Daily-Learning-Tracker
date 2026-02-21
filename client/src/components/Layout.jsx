@@ -135,13 +135,13 @@ const Layout = () => {
                 <h4 className="font-medium text-gray-800 mb-2">Preferences</h4>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm text-gray-600">Email Notifications</span>
-                  <div className="w-12 h-6 bg-indigo-500 rounded-full relative cursor-pointer">
+                  <div className="w-12 h-6 bg-green-700 rounded-full relative cursor-pointer">
                     <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow"></div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm text-gray-600">Daily Reminders</span>
-                  <div className="w-12 h-6 bg-indigo-500 rounded-full relative cursor-pointer">
+                  <div className="w-12 h-6 bg-green-700 rounded-full relative cursor-pointer">
                     <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow"></div>
                   </div>
                 </div>
@@ -176,10 +176,10 @@ const Layout = () => {
                   <div
                     key={notif._id || Math.random()}
                     onClick={() => handleMarkRead(notif._id, notif.read)}
-                    className={`p-3 rounded-xl ${notif.read ? 'bg-gray-50' : 'bg-indigo-50'} cursor-pointer hover:bg-gray-100 transition-colors border ${notif.read ? 'border-transparent' : 'border-indigo-100'}`}
+                    className={`p-3 rounded-xl ${notif.read ? 'bg-gray-50' : 'bg-green-50'} cursor-pointer hover:bg-gray-100 transition-colors border ${notif.read ? 'border-transparent' : 'border-green-100'}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${notif.read ? 'bg-gray-300' : 'bg-indigo-500'}`} />
+                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${notif.read ? 'bg-gray-300' : 'bg-green-700'}`} />
                       <div className="flex-1">
                         <p className={`text-sm ${notif.read ? 'font-medium text-gray-600' : 'font-semibold text-gray-800'}`}>{notif.title}</p>
                         <p className={`text-xs mt-0.5 ${notif.read ? 'text-gray-500' : 'text-gray-600'}`}>{notif.message}</p>
@@ -261,11 +261,11 @@ const Layout = () => {
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-indigo-200"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-green-200"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center text-white font-semibold text-sm">
                   {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-5 h-5 text-white" />}
                 </div>
               )}

@@ -265,7 +265,7 @@ const Schedule = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
       </div>
     );
   }
@@ -280,7 +280,7 @@ const Schedule = () => {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-indigo-200 transition-all"
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
         >
           <Plus className="w-5 h-5" />
           New Schedule
@@ -296,7 +296,7 @@ const Schedule = () => {
                 key={schedule._id}
                 onClick={() => setSelectedSchedule(schedule)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSchedule?._id === schedule._id
-                  ? 'bg-indigo-600 text-white shadow-md'
+                  ? 'bg-green-700 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
@@ -340,7 +340,7 @@ const Schedule = () => {
                   key={day}
                   onClick={() => setSelectedDay(day)}
                   className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${selectedDay === day
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-green-700 to-green-600 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
@@ -354,8 +354,8 @@ const Schedule = () => {
           <div className="glass-card rounded-xl p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-green-800" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 capitalize">{selectedDay}</h3>
@@ -366,7 +366,7 @@ const Schedule = () => {
               </div>
               <button
                 onClick={() => setShowAddItemModal(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add Objective
@@ -428,7 +428,7 @@ const Schedule = () => {
                         )}
                         {progress?.status === 'skipped' && (
                           <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-100 text-purple-700 text-sm font-medium">
+                            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-100 text-green-800 text-sm font-medium">
                               <SkipForward className="w-4 h-4" />
                               Skipped
                             </span>
@@ -464,7 +464,7 @@ const Schedule = () => {
                             </button>
                             <button
                               onClick={() => handleSkip(objective._id)}
-                              className="px-3 py-1.5 rounded-lg bg-purple-100 text-purple-700 text-sm font-medium hover:bg-purple-200 transition-colors"
+                              className="px-3 py-1.5 rounded-lg bg-green-100 text-green-800 text-sm font-medium hover:bg-green-200 transition-colors"
                             >
                               Skip
                             </button>
@@ -487,7 +487,7 @@ const Schedule = () => {
                 <p className="text-gray-500 mb-4">No items scheduled for {selectedDay}</p>
                 <button
                   onClick={() => setShowAddItemModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Add First Item
@@ -503,7 +503,7 @@ const Schedule = () => {
           <p className="text-gray-500 mb-4">Create your first schedule to start planning</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Create Schedule
@@ -525,7 +525,7 @@ const Schedule = () => {
                   value={scheduleForm.name}
                   onChange={(e) => setScheduleForm({ ...scheduleForm, name: e.target.value })}
                   required
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all"
                   placeholder="e.g., My Learning Plan"
                 />
               </div>
@@ -536,7 +536,7 @@ const Schedule = () => {
                   value={scheduleForm.description}
                   onChange={(e) => setScheduleForm({ ...scheduleForm, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all resize-none"
                   placeholder="Brief description of your schedule"
                 />
               </div>
@@ -551,7 +551,7 @@ const Schedule = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
                 >
                   Create
                 </button>
@@ -573,7 +573,7 @@ const Schedule = () => {
                   <button
                     key={objective._id}
                     onClick={() => handleAddItem(objective._id)}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-indigo-50 transition-colors text-left"
+                    className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-green-50 transition-colors text-left"
                   >
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -591,7 +591,7 @@ const Schedule = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No available objectives</p>
-                  <Link to="/objectives" className="text-indigo-600 hover:underline mt-2 inline-block">
+                  <Link to="/objectives" className="text-green-800 hover:underline mt-2 inline-block">
                     Create new objective
                   </Link>
                 </div>
@@ -626,7 +626,7 @@ const Schedule = () => {
               value={notesForm.notes}
               onChange={(e) => setNotesForm({ notes: e.target.value })}
               rows={4}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none mb-4"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all resize-none mb-4"
               placeholder="What did you learn? (optional)"
             />
 

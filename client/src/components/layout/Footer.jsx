@@ -67,7 +67,7 @@ const Footer = () => {
                         </button>
                         <button
                             onClick={() => openModal('feedback')}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-green-800 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
                         >
                             <MessageSquare className="w-4 h-4" />
                             Feedback
@@ -83,7 +83,7 @@ const Footer = () => {
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-5">
                                 <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-xl ${feedbackType === 'bug' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'}`}>
+                                    <div className={`p-2 rounded-xl ${feedbackType === 'bug' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'}`}>
                                         {feedbackType === 'bug' ? <Bug className="w-5 h-5" /> : <MessageSquare className="w-5 h-5" />}
                                     </div>
                                     <div>
@@ -109,7 +109,7 @@ const Footer = () => {
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
                                         placeholder={feedbackType === 'bug' ? "Describe the bug, what you were doing, and what went wrong..." : "Share your ideas, feature requests, or general thoughts..."}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors outline-none min-h-[120px] resize-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-700/50 focus:border-green-700 transition-colors outline-none min-h-[120px] resize-none"
                                         maxLength={1000}
                                         required
                                     />
@@ -131,7 +131,7 @@ const Footer = () => {
                                         disabled={!message.trim() || isSubmitting}
                                         className={`flex items-center gap-2 px-6 py-2 rounded-xl text-white transition-all ${feedbackType === 'bug'
                                             ? 'bg-red-600 hover:bg-red-700 disabled:bg-red-400'
-                                            : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400'
+                                            : 'bg-green-700 hover:bg-green-800 disabled:bg-green-600'
                                             }`}
                                     >
                                         {isSubmitting ? (

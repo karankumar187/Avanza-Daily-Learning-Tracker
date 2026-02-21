@@ -34,7 +34,7 @@ const OAuthCallback = () => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950">
-            <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
+            <Loader2 className="w-12 h-12 text-green-800 animate-spin mb-4" />
             <h2 className="text-xl font-medium text-gray-800 dark:text-gray-200">
                 Securely logging you in...
             </h2>

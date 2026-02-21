@@ -241,7 +241,7 @@ const Dashboard = () => {
       case 'missed':
         return <XCircle className="w-5 h-5 text-red-500" />;
       case 'skipped':
-        return <Clock className="w-5 h-5 text-purple-500" />;
+        return <Clock className="w-5 h-5 text-green-700" />;
       default:
         return <Clock className="w-5 h-5 text-amber-500" />;
     }
@@ -254,7 +254,7 @@ const Dashboard = () => {
       case 'missed':
         return 'bg-red-100 text-red-700';
       case 'skipped':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-amber-100 text-amber-700';
     }
@@ -278,7 +278,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
       </div>
     );
   }
@@ -286,10 +286,10 @@ const Dashboard = () => {
   return (
     <div className="space-y-6 animate-fadeIn" ref={welcomeRef}>
       {/* Welcome Section with Date */}
-      <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-slate-800/60 dark:to-slate-900/60">
+      <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-green-600/10 to-green-400/10 dark:from-slate-800/60 dark:to-slate-900/60">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4" data-welcome-anim>
           <div data-welcome-anim>
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-300 mb-2">
+            <div className="flex items-center gap-2 text-green-800 dark:text-green-400 mb-2">
               <Calendar className="w-5 h-5" />
               <span className="font-medium">{formatDate(currentDate)}</span>
             </div>
@@ -302,7 +302,7 @@ const Dashboard = () => {
           </div>
           <Link
             to="/ai-assistant"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-indigo-200 transition-all"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
           >
             <Sparkles className="w-5 h-5" />
             Get AI Schedule
@@ -332,10 +332,10 @@ const Dashboard = () => {
             </div>
 
             <div className="stagger-item stat-card">
-              <div className="stat-icon purple">
+              <div className="stat-icon green">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <div className="stat-value text-indigo-600">{stats.completionRate}%</div>
+              <div className="stat-value text-green-800">{stats.completionRate}%</div>
               <div className="stat-label">Completion</div>
             </div>
 
@@ -354,7 +354,7 @@ const Dashboard = () => {
             <div className="stagger-item glass-card rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">Weekly Progress</h3>
-                <Link to="/analytics" className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                <Link to="/analytics" className="text-sm text-green-800 hover:text-green-800 flex items-center gap-1">
                   View All <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -426,8 +426,8 @@ const Dashboard = () => {
           <div className="stagger-item glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-300" />
+                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-green-800 dark:text-green-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Today's Progress</h3>
@@ -438,7 +438,7 @@ const Dashboard = () => {
               </div>
               <Link
                 to="/schedule"
-                className="px-4 py-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 font-medium hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                className="px-4 py-2 rounded-lg bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 font-medium hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
               >
                 View Schedule
               </Link>
@@ -454,7 +454,7 @@ const Dashboard = () => {
                     <div className="flex items-center gap-4">
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: (item.learningObjective?.color || '#6366f1') + '20' }}
+                        style={{ backgroundColor: (item.learningObjective?.color || '#4A7C59') + '20' }}
                       >
                         {getStatusIcon(item.status)}
                       </div>
@@ -479,7 +479,7 @@ const Dashboard = () => {
                 <p className="text-gray-500 dark:text-gray-400 mb-4">No tasks scheduled for today</p>
                 <Link
                   to="/schedule"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-700 text-white font-medium hover:bg-green-800 transition-colors"
                 >
                   <Sparkles className="w-4 h-4" />
                   Create Schedule
@@ -551,7 +551,7 @@ const Dashboard = () => {
                   <div key={index} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800">
                     <div
                       className="w-1 h-10 rounded-full"
-                      style={{ backgroundColor: item.learningObjective?.color || '#6366f1' }}
+                      style={{ backgroundColor: item.learningObjective?.color || '#4A7C59' }}
                     />
                     <div className="flex-1">
                       <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
@@ -577,8 +577,8 @@ const Dashboard = () => {
               to="/objectives"
               className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-                <Target className="w-6 h-6 text-indigo-600" />
+              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                <Target className="w-6 h-6 text-green-800" />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-800 dark:text-gray-100">Objectives</div>
@@ -591,8 +591,8 @@ const Dashboard = () => {
               to="/schedule"
               className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-green-800" />
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-gray-800 dark:text-gray-100">Schedule</div>
@@ -603,7 +603,7 @@ const Dashboard = () => {
 
             <Link
               to="/ai-assistant"
-              className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200 hover:shadow-xl transition-shadow"
+              className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white shadow-lg shadow-green-200 hover:shadow-xl transition-shadow"
             >
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-white" />

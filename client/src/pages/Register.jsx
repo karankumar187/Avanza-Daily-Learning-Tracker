@@ -65,8 +65,8 @@ const Register = () => {
         {/* Register Card */}
         <div className="glass-card rounded-2xl p-8">
           <div className="flex items-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-purple-500" />
-            <span className="text-sm text-purple-600 font-medium">Create your account</span>
+            <Sparkles className="w-5 h-5 text-green-700" />
+            <span className="text-sm text-green-800 font-medium">Create your account</span>
           </div>
 
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Sign Up</h2>
@@ -105,7 +105,7 @@ const Register = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/80"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all bg-white/80"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -123,7 +123,7 @@ const Register = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/80"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all bg-white/80"
                   placeholder="Enter your email"
                 />
               </div>
@@ -142,7 +142,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/80"
+                  className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all bg-white/80"
                   placeholder="Create a password"
                 />
                 <button
@@ -167,7 +167,7 @@ const Register = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/80"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all bg-white/80"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -177,19 +177,19 @@ const Register = () => {
               <div
                 onClick={() => setAgreed(!agreed)}
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors mt-0.5 ${agreed
-                  ? 'bg-indigo-500 border-indigo-500'
-                  : 'border-gray-300 hover:border-indigo-400'
+                  ? 'bg-green-700 border-green-700'
+                  : 'border-gray-300 hover:border-green-400'
                   }`}
               >
                 {agreed && <Check className="w-3 h-3 text-white" />}
               </div>
               <span className="text-sm text-gray-600">
                 I agree to the{' '}
-                <Link to="#" className="text-indigo-600 hover:text-indigo-700">
+                <Link to="#" className="text-green-800 hover:text-green-800">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="#" className="text-indigo-600 hover:text-indigo-700">
+                <Link to="#" className="text-green-800 hover:text-green-800">
                   Privacy Policy
                 </Link>
               </span>
@@ -198,7 +198,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:shadow-lg hover:shadow-indigo-200 transition-all"
+              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:shadow-lg hover:shadow-green-200 transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -211,7 +211,7 @@ const Register = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
+              <Link to="/login" className="text-green-800 hover:text-green-800 font-medium">
                 Sign in
               </Link>
             </p>
@@ -221,8 +221,8 @@ const Register = () => {
         {/* Benefits */}
         <div className="mt-8 grid grid-cols-2 gap-4">
           <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-green-800" />
             </div>
             <div>
               <div className="font-medium text-gray-800">AI Schedule</div>
@@ -230,8 +230,8 @@ const Register = () => {
             </div>
           </div>
           <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-              <Crosshair className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <Crosshair className="w-5 h-5 text-green-800" />
             </div>
             <div>
               <div className="font-medium text-gray-800">Track Goals</div>

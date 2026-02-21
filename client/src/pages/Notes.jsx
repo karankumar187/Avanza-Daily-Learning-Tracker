@@ -211,7 +211,7 @@ const Notes = () => {
                             placeholder="e.g. System Design Interview..."
                             value={newNoteTitle}
                             onChange={(e) => setNewNoteTitle(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-indigo-500 mb-6 text-gray-800 dark:text-white transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-green-700 mb-6 text-gray-800 dark:text-white transition-all"
                             onKeyDown={(e) => { if (e.key === 'Enter' && newNoteTitle.trim()) handleCreateNoteSubmit(); }}
                         />
                         <div className="flex justify-end gap-3">
@@ -224,7 +224,7 @@ const Notes = () => {
                             <button
                                 onClick={handleCreateNoteSubmit}
                                 disabled={!newNoteTitle.trim()}
-                                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-200 dark:shadow-none disabled:opacity-50"
+                                className="px-4 py-2.5 rounded-xl bg-green-700 hover:bg-green-800 text-white font-medium transition-colors shadow-lg shadow-green-100 dark:shadow-none disabled:opacity-50"
                             >
                                 Create Note
                             </button>
@@ -237,7 +237,7 @@ const Notes = () => {
                 {/* Mobile Menu Toggle */}
                 <div className="md:hidden flex justify-between items-center mb-2">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <FileText className="w-6 h-6 text-indigo-500" />
+                        <FileText className="w-6 h-6 text-green-700" />
                         Notes
                     </h1>
                     <button
@@ -258,7 +258,7 @@ const Notes = () => {
                     <div className="p-4 border-b border-gray-100 dark:border-slate-800">
                         <button
                             onClick={handleCreateNoteClick}
-                            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-xl transition-colors font-medium mb-4 shadow-sm shadow-indigo-200 dark:shadow-none"
+                            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white py-2.5 px-4 rounded-xl transition-colors font-medium mb-4 shadow-sm shadow-green-100 dark:shadow-none"
                         >
                             <Plus className="w-5 h-5" />
                             New Note
@@ -271,7 +271,7 @@ const Notes = () => {
                                 placeholder="Search notes..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all dark:text-white"
+                                className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-green-700/50 outline-none transition-all dark:text-white"
                             />
                         </div>
                     </div>
@@ -279,7 +279,7 @@ const Notes = () => {
                     <div className="flex-1 overflow-y-auto p-3" ref={notesListRef}>
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-                                <Loader2 className="w-6 h-6 animate-spin mb-2 text-indigo-500" />
+                                <Loader2 className="w-6 h-6 animate-spin mb-2 text-green-700" />
                                 <p className="text-sm">Loading notes...</p>
                             </div>
                         ) : filteredNotes.length === 0 ? (
@@ -300,12 +300,12 @@ const Notes = () => {
                                     className={`
                   group relative p-3 mb-1.5 rounded-xl cursor-pointer transition-all duration-200 border
                   ${activeNote?._id === note._id
-                                            ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800/50 shadow-sm'
+                                            ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800/50 shadow-sm'
                                             : 'bg-transparent border-transparent hover:bg-gray-50 dark:hover:bg-slate-800/50'}
                 `}
                                 >
                                     <div className="pr-6 mb-0.5">
-                                        <h3 className={`font-medium text-sm truncate ${activeNote?._id === note._id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'}`}>
+                                        <h3 className={`font-medium text-sm truncate ${activeNote?._id === note._id ? 'text-green-900 dark:text-green-200' : 'text-gray-900 dark:text-gray-100'}`}>
                                             {note.title || 'Untitled'}
                                         </h3>
                                     </div>
@@ -394,7 +394,7 @@ const Notes = () => {
                             <p className="max-w-sm mb-6">Choose a note from the list on the left, or create a new one to get started saving your thoughts.</p>
                             <button
                                 onClick={handleCreateNoteClick}
-                                className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
+                                className="flex items-center gap-2 text-green-800 dark:text-green-400 font-medium hover:underline"
                             >
                                 <Plus className="w-5 h-5" />
                                 Create a new note
