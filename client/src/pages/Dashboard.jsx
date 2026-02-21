@@ -302,7 +302,7 @@ const Dashboard = () => {
           </div>
           <Link
             to="/ai-assistant"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-900 text-white font-medium  transition-all"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-800 text-white font-medium  transition-all"
           >
             <Sparkles className="w-5 h-5" />
             Get AI Schedule
@@ -327,15 +327,15 @@ const Dashboard = () => {
               <div className="stat-icon green">
                 <CheckCircle className="w-6 h-6" />
               </div>
-              <div className="stat-value text-green-600">{stats.completed}</div>
+              <div className="stat-value" style={{ color: '#1B4332' }}>{stats.completed}</div>
               <div className="stat-label">Completed</div>
             </div>
 
             <div className="stagger-item stat-card">
-              <div className="stat-icon green">
+              <div className="stat-icon sage">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <div className="stat-value text-green-800">{stats.completionRate}%</div>
+              <div className="stat-value" style={{ color: '#2D6A4F' }}>{stats.completionRate}%</div>
               <div className="stat-label">Completion</div>
             </div>
 
@@ -343,7 +343,7 @@ const Dashboard = () => {
               <div className="stat-icon orange">
                 <Flame className="w-6 h-6" />
               </div>
-              <div className="stat-value text-orange-600">{streak.currentStreak}</div>
+              <div className="stat-value" style={{ color: '#92400E' }}>{streak.currentStreak}</div>
               <div className="stat-label">Day Streak</div>
             </div>
           </div>
@@ -603,7 +603,7 @@ const Dashboard = () => {
 
             <Link
               to="/ai-assistant"
-              className="flex items-center gap-4 p-4 rounded-xl bg-gray-900 text-white  hover:transition-colors"
+              className="flex items-center gap-4 p-4 rounded-xl bg-gray-800 text-white  hover:transition-colors"
             >
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-white" />

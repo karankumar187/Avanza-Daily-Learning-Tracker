@@ -152,7 +152,7 @@ const Analytics = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#E8F2EC" }}>
                 <Target className="w-5 h-5 text-green-800" />
               </div>
               <span className="text-xs text-gray-500">Total</span>
@@ -163,7 +163,7 @@ const Analytics = () => {
 
           <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#E8F2EC" }}>
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <span className="text-xs text-green-600">+{overallStats.completed}</span>
@@ -174,7 +174,7 @@ const Analytics = () => {
 
           <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#E8F2EC" }}>
                 <TrendingUp className="w-5 h-5 text-green-800" />
               </div>
               <span className="text-xs text-gray-500">Rate</span>
@@ -185,8 +185,8 @@ const Analytics = () => {
 
           <div className="stagger-item stat-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-orange-600" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#FDEBD0" }}>
+                <Clock className="w-5 h-5 text-amber-800" />
               </div>
               <span className="text-xs text-gray-500">Time</span>
             </div>
@@ -415,7 +415,7 @@ const Analytics = () => {
                 <div className="text-sm text-gray-500">Completion Rate</div>
               </div>
               <div className="p-4 rounded-xl bg-gray-50 text-center">
-                <div className="text-2xl font-bold text-orange-600">{formatTime(selectedObjective.stats.totalTimeSpent)}</div>
+                <div className="text-2xl font-bold text-amber-800">{formatTime(selectedObjective.stats.totalTimeSpent)}</div>
                 <div className="text-sm text-gray-500">Time Spent</div>
               </div>
             </div>

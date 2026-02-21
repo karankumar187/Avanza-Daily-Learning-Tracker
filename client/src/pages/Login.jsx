@@ -37,11 +37,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#F3F4F6' }}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#F8F4EE' }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-md p-2" style={{ background: '#F3F4F6' }}>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-md p-2" style={{ background: '#F8F4EE' }}>
             <LogoIcon className="w-10 h-10" color="#1F2937" />
           </div>
           <h1 className="text-3xl font-bold" style={{ color: '#111827' }}>
@@ -137,7 +137,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70  transition-all"
+              className="w-full py-3 px-4 rounded-xl bg-gray-800 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70  transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

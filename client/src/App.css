@@ -1,39 +1,46 @@
-/* Avanza — Minimal green + beige theme */
+/* Avanza — Combined beige, sage green & light gray theme */
 :root {
-  --primary: #1F2937;
-  /* charcoal — primary actions */
-  --primary-light: #374151;
-  /* lighter charcoal */
-  --primary-dark: #111827;
-  /* near-black */
-  --accent: #4A7C59;
-  /* forest green — accent only */
-  --accent-light: #6FAF82;
-  /* sage green */
-  --success: #4A7C59;
-  --warning: #B5895A;
-  --danger: #C0564B;
-  --info: #5A8FA3;
+  /* Actions */
+  --primary: #2D6A4F;
+  /* deep sage green */
+  --primary-light: #52B788;
+  /* medium sage */
+  --primary-dark: #1B4332;
+  /* dark forest */
 
-  --bg-primary: #F9F6EF;
+  /* Accent / highlights */
+  --accent-beige: #F8F4EE;
   /* warm beige */
-  --bg-secondary: #F3F4F6;
-  /* light gray */
+  --accent-green: #D8EDDF;
+  /* pale sage */
+  --accent-amber: #FDEBD0;
+  /* warm amber-beige */
+
+  /* Backgrounds */
+  --bg-primary: #F8F4EE;
+  /* warm beige page bg */
+  --bg-secondary: #F1EDE6;
+  /* slightly darker beige */
   --bg-card: #FFFFFF;
+  /* crisp white cards */
+  --bg-subtle: #F3F4F6;
+  /* light gray for inactive areas */
 
-  --text-primary: #111827;
-  /* near-black */
-  --text-secondary: #6B7280;
-  /* medium gray */
-  --text-muted: #9CA3AF;
-  /* light gray */
+  /* Text */
+  --text-primary: #1A2E1F;
+  /* near-black with green tint */
+  --text-secondary: #5C6E62;
+  /* muted sage-gray */
+  --text-muted: #9CA9A0;
+  /* soft muted */
 
-  --border-color: #E5E7EB;
-  /* standard gray border */
+  /* Borders & shadows */
+  --border-color: #E4E8E5;
+  /* light sage-gray border */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-  --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
-  --shadow-xl: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow: 0 1px 4px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 4px 12px -2px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 10px 24px -4px rgb(0 0 0 / 0.08), 0 4px 8px -4px rgb(0 0 0 / 0.04);
 
   --radius-sm: 8px;
   --radius: 12px;
@@ -43,15 +50,16 @@
 
 /* Dark mode overrides */
 .dark {
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-card: #1E293B;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --border-color: #334155;
-  --primary: #E2E8F0;
-  --primary-dark: #F1F5F9;
+  --bg-primary: #0D1F14;
+  --bg-secondary: #162618;
+  --bg-card: #1C3022;
+  --bg-subtle: #1A2E1F;
+  --text-primary: #E8F2EB;
+  --text-secondary: #8FAF97;
+  --text-muted: #5A7362;
+  --border-color: #2A4030;
+  --primary: #52B788;
+  --primary-dark: #74C99A;
 }
 
 * {
@@ -68,7 +76,7 @@ body {
 
 /* Auth Pages Background */
 .bg-gradient-lms {
-  background: #F3F4F6;
+  background: var(--bg-primary);
 }
 
 /* Glassmorphism Card */
@@ -233,51 +241,64 @@ body {
 
 /* Stats Cards */
 .stat-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: var(--radius-lg);
   padding: 20px;
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .dark .stat-card {
-  background: #020617;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  box-shadow: none;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
 
+/* === Stat Icon Variants (flat, on-theme, 12px radius) === */
 .stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
 }
 
+/* Target / Objectives → beige-green */
 .stat-icon.blue {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  color: #2563eb;
+  background: #E8F2EC;
+  color: #2D6A4F;
 }
 
+/* Completed / Tick → pale sage green */
 .stat-icon.green {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #059669;
+  background: #D8EDDF;
+  color: #1B4332;
 }
 
+/* Streak / Flame → warm amber-beige */
 .stat-icon.orange {
-  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
-  color: #ea580c;
+  background: #FDEBD0;
+  color: #92400E;
 }
 
-.stat-icon.green {
-  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-  color: #4f46e5;
+/* Growth / Trend → light gray-green */
+.stat-icon.sage {
+  background: #E8F2EC;
+  color: #2D6A4F;
+}
+
+/* Info / Clock → cool beige */
+.stat-icon.warm {
+  background: #FEF3E2;
+  color: #92400E;
 }
 
 .stat-value {

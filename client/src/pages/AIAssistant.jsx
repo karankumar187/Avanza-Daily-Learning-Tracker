@@ -340,7 +340,7 @@ const AIAssistant = () => {
                 <button
                   type="submit"
                   disabled={loading || !prompt.trim()}
-                  className="w-full py-3 px-4 rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70  transition-all"
+                  className="w-full py-3 px-4 rounded-xl bg-gray-800 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70  transition-all"
                 >
                   {loading ? (
                     <>
@@ -380,7 +380,7 @@ const AIAssistant = () => {
                     <button
                       onClick={handleApplySuggestion}
                       disabled={applying}
-                      className="px-4 py-2 rounded-xl bg-gray-900 text-white font-medium flex items-center gap-2 disabled:opacity-70 transition-colors"
+                      className="px-4 py-2 rounded-xl bg-gray-800 text-white font-medium flex items-center gap-2 disabled:opacity-70 transition-colors"
                     >
                       {applying ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
