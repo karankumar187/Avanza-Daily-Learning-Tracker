@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import gsap from 'gsap';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { notesAPI } from '../services/api';
 
 const Notes = () => {
@@ -23,6 +24,8 @@ const Notes = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    gsap.registerPlugin(useGSAP);
 
     const notesListRef = useRef(null);
     const editorRef = useRef(null);
@@ -50,7 +53,7 @@ const Notes = () => {
     };
 
     // GSAP Animation for list stagger
-    useEffect(() => {
+    useGSAP(() => {
         if (!isLoading && notes.length > 0 && notesListRef.current) {
             gsap.fromTo(
                 notesListRef.current.children,
@@ -65,7 +68,7 @@ const Notes = () => {
                 }
             );
         }
-    }, [isLoading]);
+    }, { dependencies: [isLoading, notes.length], scope: notesListRef });
 
     // Handle creating a new note
     const handleCreateNote = async () => {
@@ -174,8 +177,8 @@ const Notes = () => {
     };
 
     const filteredNotes = notes.filter(n =>
-        n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        n.content.toLowerCase().includes(searchQuery.toLowerCase())
+        (n.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (n.content || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -270,7 +273,7 @@ const Notes = () => {
                                 <div className="flex items-center text-xs text-gray-400 dark:text-gray-500 gap-3">
                                     <span className="flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
-                                        {format(new Date(note.updatedAt), 'MMM d, yyyy')}
+                                        {format(new Date(note.updatedAt || new Date()), 'MMM d, yyyy')}
                                     </span>
                                 </div>
                             </div>
@@ -302,11 +305,11 @@ const Notes = () => {
                                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     <span className="flex items-center gap-1">
                                         <Calendar className="w-3.5 h-3.5" />
-                                        Created: {format(new Date(activeNote.createdAt), 'MMM d, yyyy')}
+                                        Created: {format(new Date(activeNote.createdAt || new Date()), 'MMM d, yyyy')}
                                     </span>
                                     <span className="flex items-center gap-1">
                                         <Clock className="w-3.5 h-3.5" />
-                                        Last edited {format(new Date(activeNote.updatedAt), 'h:mm a')}
+                                        Last edited {format(new Date(activeNote.updatedAt || new Date()), 'h:mm a')}
                                     </span>
                                 </div>
                             </div>

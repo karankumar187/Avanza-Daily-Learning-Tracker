@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { notificationsAPI } from '../services/api';
+import { formatDistanceToNow } from 'date-fns';
 import {
   LayoutDashboard,
   Target,
@@ -32,11 +34,39 @@ const Layout = () => {
     navigate('/login');
   };
 
+  const [notifications, setNotifications] = useState([]);
+
   useEffect(() => {
     const stored = localStorage.getItem('theme') || 'light';
     setTheme(stored);
     document.documentElement.classList.toggle('dark', stored === 'dark');
-  }, []);
+
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await notificationsAPI.getAll();
+      setNotifications(res.data.data);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const handleMarkRead = async (id, read) => {
+    if (read) return; // Already read
+
+    try {
+      await notificationsAPI.markAsRead(id);
+      setNotifications(notifications.map(n =>
+        n._id === id ? { ...n, read: true } : n
+      ));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -54,13 +84,7 @@ const Layout = () => {
     { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
   ];
 
-  const isActive = (path) => location.pathname === path;
-
-  const notifications = [
-    { id: 1, title: 'Task completed', message: 'You completed "Learn Python Basics"', time: '2 min ago', read: false },
-    { id: 2, title: 'Schedule reminder', message: 'You have 3 tasks scheduled for today', time: '1 hour ago', read: false },
-    { id: 3, title: 'Streak milestone', message: 'You reached a 7-day streak!', time: '2 hours ago', read: true },
-  ];
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
@@ -126,18 +150,28 @@ const Layout = () => {
               </button>
             </div>
             <div className="space-y-3 max-h-80 overflow-auto">
-              {notifications.map((notif) => (
-                <div key={notif.id} className={`p-3 rounded-xl ${notif.read ? 'bg-gray-50' : 'bg-indigo-50'} cursor-pointer hover:bg-gray-100 transition-colors`}>
-                  <div className="flex items-start gap-3">
-                    <div className={`w-2 h-2 rounded-full mt-2 ${notif.read ? 'bg-gray-300' : 'bg-indigo-500'}`} />
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-gray-800">{notif.title}</p>
-                      <p className="text-xs text-gray-500">{notif.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
+              {notifications.length === 0 ? (
+                <div className="text-center text-sm text-gray-500 py-4">No notifications yet</div>
+              ) : (
+                notifications.map((notif) => (
+                  <div
+                    key={notif._id}
+                    onClick={() => handleMarkRead(notif._id, notif.read)}
+                    className={`p-3 rounded-xl ${notif.read ? 'bg-gray-50' : 'bg-indigo-50'} cursor-pointer hover:bg-gray-100 transition-colors border ${notif.read ? 'border-transparent' : 'border-indigo-100'}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${notif.read ? 'bg-gray-300' : 'bg-indigo-500'}`} />
+                      <div className="flex-1">
+                        <p className={`text-sm ${notif.read ? 'font-medium text-gray-600' : 'font-semibold text-gray-800'}`}>{notif.title}</p>
+                        <p className={`text-xs mt-0.5 ${notif.read ? 'text-gray-500' : 'text-gray-600'}`}>{notif.message}</p>
+                        <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
+                          {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -235,10 +269,12 @@ const Layout = () => {
               </button>
               <button
                 onClick={() => setShowNotifications(true)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors relative"
               >
                 <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+                )}
               </button>
               <button
                 onClick={() => setShowSettings(true)}

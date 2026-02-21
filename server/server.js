@@ -28,6 +28,7 @@ const analyticsRoutes = require('./routes/analytics');
 const aiAssistantRoutes = require('./routes/aiAssistant');
 const feedbackRoutes = require('./routes/feedback');
 const noteRoutes = require('./routes/notes');
+const notificationRoutes = require('./routes/notifications');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -78,6 +79,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ai', aiAssistantRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

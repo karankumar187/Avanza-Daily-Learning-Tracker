@@ -119,4 +119,11 @@ export const notesAPI = {
   delete: (id) => api.delete(`/notes/${id}`)
 };
 
+// Notifications APIs
+export const notificationsAPI = {
+  getAll: () => api.get('/notifications'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  create: (data) => api.post('/notifications', data)
+};
+
 export default api;
