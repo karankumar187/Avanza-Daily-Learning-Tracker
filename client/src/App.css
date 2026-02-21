@@ -1,32 +1,57 @@
-/* Avanza - Light green + beige theme */
+/* Avanza — Minimal green + beige theme */
 :root {
-  --primary: #4A7C59;          /* muted forest green */
-  --primary-light: #6FAF82;    /* sage green */
-  --primary-dark: #2F5E3F;     /* deep forest green */
-  --secondary: #8DB596;        /* soft sage */
+  --primary: #1F2937;
+  /* charcoal — primary actions */
+  --primary-light: #374151;
+  /* lighter charcoal */
+  --primary-dark: #111827;
+  /* near-black */
+  --accent: #4A7C59;
+  /* forest green — accent only */
+  --accent-light: #6FAF82;
+  /* sage green */
   --success: #4A7C59;
   --warning: #B5895A;
   --danger: #C0564B;
   --info: #5A8FA3;
 
-  --bg-primary: #F9F6EF;       /* warm beige */
-  --bg-secondary: #F1EDE3;     /* slightly darker beige */
+  --bg-primary: #F9F6EF;
+  /* warm beige */
+  --bg-secondary: #F3F4F6;
+  /* light gray */
   --bg-card: #FFFFFF;
 
-  --text-primary: #1C2B1F;     /* dark green-black */
-  --text-secondary: #5A6E60;   /* muted sage-gray */
-  --text-muted: #9AAD9E;       /* light sage-gray */
+  --text-primary: #111827;
+  /* near-black */
+  --text-secondary: #6B7280;
+  /* medium gray */
+  --text-muted: #9CA3AF;
+  /* light gray */
 
-  --border-color: #E0E8E1;     /* very light sage border */
-  --shadow-sm: 0 1px 2px 0 rgb(74 124 89 / 0.06);
-  --shadow: 0 4px 6px -1px rgb(74 124 89 / 0.08), 0 2px 4px -2px rgb(74 124 89 / 0.06);
-  --shadow-lg: 0 10px 15px -3px rgb(74 124 89 / 0.08), 0 4px 6px -4px rgb(74 124 89 / 0.05);
-  --shadow-xl: 0 20px 25px -5px rgb(74 124 89 / 0.1), 0 8px 10px -6px rgb(74 124 89 / 0.06);
+  --border-color: #E5E7EB;
+  /* standard gray border */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.04);
 
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+}
+
+/* Dark mode overrides */
+.dark {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-card: #1E293B;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border-color: #334155;
+  --primary: #E2E8F0;
+  --primary-dark: #F1F5F9;
 }
 
 * {
@@ -38,11 +63,12 @@ body {
   background: var(--bg-primary);
   min-height: 100vh;
   color: var(--text-primary);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* Auth Pages Background */
 .bg-gradient-lms {
-  background: linear-gradient(135deg, #EEF4EC 0%, #F9F6EF 50%, #F4EFE6 100%);
+  background: #F3F4F6;
 }
 
 /* Glassmorphism Card */
@@ -57,17 +83,17 @@ body {
 }
 
 .dark .glass-card {
-  background: rgba(15, 23, 42, 0.95);
-  border-color: rgba(51, 65, 85, 0.9);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+  background: #1E293B;
+  border-color: #334155;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .glass-card:hover {
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .dark .glass-card:hover {
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.95);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* Glass Input */
@@ -85,26 +111,28 @@ body {
   outline: none;
 }
 
-/* Glass Button */
+/* Flat Button (no gradient) */
 .glass-button {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: #1F2937;
   color: white;
   border: none;
   border-radius: var(--radius);
   font-weight: 600;
-  box-shadow: 0 4px 14px rgba(74, 124, 89, 0.3);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .glass-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(74, 124, 89, 0.4);
+  background: #111827;
+}
+
+.dark .glass-button {
+  background: #E2E8F0;
+  color: #111827;
 }
 
 .glass-button:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 /* Modern Button Styles */
@@ -123,14 +151,12 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: #1F2937;
   color: white;
-  box-shadow: 0 4px 14px rgba(74, 124, 89, 0.3);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(74, 124, 89, 0.4);
+  background: #111827;
 }
 
 .btn-secondary {
@@ -358,6 +384,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -369,6 +396,7 @@ body {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -376,9 +404,12 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -434,8 +465,8 @@ body {
 }
 
 .nav-item.active {
-  background: #D1E8D0;
-  color: var(--primary-dark);
+  background: #F3F4F6;
+  color: #111827;
   font-weight: 500;
 }
 
@@ -449,7 +480,7 @@ body {
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+  background: #1F2937;
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -505,7 +536,7 @@ body {
   .stat-card {
     padding: 16px;
   }
-  
+
   .stat-value {
     font-size: 24px;
   }

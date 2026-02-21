@@ -106,7 +106,7 @@ const Layout = () => {
   const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.read).length : 0;
 
   return (
-    <div className="min-h-screen" style={{ background: '#F9F6EF' }}>
+    <div className="min-h-screen" style={{ background: '#F9FAFB' }}>
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -200,16 +200,16 @@ const Layout = () => {
       <aside
         className={`fixed left-0 top-0 h-full w-72 backdrop-blur-xl border-r z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
-        style={{ background: '#FAF7F2', borderColor: '#E0E8E1' }}
+        style={{ background: 'white', borderColor: '#E5E7EB' }}
       >
         {/* Logo */}
-        <div className="p-6 border-b" style={{ borderColor: '#E0E8E1' }}>
+        <div className="p-6 border-b" style={{ borderColor: '#E5E7EB' }}>
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm p-2" style={{ background: '#D1E8D0' }}>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm p-2" style={{ background: '#F3F4F6' }}>
               <LogoIcon className="w-8 h-8" color="white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold" style={{ color: '#1C2B1F' }}>
+              <h1 className="text-xl font-bold" style={{ color: '#111827' }}>
                 Avanza
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Master Your Learning</p>
@@ -233,18 +233,18 @@ const Layout = () => {
                   : 'hover:bg-opacity-60'
                   }`}
                 style={active ? {
-                  background: '#D1E8D0',
-                  color: '#2F5E3F'
+                  background: '#F3F4F6',
+                  color: '#111827'
                 } : {
-                  color: '#5A6E60',
+                  color: '#6B7280',
                 }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#EFF5EF'; }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F3F4F6'; }}
                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
               >
                 <Icon className="w-5 h-5" />
                 <span className="font-medium">{item.label}</span>
                 {item.path === '/ai-assistant' && (
-                  <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: '#D1E8D0', color: '#2F5E3F' }}>
+                  <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#111827' }}>
                     AI
                   </span>
                 )}
@@ -254,8 +254,8 @@ const Layout = () => {
         </nav>
 
         {/* User Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: '#E0E8E1' }}>
-          <div className="rounded-xl p-4" style={{ background: '#EFF5EF' }}>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: '#E5E7EB' }}>
+          <div className="rounded-xl p-4" style={{ background: '#F9FAFB' }}>
             <div className="flex items-center gap-3 mb-3">
               {user?.avatar ? (
                 <img
@@ -265,7 +265,7 @@ const Layout = () => {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center text-white font-semibold text-sm">
+                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-semibold text-sm">
                   {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-5 h-5 text-white" />}
                 </div>
               )}
@@ -281,7 +281,7 @@ const Layout = () => {
       {/* Main Content */}
       <div className="lg:ml-72 min-h-screen">
         {/* Header */}
-        <header className="sticky top-0 z-30 backdrop-blur-xl border-b" style={{ background: 'rgba(249,246,239,0.85)', borderColor: '#E0E8E1' }}>
+        <header className="sticky top-0 z-30 backdrop-blur-xl border-b" style={{ background: 'rgba(255,255,255,0.9)', borderColor: '#E5E7EB' }}>
           <div className="flex items-center justify-between px-4 py-4 lg:px-8">
             <div className="flex items-center gap-4">
               <button
@@ -301,7 +301,7 @@ const Layout = () => {
               <button
                 onClick={toggleTheme}
                 className="px-2 py-1 rounded-full border text-xs font-medium transition-colors"
-                style={{ borderColor: '#C5D9C7', color: '#4A7C59', background: 'transparent' }}
+                style={{ borderColor: '#E5E7EB', color: '#374151', background: 'transparent' }}
               >
                 {theme === 'dark' ? 'Light' : 'Dark'}
               </button>

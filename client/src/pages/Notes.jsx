@@ -224,7 +224,7 @@ const Notes = () => {
                             <button
                                 onClick={handleCreateNoteSubmit}
                                 disabled={!newNoteTitle.trim()}
-                                className="px-4 py-2.5 rounded-xl bg-green-700 hover:bg-green-800 text-white font-medium transition-colors shadow-lg shadow-green-100 dark:shadow-none disabled:opacity-50"
+                                className="px-4 py-2.5 rounded-xl bg-green-700 hover:bg-green-800 text-white font-medium transition-colors  dark:shadow-none disabled:opacity-50"
                             >
                                 Create Note
                             </button>

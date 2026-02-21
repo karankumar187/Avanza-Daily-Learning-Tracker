@@ -191,7 +191,7 @@ const Analytics = () => {
         <div className="stagger-item glass-card rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-200">
+              <div className="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center shadow-lg shadow-orange-200">
                 <Flame className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -360,7 +360,7 @@ const Analytics = () => {
               </div>
               <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-green-700 to-green-600 transition-all"
+                  className="h-full bg-gray-900 transition-all"
                   style={{ width: `${cat.completionRate}%` }}
                 />
               </div>

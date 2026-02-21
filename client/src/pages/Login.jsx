@@ -37,14 +37,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: 'linear-gradient(135deg, #EEF4EC 0%, #F9F6EF 50%, #F4EFE6 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#F3F4F6' }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-md p-2" style={{ background: '#D1E8D0' }}>
-            <LogoIcon className="w-10 h-10" color="#2F5E3F" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-md p-2" style={{ background: '#F3F4F6' }}>
+            <LogoIcon className="w-10 h-10" color="#1F2937" />
           </div>
-          <h1 className="text-3xl font-bold" style={{ color: '#1C2B1F' }}>
+          <h1 className="text-3xl font-bold" style={{ color: '#111827' }}>
             Avanza
           </h1>
           <p className="text-gray-500 mt-2">Master Your Learning Journey</p>
@@ -137,7 +137,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:shadow-lg hover:shadow-green-200 transition-all"
+              className="w-full py-3 px-4 rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70  transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

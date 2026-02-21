@@ -280,7 +280,7 @@ const Schedule = () => {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gray-900 text-white font-medium  transition-all"
         >
           <Plus className="w-5 h-5" />
           New Schedule
@@ -340,7 +340,7 @@ const Schedule = () => {
                   key={day}
                   onClick={() => setSelectedDay(day)}
                   className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${selectedDay === day
-                    ? 'bg-gradient-to-r from-green-700 to-green-600 text-white shadow-md'
+                    ? 'bg-gray-900 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >

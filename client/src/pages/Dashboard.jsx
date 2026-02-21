@@ -286,7 +286,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6 animate-fadeIn" ref={welcomeRef}>
       {/* Welcome Section with Date */}
-      <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-green-600/10 to-green-400/10 dark:from-slate-800/60 dark:to-slate-900/60">
+      <div className="glass-card rounded-2xl p-6 bg-gray-100 ">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4" data-welcome-anim>
           <div data-welcome-anim>
             <div className="flex items-center gap-2 text-green-800 dark:text-green-400 mb-2">
@@ -302,7 +302,7 @@ const Dashboard = () => {
           </div>
           <Link
             to="/ai-assistant"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium hover:shadow-lg hover:shadow-green-200 transition-all"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-900 text-white font-medium  transition-all"
           >
             <Sparkles className="w-5 h-5" />
             Get AI Schedule
@@ -603,7 +603,7 @@ const Dashboard = () => {
 
             <Link
               to="/ai-assistant"
-              className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white shadow-lg shadow-green-200 hover:shadow-xl transition-shadow"
+              className="flex items-center gap-4 p-4 rounded-xl bg-gray-900 text-white  hover:transition-colors"
             >
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-white" />

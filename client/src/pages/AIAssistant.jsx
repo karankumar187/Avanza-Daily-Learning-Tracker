@@ -221,7 +221,7 @@ const AIAssistant = () => {
       {/* Header */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-700 to-green-600 flex items-center justify-center shadow-lg shadow-green-200">
+          <div className="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center ">
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -340,7 +340,7 @@ const AIAssistant = () => {
                 <button
                   type="submit"
                   disabled={loading || !prompt.trim()}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70 hover:shadow-lg hover:shadow-green-200 transition-all"
+                  className="w-full py-3 px-4 rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70  transition-all"
                 >
                   {loading ? (
                     <>
@@ -380,7 +380,7 @@ const AIAssistant = () => {
                     <button
                       onClick={handleApplySuggestion}
                       disabled={applying}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-700 to-green-600 text-white font-medium flex items-center gap-2 disabled:opacity-70 hover:shadow-lg transition-all"
+                      className="px-4 py-2 rounded-xl bg-gray-900 text-white font-medium flex items-center gap-2 disabled:opacity-70 transition-colors"
                     >
                       {applying ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
