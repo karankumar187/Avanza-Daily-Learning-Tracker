@@ -29,7 +29,7 @@ learnflow-deploy/
 
 ### Option A: Blueprint (Recommended)
 
-1. Push this repo to GitHub (or use `learnflow-deploy` as the repo root)
+1. Push this repo to GitHub (or use `Avanza - Daily Learning Tracker` as the repo root)
 2. In [Render Dashboard](https://dashboard.render.com), click **New** → **Blueprint**
 3. Connect your repo; if `learnflow-deploy` is inside another folder, set **Root Directory** to `learnflow-deploy`
 4. Render will create two services from `render.yaml`:
