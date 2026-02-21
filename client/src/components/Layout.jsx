@@ -233,9 +233,18 @@ const Layout = () => {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 dark:border-slate-800">
           <div className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-indigo-200"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-5 h-5 text-white" />}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{user?.name}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
