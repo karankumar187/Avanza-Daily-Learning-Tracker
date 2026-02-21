@@ -28,6 +28,7 @@ const Schedule = () => {
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedProgress, setSelectedProgress] = useState(null);
+  const [pendingCompleteId, setPendingCompleteId] = useState(null);
   const [todayProgress, setTodayProgress] = useState([]);
 
   const [scheduleForm, setScheduleForm] = useState({
@@ -165,27 +166,33 @@ const Schedule = () => {
     return selectedDay === todayName;
   };
 
-  const handleMarkComplete = async (objectiveId) => {
+  const handleMarkComplete = (objectiveId) => {
+    if (!isTodayTab()) {
+      toast.error('You can only complete objectives for today from this view.');
+      return;
+    }
+    // Don't call the API yet — just open the confirmation modal
+    setPendingCompleteId(objectiveId);
+    setNotesForm({ notes: '' });
+    setShowNotesModal(true);
+  };
+
+  const handleConfirmComplete = async () => {
     try {
-      if (!isTodayTab()) {
-        toast.error('You can only complete objectives for today from this view.');
-        return;
-      }
+      if (!pendingCompleteId) return;
+
       const d = new Date();
       const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const response = await progressAPI.createOrUpdate({
-        learningObjectiveId: objectiveId,
+      await progressAPI.createOrUpdate({
+        learningObjectiveId: pendingCompleteId,
         date: today,
-        status: 'completed'
+        status: 'completed',
+        notes: notesForm.notes || undefined
       });
-
-      setSelectedProgress(response.data.data);
-      setNotesForm({ notes: '' });
-      setShowNotesModal(true);
 
       // Celebration animation on completion
       gsap.fromTo(
-        `[data-objective-id="${objectiveId}"]`,
+        `[data-objective-id="${pendingCompleteId}"]`,
         { scale: 0.9, boxShadow: '0 0 0 rgba(34,197,94,0)' },
         {
           scale: 1.06,
@@ -197,44 +204,20 @@ const Schedule = () => {
         }
       );
 
+      toast.success('Marked as completed!');
+      setShowNotesModal(false);
+      setPendingCompleteId(null);
+      setNotesForm({ notes: '' });
       fetchData();
     } catch (error) {
       toast.error('Failed to update progress');
     }
   };
 
-  const handleSaveNotes = async () => {
-    try {
-      if (!selectedProgress) return;
-
-      const d = new Date();
-      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-      if (!notesForm.notes.trim()) {
-        // Auto-skip if input field is empty
-        await progressAPI.skip({
-          learningObjectiveId: selectedProgress.learningObjective?._id || selectedProgress.learningObjective,
-          date: today,
-          remarks: 'Skipped - no notes provided'
-        });
-        toast.success('Marked as skipped (no notes provided)');
-      } else {
-        await progressAPI.createOrUpdate({
-          learningObjectiveId: selectedProgress.learningObjective?._id || selectedProgress.learningObjective,
-          date: today,
-          status: 'completed',
-          notes: notesForm.notes
-        });
-        toast.success('Notes saved!');
-      }
-
-      setShowNotesModal(false);
-      setSelectedProgress(null);
-      setNotesForm({ notes: '' });
-      fetchData();
-    } catch (error) {
-      toast.error('Failed to save');
-    }
+  const handleCancelComplete = () => {
+    setShowNotesModal(false);
+    setPendingCompleteId(null);
+    setNotesForm({ notes: '' });
   };
 
   const handleSkip = async (objectiveId) => {
@@ -480,6 +463,12 @@ const Schedule = () => {
                               Complete
                             </button>
                             <button
+                              onClick={() => handleSkip(objective._id)}
+                              className="px-3 py-1.5 rounded-lg bg-purple-100 text-purple-700 text-sm font-medium hover:bg-purple-200 transition-colors"
+                            >
+                              Skip
+                            </button>
+                            <button
                               onClick={() => handleRemoveItem(objective._id)}
                               className="p-2 rounded-lg hover:bg-red-50 transition-colors"
                             >
@@ -619,7 +608,7 @@ const Schedule = () => {
         </div>
       )}
 
-      {/* Notes Modal */}
+      {/* Completion Confirmation Modal */}
       {showNotesModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 w-full max-w-md">
@@ -628,36 +617,32 @@ const Schedule = () => {
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-800">Great job!</h3>
-                <p className="text-sm text-gray-500">What did you learn today?</p>
+                <h3 className="text-xl font-bold text-gray-800">Complete this task?</h3>
+                <p className="text-sm text-gray-500">Add an optional note about what you learned</p>
               </div>
             </div>
 
             <textarea
               value={notesForm.notes}
               onChange={(e) => setNotesForm({ notes: e.target.value })}
-              rows={5}
+              rows={4}
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none mb-4"
-              placeholder="Write about what you learned, key takeaways, or any notes you want to remember..."
+              placeholder="What did you learn? (optional)"
             />
 
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  setShowNotesModal(false);
-                  setSelectedProgress(null);
-                  setNotesForm({ notes: '' });
-                }}
+                onClick={handleCancelComplete}
                 className="flex-1 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSaveNotes}
+                onClick={handleConfirmComplete}
                 className="flex-1 px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
               >
-                <Save className="w-4 h-4" />
-                Save Notes
+                <CheckCircle className="w-4 h-4" />
+                Complete
               </button>
             </div>
           </div>
