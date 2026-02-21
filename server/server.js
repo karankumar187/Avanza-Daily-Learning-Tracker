@@ -38,6 +38,8 @@ const errorHandler = require('./middleware/errorHandler');
 // Import models for cron jobs
 const DailyProgress = require('./models/DailyProgress');
 const Schedule = require('./models/Schedule');
+const Notification = require('./models/Notification');
+const User = require('./models/User');
 const LearningObjective = require('./models/LearningObjective');
 
 const app = express();
@@ -235,9 +237,118 @@ connectDB()
       timezone: 'Asia/Kolkata'
     });
 
+    // Incomplete task reminder (5:00 PM IST)
+    cron.schedule('0 17 * * *', async () => {
+      console.log('Running 5 PM incomplete task reminder...');
+      try {
+        await sendIncompleteTaskReminder('evening');
+      } catch (error) {
+        console.error('Error in 5 PM reminder cron:', error);
+      }
+    }, {
+      timezone: 'Asia/Kolkata'
+    });
+
+    // Incomplete task reminder (10:00 PM IST)
+    cron.schedule('0 22 * * *', async () => {
+      console.log('Running 10 PM incomplete task reminder...');
+      try {
+        await sendIncompleteTaskReminder('night');
+      } catch (error) {
+        console.error('Error in 10 PM reminder cron:', error);
+      }
+    }, {
+      timezone: 'Asia/Kolkata'
+    });
+
+    // Weekly motivation (Monday 9:00 AM IST)
+    cron.schedule('0 9 * * 1', async () => {
+      console.log('Running weekly motivation notification...');
+      try {
+        const users = await User.find({});
+        for (const user of users) {
+          // Count last week's completed tasks
+          const weekAgo = moment.tz('Asia/Kolkata').subtract(7, 'days').startOf('day').toDate();
+          const now = moment.tz('Asia/Kolkata').endOf('day').toDate();
+          const completedLastWeek = await DailyProgress.countDocuments({
+            user: user._id,
+            status: 'completed',
+            date: { $gte: weekAgo, $lte: now }
+          });
+
+          if (completedLastWeek > 0) {
+            await Notification.create({
+              user: user._id,
+              title: 'Weekly Summary',
+              message: `Last week you completed ${completedLastWeek} tasks. Let's make this week even better!`,
+              type: 'info'
+            });
+          } else {
+            await Notification.create({
+              user: user._id,
+              title: 'New Week, Fresh Start!',
+              message: 'A new week begins! Set your learning goals and start building momentum.',
+              type: 'info'
+            });
+          }
+        }
+        console.log('Weekly motivation notifications sent.');
+      } catch (error) {
+        console.error('Error in weekly motivation cron:', error);
+      }
+    }, {
+      timezone: 'Asia/Kolkata'
+    });
+
     console.log('Cron jobs scheduled successfully.');
   })
   .catch((err) => {
     console.error('Database connection failed:', err);
     process.exit(1);
   });
+
+// Helper: Send incomplete task reminders to all users with pending tasks
+async function sendIncompleteTaskReminder(timeOfDay) {
+  const todayStart = moment.tz('Asia/Kolkata').startOf('day').toDate();
+  const todayEnd = moment.tz('Asia/Kolkata').endOf('day').toDate();
+
+  // Find all users who have pending tasks today
+  const pendingEntries = await DailyProgress.find({
+    date: { $gte: todayStart, $lte: todayEnd },
+    status: 'pending'
+  }).populate('learningObjective', 'title');
+
+  // Group by user
+  const userMap = {};
+  for (const entry of pendingEntries) {
+    const userId = entry.user.toString();
+    if (!userMap[userId]) {
+      userMap[userId] = [];
+    }
+    userMap[userId].push(entry.learningObjective?.title || 'Unnamed task');
+  }
+
+  // Create a notification for each user
+  for (const [userId, tasks] of Object.entries(userMap)) {
+    const taskCount = tasks.length;
+    const taskList = tasks.slice(0, 3).join(', ');
+    const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
+
+    const title = timeOfDay === 'evening'
+      ? 'Evening Reminder'
+      : 'Late Night Reminder';
+
+    const message = timeOfDay === 'evening'
+      ? `You still have ${taskCount} pending task${taskCount > 1 ? 's' : ''}: ${taskList}${extra}. Complete them before the day ends!`
+      : `Don't forget! ${taskCount} task${taskCount > 1 ? 's are' : ' is'} still pending: ${taskList}${extra}. Wrap up before midnight!`;
+
+    await Notification.create({
+      user: userId,
+      title,
+      message,
+      type: 'warning'
+    });
+  }
+
+  console.log(`Sent incomplete task reminders to ${Object.keys(userMap).length} users (${timeOfDay})`);
+}

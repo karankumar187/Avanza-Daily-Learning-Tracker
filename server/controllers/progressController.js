@@ -3,6 +3,7 @@ const moment = require('moment-timezone');
 const DailyProgress = require('../models/DailyProgress');
 const LearningObjective = require('../models/LearningObjective');
 const Schedule = require('../models/Schedule');
+const Notification = require('../models/Notification');
 const syncProgress = require('../utils/syncProgress');
 
 const TIMEZONE = 'Asia/Kolkata';
@@ -104,6 +105,56 @@ exports.createOrUpdateProgress = async (req, res, next) => {
 
     fs.appendFileSync('progress_debug.log', `[createOrUpdate] Returning saved status: ${progress.status}\n`);
     console.log(`[createOrUpdate] Returning saved status: ${progress.status}`);
+
+    // --- Notification triggers for completed tasks ---
+    if (status === 'completed') {
+      try {
+        const objTitle = objective.title || 'a task';
+
+        // 1) Task completed notification
+        await Notification.create({
+          user: req.user.id,
+          title: 'Task Completed!',
+          message: `Great work! You completed "${objTitle}".`,
+          type: 'success'
+        });
+
+        // 2) Check if ALL of today's tasks are now complete
+        const todayStart = moment.tz(TIMEZONE).startOf('day').toDate();
+        const todayEnd = moment.tz(TIMEZONE).endOf('day').toDate();
+        const todayEntries = await DailyProgress.find({
+          user: req.user.id,
+          date: { $gte: todayStart, $lte: todayEnd }
+        });
+
+        if (todayEntries.length > 0) {
+          const allDone = todayEntries.every(e => e.status === 'completed' || e.status === 'skipped');
+          if (allDone) {
+            await Notification.create({
+              user: req.user.id,
+              title: 'All Tasks Done!',
+              message: `You have completed all ${todayEntries.length} tasks for today. Amazing consistency!`,
+              type: 'success'
+            });
+          }
+        }
+
+        // 3) Streak milestone check
+        const consecutiveDays = await calculateStreak(req.user.id);
+        const milestones = [3, 5, 7, 14, 21, 30, 50, 100];
+        if (milestones.includes(consecutiveDays)) {
+          await Notification.create({
+            user: req.user.id,
+            title: `${consecutiveDays}-Day Streak!`,
+            message: `Incredible! You have maintained a ${consecutiveDays}-day learning streak. Keep it up!`,
+            type: 'success'
+          });
+        }
+      } catch (notifErr) {
+        console.error('[Notification] Error creating completion notification:', notifErr);
+      }
+    }
+
     res.status(200).json({
       success: true,
       data: progress
@@ -113,6 +164,32 @@ exports.createOrUpdateProgress = async (req, res, next) => {
     next(error);
   }
 };
+
+// Helper: calculate consecutive days with at least 1 completed task
+async function calculateStreak(userId) {
+  let streak = 0;
+  let checkDate = moment.tz(TIMEZONE).startOf('day');
+
+  while (true) {
+    const dayStart = checkDate.toDate();
+    const dayEnd = moment(checkDate).endOf('day').toDate();
+
+    const completed = await DailyProgress.findOne({
+      user: userId,
+      date: { $gte: dayStart, $lte: dayEnd },
+      status: 'completed'
+    });
+
+    if (completed) {
+      streak++;
+      checkDate.subtract(1, 'day');
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
 
 // @desc    Get daily progress for a specific date
 // @route   GET /api/progress/daily

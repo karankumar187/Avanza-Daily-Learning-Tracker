@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { JWT_SECRET, JWT_EXPIRE } = require('../config/config');
 
 // Generate JWT token
@@ -43,6 +44,18 @@ exports.register = async (req, res, next) => {
 
     // Generate token
     const token = generateToken(user._id);
+
+    // Welcome notification
+    try {
+      await Notification.create({
+        user: user._id,
+        title: 'Welcome to LearnFlow!',
+        message: `Hi ${name}! Start by creating learning objectives and setting up your weekly schedule. Happy learning!`,
+        type: 'info'
+      });
+    } catch (notifErr) {
+      console.error('Failed to create welcome notification:', notifErr);
+    }
 
     res.status(201).json({
       success: true,
@@ -138,7 +151,7 @@ exports.getMe = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
   try {
     const { name, preferences } = req.body;
-    
+
     const updateData = {};
     if (name) updateData.name = name;
     if (preferences) updateData.preferences = preferences;
