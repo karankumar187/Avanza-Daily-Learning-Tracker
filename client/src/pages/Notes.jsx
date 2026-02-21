@@ -298,31 +298,31 @@ const Notes = () => {
                                         setIsMobileMenuOpen(false);
                                     }}
                                     className={`
-                  group p-4 mb-2 rounded-xl cursor-pointer transition-all duration-200 border
+                  group relative p-3 mb-1.5 rounded-xl cursor-pointer transition-all duration-200 border
                   ${activeNote?._id === note._id
                                             ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800/50 shadow-sm'
                                             : 'bg-transparent border-transparent hover:bg-gray-50 dark:hover:bg-slate-800/50'}
                 `}
                                 >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h3 className={`font-semibold truncate pr-2 ${activeNote?._id === note._id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'}`}>
+                                    <div className="pr-6 mb-0.5">
+                                        <h3 className={`font-medium text-sm truncate ${activeNote?._id === note._id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'}`}>
                                             {note.title || 'Untitled'}
                                         </h3>
-                                        <button
-                                            onClick={(e) => handleDeleteNote(note._id, e)}
-                                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
                                     </div>
 
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 h-10">
+                                    <button
+                                        onClick={(e) => handleDeleteNote(note._id, e)}
+                                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-all absolute right-2 top-2"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate mb-1 pr-4">
                                         {note.content || 'No content...'}
                                     </p>
 
-                                    <div className="flex items-center text-xs text-gray-400 dark:text-gray-500 gap-3">
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="w-3 h-3" />
+                                    <div className="flex items-center text-[10px] text-gray-400 dark:text-gray-500 gap-3">
+                                        <span className="flex items-center gap-1 uppercase tracking-wider font-semibold">
                                             {format(new Date(note.updatedAt || new Date()), 'MMM d, yyyy')}
                                         </span>
                                     </div>
