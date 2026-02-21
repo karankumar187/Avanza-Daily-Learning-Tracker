@@ -41,6 +41,16 @@ const periodOptions = [
 
 const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#6FAF82', '#3b82f6'];
 
+// Converts raw minutes to a human-readable string e.g. 90 → "1h 30m", 45 → "45m", 120 → "2h"
+const formatTime = (totalMinutes) => {
+  if (!totalMinutes || totalMinutes <= 0) return '0m';
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+};
+
 const Analytics = () => {
   const [period, setPeriod] = useState('weekly');
   const [overallStats, setOverallStats] = useState(null);
@@ -180,8 +190,8 @@ const Analytics = () => {
               </div>
               <span className="text-xs text-gray-500">Time</span>
             </div>
-            <div className="text-2xl font-bold text-gray-800">{Math.round(overallStats.totalTimeSpent / 60)}</div>
-            <div className="text-sm text-gray-500">Hours</div>
+            <div className="text-2xl font-bold text-gray-800">{formatTime(overallStats.totalTimeSpent)}</div>
+            <div className="text-sm text-gray-500">Time Spent</div>
           </div>
         </div>
       )}
@@ -355,7 +365,7 @@ const Analytics = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Time</span>
-                  <span className="text-gray-700">{Math.round(cat.totalTimeSpent / 60)} hrs</span>
+                  <span className="text-gray-700">{formatTime(cat.totalTimeSpent)}</span>
                 </div>
               </div>
               <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -405,8 +415,8 @@ const Analytics = () => {
                 <div className="text-sm text-gray-500">Completion Rate</div>
               </div>
               <div className="p-4 rounded-xl bg-gray-50 text-center">
-                <div className="text-2xl font-bold text-orange-600">{Math.round(selectedObjective.stats.totalTimeSpent / 60)}</div>
-                <div className="text-sm text-gray-500">Hours Spent</div>
+                <div className="text-2xl font-bold text-orange-600">{formatTime(selectedObjective.stats.totalTimeSpent)}</div>
+                <div className="text-sm text-gray-500">Time Spent</div>
               </div>
             </div>
 

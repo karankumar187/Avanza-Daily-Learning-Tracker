@@ -123,6 +123,8 @@ export const notesAPI = {
 export const notificationsAPI = {
   getAll: () => api.get('/notifications'),
   markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllRead: () => api.put('/notifications/read-all'),
+  triggerReminder: () => api.post('/notifications/trigger-reminder'),
   create: (data) => api.post('/notifications', data)
 };
 

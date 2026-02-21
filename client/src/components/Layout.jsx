@@ -65,23 +65,33 @@ const Layout = () => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Re-fetch when notification panel is opened
+  // Re-fetch when notification panel is opened, and trigger a pending reminder
   useEffect(() => {
     if (showNotifications && user) {
       fetchNotifications();
+      // Silently trigger a pending-tasks check so reminders appear immediately
+      notificationsAPI.triggerReminder()
+        .then(() => fetchNotifications())
+        .catch(() => { }); // ignore if no pending tasks
     }
   }, [showNotifications]);
 
   const handleMarkRead = async (id, read) => {
-    if (read) return; // Already read
-
+    if (read) return;
     try {
       await notificationsAPI.markAsRead(id);
-      setNotifications(notifications.map(n =>
-        n._id === id ? { ...n, read: true } : n
-      ));
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationsAPI.markAllRead();
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
     }
   };
 
@@ -164,9 +174,19 @@ const Layout = () => {
           <div className="glass-card w-full max-w-sm p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
-              <button onClick={() => setShowNotifications(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {notifications.some(n => !n.read) && (
+                  <button
+                    onClick={handleMarkAllRead}
+                    className="text-xs text-gray-500 hover:text-gray-800 underline transition-colors"
+                  >
+                    Mark all read
+                  </button>
+                )}
+                <button onClick={() => setShowNotifications(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="space-y-3 max-h-80 overflow-auto">
               {!Array.isArray(notifications) || notifications.length === 0 ? (
