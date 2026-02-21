@@ -13,7 +13,8 @@ import {
   User,
   Settings,
   Bell,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import Footer from './layout/Footer';
 
@@ -48,6 +49,7 @@ const Layout = () => {
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/objectives', label: 'Objectives', icon: Target },
     { path: '/schedule', label: 'Schedule', icon: Calendar },
+    { path: '/notes', label: 'Notes', icon: FileText },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
   ];
@@ -173,8 +175,8 @@ const Layout = () => {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${active
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
                   }`}
               >
                 <Icon className={`w-5 h-5 ${active ? 'text-white' : ''}`} />

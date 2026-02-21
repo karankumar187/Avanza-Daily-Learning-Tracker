@@ -110,4 +110,13 @@ export const feedbackAPI = {
   submit: (data) => api.post('/feedback', data)
 };
 
+// Notes APIs
+export const notesAPI = {
+  getAll: () => api.get('/notes'),
+  getById: (id) => api.get(`/notes/${id}`),
+  create: (data) => api.post('/notes', data),
+  update: (id, data) => api.put(`/notes/${id}`, data),
+  delete: (id) => api.delete(`/notes/${id}`)
+};
+
 export default api;

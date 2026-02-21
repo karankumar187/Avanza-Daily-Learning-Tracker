@@ -27,6 +27,7 @@ const scheduleRoutes = require('./routes/schedules');
 const analyticsRoutes = require('./routes/analytics');
 const aiAssistantRoutes = require('./routes/aiAssistant');
 const feedbackRoutes = require('./routes/feedback');
+const noteRoutes = require('./routes/notes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -76,6 +77,7 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ai', aiAssistantRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/notes', noteRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

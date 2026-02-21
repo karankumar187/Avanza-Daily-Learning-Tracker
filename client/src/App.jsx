@@ -12,6 +12,7 @@ import Objectives from './pages/Objectives';
 import Schedule from './pages/Schedule';
 import Analytics from './pages/Analytics';
 import AIAssistant from './pages/AIAssistant';
+import Notes from './pages/Notes';
 import Layout from './components/Layout';
 
 // Protected Route Component
@@ -83,6 +84,7 @@ function App() {
             <Route path="schedule" element={<Schedule />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="ai-assistant" element={<AIAssistant />} />
+            <Route path="notes" element={<Notes />} />
           </Route>
         </Routes>
       </Router>
