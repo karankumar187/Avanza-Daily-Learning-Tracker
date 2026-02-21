@@ -78,29 +78,4 @@ router.get(
   }
 );
 
-// --- GitHub ---
-router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
-
-router.get(
-  '/github/callback',
-  passport.authenticate('github', { failureRedirect: `${CLIENT_URL}/login?error=OAuthFailed`, session: false }),
-  (req, res) => {
-    const token = generateToken(req.user._id);
-    res.redirect(`${CLIENT_URL}/oauth-callback?token=${token}`);
-  }
-);
-
-// --- Apple ---
-router.get('/apple', passport.authenticate('apple'));
-
-router.post(
-  '/apple/callback',
-  express.urlencoded({ extended: true }), // Apple sends a POST request URL-encoded
-  passport.authenticate('apple', { failureRedirect: `${CLIENT_URL}/login?error=OAuthFailed`, session: false }),
-  (req, res) => {
-    const token = generateToken(req.user._id);
-    res.redirect(`${CLIENT_URL}/oauth-callback?token=${token}`);
-  }
-);
-
 module.exports = router;
