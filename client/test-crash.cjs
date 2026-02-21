@@ -11,14 +11,11 @@ const puppeteer = require('puppeteer');
   });
   page.on('pageerror', err => console.log('PAGE UNCAUGHT ERROR:', err.toString()));
 
-  await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle2' });
-  await page.evaluate(() => {
-    localStorage.setItem('token', 'fake.jwt.token');
-    localStorage.setItem('user', JSON.stringify({ name: 'Test', email: 'test@test.com' }));
-  });
+  console.log('Navigating to http://localhost:5173...');
+  await page.goto('http://localhost:5173', { waitUntil: 'networkidle2' });
   
-  console.log('Navigating to dashboard...');
-  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle2' });
+  const content = await page.evaluate(() => document.getElementById('root')?.innerHTML);
+  console.log('Root content len:', content?.length);
   
   await browser.close();
   process.exit(0);

@@ -4,9 +4,6 @@ const puppeteer = require('puppeteer');
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
   
-  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-  page.on('pageerror', err => console.log('PAGE UNCAUGHT ERROR:', err.toString()));
-
   await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle2' });
   await page.evaluate(() => {
     localStorage.setItem('token', 'fake.jwt.token');
@@ -14,6 +11,9 @@ const puppeteer = require('puppeteer');
   });
   
   await page.goto('http://localhost:5173/dashboard', { waitUntil: 'networkidle2' });
+  
+  const content = await page.evaluate(() => document.body.innerHTML);
+  console.log(content);
   
   await browser.close();
   process.exit(0);

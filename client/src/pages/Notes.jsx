@@ -9,13 +9,15 @@ import {
     ChevronRight,
     Menu,
     X,
-    Search
+    Search,
+    Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { notesAPI } from '../services/api';
+gsap.registerPlugin(useGSAP);
 
 const Notes = () => {
     const [notes, setNotes] = useState([]);
@@ -24,8 +26,6 @@ const Notes = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    gsap.registerPlugin(useGSAP);
 
     const notesListRef = useRef(null);
     const editorRef = useRef(null);

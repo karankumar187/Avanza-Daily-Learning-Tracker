@@ -36,6 +36,17 @@ const Layout = () => {
 
   const [notifications, setNotifications] = useState([]);
 
+  const fetchNotifications = async () => {
+    try {
+      if (!user) return;
+      const res = await notificationsAPI.getAll();
+      setNotifications(res.data?.data || []);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      setNotifications([]);
+    }
+  };
+
   useEffect(() => {
     const stored = localStorage.getItem('theme') || 'light';
     setTheme(stored);
@@ -45,16 +56,6 @@ const Layout = () => {
       fetchNotifications();
     }
   }, [user]);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await notificationsAPI.getAll();
-      setNotifications(res.data?.data || []);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-      setNotifications([]);
-    }
-  };
 
   const handleMarkRead = async (id, read) => {
     if (read) return; // Already read
@@ -85,7 +86,9 @@ const Layout = () => {
     { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
   ];
 
-  const unreadCount = (notifications || []).filter(n => !n?.read).length;
+  const isActive = (path) => location.pathname === path;
+
+  const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.read).length : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
@@ -151,12 +154,12 @@ const Layout = () => {
               </button>
             </div>
             <div className="space-y-3 max-h-80 overflow-auto">
-              {(!notifications || notifications.length === 0) ? (
+              {!Array.isArray(notifications) || notifications.length === 0 ? (
                 <div className="text-center text-sm text-gray-500 py-4">No notifications yet</div>
               ) : (
                 notifications.map((notif) => (
                   <div
-                    key={notif._id}
+                    key={notif._id || Math.random()}
                     onClick={() => handleMarkRead(notif._id, notif.read)}
                     className={`p-3 rounded-xl ${notif.read ? 'bg-gray-50' : 'bg-indigo-50'} cursor-pointer hover:bg-gray-100 transition-colors border ${notif.read ? 'border-transparent' : 'border-indigo-100'}`}
                   >
@@ -166,7 +169,7 @@ const Layout = () => {
                         <p className={`text-sm ${notif.read ? 'font-medium text-gray-600' : 'font-semibold text-gray-800'}`}>{notif.title}</p>
                         <p className={`text-xs mt-0.5 ${notif.read ? 'text-gray-500' : 'text-gray-600'}`}>{notif.message}</p>
                         <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">
-                          {notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true }) : 'Just now'}
+                          {formatDistanceToNow(new Date(notif.createdAt || new Date()), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
