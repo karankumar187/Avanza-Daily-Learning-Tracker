@@ -106,7 +106,7 @@ const Layout = () => {
   const unreadCount = Array.isArray(notifications) ? notifications.filter(n => !n.read).length : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+    <div className="min-h-screen" style={{ background: '#F9F6EF' }}>
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -198,17 +198,18 @@ const Layout = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-full w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-r border-gray-200/60 dark:border-slate-800 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed left-0 top-0 h-full w-72 backdrop-blur-xl border-r z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+        style={{ background: '#FAF7F2', borderColor: '#E0E8E1' }}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-gray-100 dark:border-slate-800">
+        <div className="p-6 border-b" style={{ borderColor: '#E0E8E1' }}>
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200 p-2">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm p-2" style={{ background: '#D1E8D0' }}>
               <LogoIcon className="w-8 h-8" color="white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold" style={{ color: '#1C2B1F' }}>
                 Avanza
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Master Your Learning</p>
@@ -227,15 +228,23 @@ const Layout = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${active
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${active
+                  ? 'shadow-sm'
+                  : 'hover:bg-opacity-60'
                   }`}
+                style={active ? {
+                  background: '#D1E8D0',
+                  color: '#2F5E3F'
+                } : {
+                  color: '#5A6E60',
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#EFF5EF'; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
               >
-                <Icon className={`w-5 h-5 ${active ? 'text-white' : ''}`} />
+                <Icon className="w-5 h-5" />
                 <span className="font-medium">{item.label}</span>
                 {item.path === '/ai-assistant' && (
-                  <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-white/20 text-white">
+                  <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: '#D1E8D0', color: '#2F5E3F' }}>
                     AI
                   </span>
                 )}
@@ -245,8 +254,8 @@ const Layout = () => {
         </nav>
 
         {/* User Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 dark:border-slate-800">
-          <div className="bg-gray-50 dark:bg-slate-800 rounded-xl p-4">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: '#E0E8E1' }}>
+          <div className="rounded-xl p-4" style={{ background: '#EFF5EF' }}>
             <div className="flex items-center gap-3 mb-3">
               {user?.avatar ? (
                 <img
@@ -272,7 +281,7 @@ const Layout = () => {
       {/* Main Content */}
       <div className="lg:ml-72 min-h-screen">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-slate-800">
+        <header className="sticky top-0 z-30 backdrop-blur-xl border-b" style={{ background: 'rgba(249,246,239,0.85)', borderColor: '#E0E8E1' }}>
           <div className="flex items-center justify-between px-4 py-4 lg:px-8">
             <div className="flex items-center gap-4">
               <button
@@ -291,7 +300,8 @@ const Layout = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleTheme}
-                className="px-2 py-1 rounded-full border border-gray-200 dark:border-slate-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                className="px-2 py-1 rounded-full border text-xs font-medium transition-colors"
+                style={{ borderColor: '#C5D9C7', color: '#4A7C59', background: 'transparent' }}
               >
                 {theme === 'dark' ? 'Light' : 'Dark'}
               </button>

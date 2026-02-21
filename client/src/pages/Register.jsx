@@ -49,14 +49,14 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: 'linear-gradient(135deg, #EEF4EC 0%, #F9F6EF 50%, #F4EFE6 100%)' }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-4 shadow-lg shadow-indigo-200 p-2">
-            <LogoIcon className="w-10 h-10" color="white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-md p-2" style={{ background: '#D1E8D0' }}>
+            <LogoIcon className="w-10 h-10" color="#2F5E3F" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold" style={{ color: '#1C2B1F' }}>
             Avanza
           </h1>
           <p className="text-gray-500 mt-2">Start Your Learning Journey</p>
