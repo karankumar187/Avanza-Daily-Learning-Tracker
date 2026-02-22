@@ -353,6 +353,7 @@ body {
 
 .calendar-day {
   aspect-ratio: 1;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -371,7 +372,7 @@ body {
 }
 
 .dark .calendar-day:hover {
-  background: rgba(30, 64, 175, 0.35);
+  background: rgba(82, 183, 136, 0.15);
 }
 
 .calendar-day.active {
@@ -386,7 +387,7 @@ body {
 }
 
 .dark .calendar-day.today {
-  border-color: #38bdf8;
+  border-color: #52B788;
 }
 
 .calendar-day.other-month {
