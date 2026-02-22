@@ -22,7 +22,14 @@ exports.suggestSchedule = async (req, res, next) => {
       });
     }
 
-    const { prompt, studyHoursPerDay, preferredTime } = req.body;
+    const { prompt: rawPrompt, studyHoursPerDay, preferredTime } = req.body;
+
+    // Sanitize user input before embedding in AI prompt (prevent prompt injection)
+    const prompt = (rawPrompt || '')
+      .slice(0, 500)                         // cap at 500 chars
+      .replace(/[\r\n]+/g, ' ')              // strip newlines that could break prompt structure
+      .replace(/[<>]/g, '')                  // strip angle brackets
+      .trim();
 
     // Get user's existing objectives for context
     const existingObjectives = await LearningObjective.find({

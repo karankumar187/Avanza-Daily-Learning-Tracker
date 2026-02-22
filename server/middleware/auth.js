@@ -22,15 +22,16 @@ exports.protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = await User.findById(decoded.id);
-    
+    // Select only fields needed for auth — never load password hash into req.user
+    req.user = await User.findById(decoded.id).select('_id name email preferences authProvider');
+
     if (!req.user) {
       return res.status(401).json({
         success: false,
         message: 'User not found'
       });
     }
-    
+
     next();
   } catch (error) {
     return res.status(401).json({
@@ -59,6 +60,6 @@ exports.optionalAuth = async (req, res, next) => {
       // Continue without user
     }
   }
-  
+
   next();
 };

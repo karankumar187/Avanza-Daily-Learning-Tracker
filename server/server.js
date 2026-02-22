@@ -45,16 +45,24 @@ const LearningObjective = require('./models/LearningObjective');
 const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Guard: crash loudly if session secret is missing in production
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET && !process.env.JWT_SECRET) {
+  console.error('FATAL: SESSION_SECRET or JWT_SECRET env var is required in production.');
+  process.exit(1);
+}
 
 // Express Session
 app.use(session({
-  secret: process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod',
+  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     maxAge: 1000 * 60 * 60 * 24 // 1 day
   }
 }));
@@ -81,13 +89,27 @@ app.use(xss());
 // Prevent HTTP Param Pollution
 app.use(hpp());
 
-// Rate Limiting (100 reqs per 10 mins)
+// Global rate limit: 100 requests per 10 minutes
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 100,
-  message: 'Too many requests from this IP, please try again in 10 minutes'
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests, please try again in 10 minutes.' }
 });
 app.use('/api', limiter);
+
+// Stricter rate limit for auth endpoints: 10 attempts per 15 minutes (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many login attempts, please try again in 15 minutes.' },
+  skipSuccessfulRequests: true // only count failed requests
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
