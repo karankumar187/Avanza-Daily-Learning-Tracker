@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsAPI, progressAPI, objectivesAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import {
   Target,
@@ -15,7 +16,8 @@ import {
   BookOpen,
   MoreHorizontal,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react';
 import {
   BarChart,
@@ -37,7 +39,20 @@ const getTodayInIST = () => {
   return new Date(istString);
 };
 
+const TIMEZONE_OPTIONS = [
+  { value: 'Asia/Kolkata', label: 'IST (India)' },
+  { value: 'UTC', label: 'UTC' },
+  { value: 'America/New_York', label: 'EST (New York)' },
+  { value: 'America/Los_Angeles', label: 'PST (Los Angeles)' },
+  { value: 'Europe/London', label: 'GMT (London)' },
+  { value: 'Europe/Paris', label: 'CET (Paris)' },
+  { value: 'Asia/Singapore', label: 'SGT (Singapore)' },
+  { value: 'Asia/Tokyo', label: 'JST (Tokyo)' },
+  { value: 'Australia/Sydney', label: 'AEST (Sydney)' },
+];
+
 const Dashboard = () => {
+  const { user, updateTimezone } = useAuth();
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -300,13 +315,31 @@ const Dashboard = () => {
               Here's your learning progress for today
             </p>
           </div>
-          <Link
-            to="/ai-assistant"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-800 text-white font-medium  transition-all"
-          >
-            <Sparkles className="w-5 h-5" />
-            Get AI Schedule
-          </Link>
+          <div className="flex items-center gap-3 flex-wrap" data-welcome-anim>
+            {/* Timezone Selector */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+              <Globe className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <select
+                value={user?.preferences?.timezone || 'Asia/Kolkata'}
+                onChange={async (e) => {
+                  await updateTimezone(e.target.value);
+                  fetchDashboardData();
+                }}
+                className="text-sm text-gray-700 dark:text-gray-200 bg-transparent outline-none cursor-pointer"
+              >
+                {TIMEZONE_OPTIONS.map(tz => (
+                  <option key={tz.value} value={tz.value}>{tz.label}</option>
+                ))}
+              </select>
+            </div>
+            <Link
+              to="/ai-assistant"
+              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-800 text-white font-medium transition-all"
+            >
+              <Sparkles className="w-5 h-5" />
+              Get AI Schedule
+            </Link>
+          </div>
         </div>
       </div>
 

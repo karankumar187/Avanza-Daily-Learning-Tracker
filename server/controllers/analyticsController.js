@@ -4,7 +4,8 @@ const LearningObjective = require('../models/LearningObjective');
 const Schedule = require('../models/Schedule');
 const syncProgress = require('../utils/syncProgress');
 
-const TIMEZONE = 'Asia/Kolkata';
+// Timezone from user preferences (falls back to IST)
+const getUserTZ = (user) => user?.preferences?.timezone || 'Asia/Kolkata';
 
 /**
  * Returns the start-of-day date for when the user first created a schedule.
@@ -18,7 +19,7 @@ const getScheduleStartDate = async (userId) => {
     { sort: { createdAt: 1 } }  // oldest first
   );
   if (!schedule) return null;
-  return moment.tz(schedule.createdAt, TIMEZONE).startOf('day').toDate();
+  return moment.tz(schedule.createdAt, getUserTZ(req.user)).startOf('day').toDate();
 };
 
 // @desc    Get overall analytics
@@ -29,7 +30,7 @@ exports.getOverallAnalytics = async (req, res, next) => {
     const { period } = req.query; // 'daily', 'weekly', 'monthly', 'all'
 
     let dateFilter = {};
-    const now = moment.tz(TIMEZONE);
+    const now = moment.tz(getUserTZ(req.user));
 
     if (period === 'daily') {
       dateFilter = {
@@ -119,12 +120,12 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
 
     let dateFilter = {};
     if (startDate && endDate) {
-      const fromDate = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
+      const fromDate = moment.tz(startDate, getUserTZ(req.user)).startOf('day').toDate();
       dateFilter = {
         date: {
           // clamp lower bound to scheduleStart
           $gte: scheduleStart && scheduleStart > fromDate ? scheduleStart : fromDate,
-          $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
+          $lte: moment.tz(endDate, getUserTZ(req.user)).endOf('day').toDate()
         }
       };
     } else if (scheduleStart) {
@@ -197,8 +198,8 @@ exports.getDailyAnalytics = async (req, res, next) => {
   try {
     const { month, year } = req.query;
 
-    const targetMonth = month ? parseInt(month) - 1 : moment.tz(TIMEZONE).month();
-    const targetYear = year ? parseInt(year) : moment.tz(TIMEZONE).year();
+    const targetMonth = month ? parseInt(month) - 1 : moment.tz(getUserTZ(req.user)).month();
+    const targetYear = year ? parseInt(year) : moment.tz(getUserTZ(req.user)).year();
 
     const startOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).startOf('month');
     const endOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).endOf('month');
@@ -233,7 +234,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
 
     // Populate with actual data
     progress.forEach(p => {
-      const dateKey = moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD');
+      const dateKey = moment.tz(p.date, getUserTZ(req.user)).format('YYYY-MM-DD');
       if (dailyData[dateKey]) {
         dailyData[dateKey].total++;
         dailyData[dateKey][p.status]++;
@@ -288,20 +289,20 @@ exports.getStreakInfo = async (req, res, next) => {
 
     // Get unique dates with completions
     const completedDates = [...new Set(progress.map(p =>
-      moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD')
+      moment.tz(p.date, getUserTZ(req.user)).format('YYYY-MM-DD')
     ))].sort().reverse();
 
     // Calculate current streak
     let currentStreak = 0;
-    const today = moment.tz(TIMEZONE).format('YYYY-MM-DD');
-    const yesterday = moment.tz(TIMEZONE).subtract(1, 'day').format('YYYY-MM-DD');
+    const today = moment.tz(getUserTZ(req.user)).format('YYYY-MM-DD');
+    const yesterday = moment.tz(getUserTZ(req.user)).subtract(1, 'day').format('YYYY-MM-DD');
 
     // Check if streak is still active (completed today or yesterday)
     if (completedDates[0] === today || completedDates[0] === yesterday) {
       currentStreak = 1;
       for (let i = 1; i < completedDates.length; i++) {
-        const prevDate = moment.tz(completedDates[i - 1], TIMEZONE);
-        const currDate = moment.tz(completedDates[i], TIMEZONE);
+        const prevDate = moment.tz(completedDates[i - 1], getUserTZ(req.user));
+        const currDate = moment.tz(completedDates[i], getUserTZ(req.user));
 
         if (prevDate.diff(currDate, 'days') === 1) {
           currentStreak++;
@@ -317,8 +318,8 @@ exports.getStreakInfo = async (req, res, next) => {
 
     const sortedDates = [...completedDates].sort();
     for (let i = 1; i < sortedDates.length; i++) {
-      const prevDate = moment.tz(sortedDates[i - 1], TIMEZONE);
-      const currDate = moment.tz(sortedDates[i], TIMEZONE);
+      const prevDate = moment.tz(sortedDates[i - 1], getUserTZ(req.user));
+      const currDate = moment.tz(sortedDates[i], getUserTZ(req.user));
 
       if (currDate.diff(prevDate, 'days') === 1) {
         currentLongest++;
@@ -347,7 +348,7 @@ exports.getStreakInfo = async (req, res, next) => {
 // @access  Private
 exports.getWeeklyChartData = async (req, res, next) => {
   try {
-    const now = moment.tz(TIMEZONE);
+    const now = moment.tz(getUserTZ(req.user));
     const startOfWeek = now.clone().startOf('week');
     const endOfWeek = now.clone().endOf('week');
 
@@ -376,7 +377,7 @@ exports.getWeeklyChartData = async (req, res, next) => {
       }
 
       const dayProgress = progress.filter(p => {
-        const pDate = moment.tz(p.date, TIMEZONE);
+        const pDate = moment.tz(p.date, getUserTZ(req.user));
         return pDate.isBetween(dayStart, dayEnd, null, '[]');
       });
 
@@ -416,11 +417,11 @@ exports.getCategoryAnalytics = async (req, res, next) => {
 
     let dateFilter = {};
     if (startDate && endDate) {
-      const fromDate = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
+      const fromDate = moment.tz(startDate, getUserTZ(req.user)).startOf('day').toDate();
       dateFilter = {
         date: {
           $gte: scheduleStart && scheduleStart > fromDate ? scheduleStart : fromDate,
-          $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
+          $lte: moment.tz(endDate, getUserTZ(req.user)).endOf('day').toDate()
         }
       };
     } else if (scheduleStart) {

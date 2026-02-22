@@ -2,7 +2,8 @@ const Notification = require('../models/Notification');
 const DailyProgress = require('../models/DailyProgress');
 const moment = require('moment-timezone');
 
-const TIMEZONE = 'Asia/Kolkata';
+// Timezone from user preferences (falls back to IST)
+const getUserTZ = (user) => user?.preferences?.timezone || 'Asia/Kolkata';
 
 // @desc    Get all notifications for user
 // @route   GET /api/notifications
@@ -92,8 +93,8 @@ exports.createNotification = async (req, res, next) => {
 // @access  Private
 exports.triggerPendingReminder = async (req, res, next) => {
     try {
-        const todayStart = moment.tz(TIMEZONE).startOf('day').toDate();
-        const todayEnd = moment.tz(TIMEZONE).endOf('day').toDate();
+        const todayStart = moment.tz(getUserTZ(req.user)).startOf('day').toDate();
+        const todayEnd = moment.tz(getUserTZ(req.user)).endOf('day').toDate();
 
         const pendingEntries = await DailyProgress.find({
             user: req.user.id,
@@ -108,16 +109,34 @@ exports.triggerPendingReminder = async (req, res, next) => {
             });
         }
 
+        // Deduplication: skip if an unread pending reminder was already sent in the last 4 hours
+        const fourHoursAgo = moment.tz(getUserTZ(req.user)).subtract(4, 'hours').toDate();
+        const recentReminder = await Notification.findOne({
+            user: req.user.id,
+            type: 'warning',
+            read: false,
+            createdAt: { $gte: fourHoursAgo }
+        });
+
+        if (recentReminder) {
+            return res.status(200).json({
+                success: true,
+                message: 'Reminder already sent recently.',
+                data: recentReminder,
+                pendingCount: pendingEntries.length
+            });
+        }
+
         const taskCount = pendingEntries.length;
         const taskList = pendingEntries.slice(0, 3).map(e => e.learningObjective?.title || 'Unnamed task').join(', ');
         const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
 
-        const hour = moment.tz(TIMEZONE).hour();
+        const hour = moment.tz(getUserTZ(req.user)).hour();
         const isNight = hour >= 20;
 
         const notification = await Notification.create({
             user: req.user.id,
-            title: isNight ? 'Late Night Reminder' : 'Pending Tasks Reminder',
+            title: isNight ? 'Late Night Reminder 🌙' : 'Pending Tasks Reminder ⏰',
             message: `You have ${taskCount} pending task${taskCount > 1 ? 's' : ''} today: ${taskList}${extra}. Keep going!`,
             type: 'warning'
         });
