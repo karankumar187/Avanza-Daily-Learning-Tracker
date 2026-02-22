@@ -41,7 +41,6 @@ const Objectives = () => {
     description: '',
     category: '',
     priority: 'medium',
-    estimatedTime: 60,
     color: '#4A7C59',
     icon: 'Book'
   });
@@ -120,7 +119,6 @@ const Objectives = () => {
       description: objective.description || '',
       category: objective.category,
       priority: objective.priority,
-      estimatedTime: objective.estimatedTime,
       color: objective.color,
       icon: objective.icon
     });
@@ -147,7 +145,6 @@ const Objectives = () => {
       description: '',
       category: '',
       priority: 'medium',
-      estimatedTime: 60,
       color: '#4A7C59',
       icon: 'Book'
     });
@@ -429,19 +426,6 @@ const Objectives = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Estimated Time (minutes)
-                </label>
-                <input
-                  type="number"
-                  value={formData.estimatedTime}
-                  onChange={(e) => setFormData({ ...formData, estimatedTime: parseInt(e.target.value) })}
-                  min={5}
-                  max={480}
-                  className="form-input"
-                />
-              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Icon</label>

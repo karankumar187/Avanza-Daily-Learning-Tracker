@@ -37,7 +37,8 @@ const Schedule = () => {
   });
 
   const [notesForm, setNotesForm] = useState({
-    notes: ''
+    notes: '',
+    timeSpent: ''
   });
 
   useGSAP(() => {
@@ -173,7 +174,7 @@ const Schedule = () => {
     }
     // Don't call the API yet — just open the confirmation modal
     setPendingCompleteId(objectiveId);
-    setNotesForm({ notes: '' });
+    setNotesForm({ notes: '', timeSpent: '' });
     setShowNotesModal(true);
   };
 
@@ -183,11 +184,16 @@ const Schedule = () => {
 
       const d = new Date();
       const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      // Parse time spent — accept minutes as number
+      const timeSpentMinutes = notesForm.timeSpent ? parseInt(notesForm.timeSpent, 10) : undefined;
+
       await progressAPI.createOrUpdate({
         learningObjectiveId: pendingCompleteId,
         date: today,
         status: 'completed',
-        notes: notesForm.notes || undefined
+        notes: notesForm.notes || undefined,
+        timeSpent: timeSpentMinutes && !isNaN(timeSpentMinutes) ? timeSpentMinutes : undefined
       });
 
       // Celebration animation on completion
@@ -207,7 +213,7 @@ const Schedule = () => {
       toast.success('Marked as completed!');
       setShowNotesModal(false);
       setPendingCompleteId(null);
-      setNotesForm({ notes: '' });
+      setNotesForm({ notes: '', timeSpent: '' });
       fetchData();
     } catch (error) {
       toast.error('Failed to update progress');
@@ -217,7 +223,7 @@ const Schedule = () => {
   const handleCancelComplete = () => {
     setShowNotesModal(false);
     setPendingCompleteId(null);
-    setNotesForm({ notes: '' });
+    setNotesForm({ notes: '', timeSpent: '' });
   };
 
   const handleSkip = async (objectiveId) => {
@@ -622,10 +628,27 @@ const Schedule = () => {
               </div>
             </div>
 
+            {/* Time Spent */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Time Spent <span className="text-gray-400 font-normal">(minutes)</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={600}
+                value={notesForm.timeSpent}
+                onChange={(e) => setNotesForm({ ...notesForm, timeSpent: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all"
+                placeholder="e.g. 45"
+              />
+            </div>
+
+            {/* Notes */}
             <textarea
               value={notesForm.notes}
-              onChange={(e) => setNotesForm({ notes: e.target.value })}
-              rows={4}
+              onChange={(e) => setNotesForm({ ...notesForm, notes: e.target.value })}
+              rows={3}
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-green-700 focus:ring-2 focus:ring-green-200 outline-none transition-all resize-none mb-4"
               placeholder="What did you learn? (optional)"
             />
