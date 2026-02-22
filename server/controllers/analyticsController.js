@@ -9,17 +9,17 @@ const getUserTZ = (user) => user?.preferences?.timezone || 'Asia/Kolkata';
 
 /**
  * Returns the start-of-day date for when the user first created a schedule.
- * All analytics queries use this as a $gte floor so phantom entries from
- * before schedule setup are never counted.
+ * Accepts an explicit timezone string so it works outside of request scope.
  */
-const getScheduleStartDate = async (userId) => {
+const getScheduleStartDate = async (userId, timezone) => {
+  const tz = timezone || 'Asia/Kolkata';
   const schedule = await Schedule.findOne(
     { user: userId, isActive: true },
     { createdAt: 1 },
     { sort: { createdAt: 1 } }  // oldest first
   );
   if (!schedule) return null;
-  return moment.tz(schedule.createdAt, getUserTZ(req.user)).startOf('day').toDate();
+  return moment.tz(schedule.createdAt, tz).startOf('day').toDate();
 };
 
 // @desc    Get overall analytics
@@ -59,7 +59,7 @@ exports.getOverallAnalytics = async (req, res, next) => {
     await syncProgress(req.user.id);
 
     // Never show data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id);
+    const scheduleStart = await getScheduleStartDate(req.user.id, getUserTZ(req.user));
 
     // Get all progress for the period
     const query = { user: req.user.id };
@@ -116,7 +116,7 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
     await syncProgress(req.user.id);
 
     // Never show data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id);
+    const scheduleStart = await getScheduleStartDate(req.user.id, getUserTZ(req.user));
 
     let dateFilter = {};
     if (startDate && endDate) {
@@ -356,7 +356,7 @@ exports.getWeeklyChartData = async (req, res, next) => {
     await syncProgress(req.user.id);
 
     // Never count data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id);
+    const scheduleStart = await getScheduleStartDate(req.user.id, getUserTZ(req.user));
 
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -413,7 +413,7 @@ exports.getCategoryAnalytics = async (req, res, next) => {
     await syncProgress(req.user.id);
 
     // Never count data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id);
+    const scheduleStart = await getScheduleStartDate(req.user.id, getUserTZ(req.user));
 
     let dateFilter = {};
     if (startDate && endDate) {
@@ -502,7 +502,7 @@ exports.getCategoryAnalytics = async (req, res, next) => {
 // @access  Private
 exports.cleanupPhantomProgress = async (req, res, next) => {
   try {
-    const scheduleStart = await getScheduleStartDate(req.user.id);
+    const scheduleStart = await getScheduleStartDate(req.user.id, getUserTZ(req.user));
 
     if (!scheduleStart) {
       return res.status(200).json({
