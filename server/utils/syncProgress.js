@@ -48,23 +48,21 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
 
             const weekDaysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-            // Calculate how many days left in the week (forward-fill)
-            const endOfWeek = today.clone().endOf('week');
-            const daysLookAhead = endOfWeek.diff(today, 'days');
-
             const scheduleCreatedAtDate = schedule.createdAt
                 ? moment.tz(schedule.createdAt, TIMEZONE).startOf('day')
                 : moment.tz(TIMEZONE).subtract(30, 'days').startOf('day');
 
-            // --- AUTO-HEAL: Delete any 'missed' tasks erroneously generated before the schedule existed ---
+            // --- AUTO-HEAL: Wipe corrupted past 'missed' tasks & forward-filled future tasks ---
             await DailyProgress.deleteMany({
                 user: userId,
-                status: 'missed',
-                date: { $lt: scheduleCreatedAtDate.toDate() }
+                $or: [
+                    { status: 'missed', date: { $lt: scheduleCreatedAtDate.toDate() } },
+                    { date: { $gt: today.clone().endOf('day').toDate() } }
+                ]
             });
 
-            // 2. Loop through recent days and backfill/forward-fill missing records
-            for (let i = daysToLookBack; i >= -daysLookAhead; i--) {
+            // 2. Loop through recent days and backfill missing records up to TODAY
+            for (let i = daysToLookBack; i >= 0; i--) {
                 const targetDate = moment.tz(TIMEZONE).subtract(i, 'days').startOf('day');
 
                 // Do not create or expect tasks for days before the schedule even existed
@@ -152,7 +150,7 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
                             user: userId,
                             learningObjective: item.learningObjective,
                             date: targetDate.clone().startOf('day').toDate(),
-                            status: i <= 0 ? 'pending' : 'missed',
+                            status: i === 0 ? 'pending' : 'missed',
                             timeSpent: 0
                         });
                     }
