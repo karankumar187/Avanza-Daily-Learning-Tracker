@@ -96,6 +96,13 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
           $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
         }
       };
+    } else {
+      // Exclude future tasks from overall objective stats
+      dateFilter = {
+        date: {
+          $lte: moment.tz(TIMEZONE).endOf('day').toDate()
+        }
+      };
     }
 
     // Sync before fetching
@@ -381,6 +388,13 @@ exports.getCategoryAnalytics = async (req, res, next) => {
         date: {
           $gte: moment.tz(startDate, TIMEZONE).startOf('day').toDate(),
           $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
+        }
+      };
+    } else {
+      // Exclude future tasks from overall category stats
+      dateFilter = {
+        date: {
+          $lte: moment.tz(TIMEZONE).endOf('day').toDate()
         }
       };
     }
