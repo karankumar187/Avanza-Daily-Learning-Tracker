@@ -232,7 +232,7 @@ const Dashboard = () => {
 
   const isToday = (dayItem) => {
     if (!dayItem?.date) return false;
-    const today = getTodayInIST();
+    const today = getTodayInTZ(timezone);
     return dayItem.date.toDateString() === today.toDateString();
   };
 
@@ -363,8 +363,8 @@ const Dashboard = () => {
                       key={tz.value}
                       onClick={() => handleTimezoneChange(tz.value)}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-green-50 dark:hover:bg-slate-800 ${timezone === tz.value
-                          ? 'text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-slate-800'
-                          : 'text-gray-700 dark:text-gray-300'
+                        ? 'text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-slate-800'
+                        : 'text-gray-700 dark:text-gray-300'
                         }`}
                     >
                       {tz.label}
