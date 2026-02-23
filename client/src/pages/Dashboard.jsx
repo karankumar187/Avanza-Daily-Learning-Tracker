@@ -33,8 +33,17 @@ import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 const getLocalToday = (timezone) => {
-  const tzString = new Date().toLocaleString('en-US', { timeZone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone });
-  return new Date(tzString);
+  try {
+    const tz = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(new Date());
+    const year = parseInt(parts.find(p => p.type === 'year').value, 10);
+    const month = parseInt(parts.find(p => p.type === 'month').value, 10);
+    const day = parseInt(parts.find(p => p.type === 'day').value, 10);
+    return new Date(year, month - 1, day);
+  } catch (e) {
+    console.error('Timezone parsing error, falling back to local Date:', e);
+    return new Date();
+  }
 };
 
 const Dashboard = () => {
@@ -197,14 +206,26 @@ const Dashboard = () => {
   };
 
   const getDayStatus = (dateObj) => {
-    // Build date key in the user's timezone exactly like the backend analyticsController does
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: userTimezone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-    const key = formatter.format(dateObj); // YYYY-MM-DD
+    if (!dateObj || isNaN(dateObj.valueOf())) return null;
+    let key;
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: userTimezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(dateObj);
+      const y = parts.find(p => p.type === 'year').value;
+      const m = parts.find(p => p.type === 'month').value;
+      const d = parts.find(p => p.type === 'day').value;
+      key = `${y}-${m}-${d}`; // YYYY-MM-DD
+    } catch (e) {
+      // Fallback to local string parsing
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      key = `${y}-${m}-${d}`;
+    }
     const data = dailyAnalytics[key];
     if (!data || data.total === 0) return null;
 
