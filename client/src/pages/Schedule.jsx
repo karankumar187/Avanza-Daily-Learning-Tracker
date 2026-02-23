@@ -393,8 +393,7 @@ const Schedule = () => {
                     <div
                       key={`${item._id}-${index}`}
                       data-objective-id={objectiveId}
-                      onClick={() => objective.url ? window.open(objective.url, '_blank') : null}
-                      className={`stagger-item flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700 ${objective.url ? 'cursor-pointer' : ''}`}
+                      className="stagger-item flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
                     >
                       <div className="flex items-center gap-4">
                         <div

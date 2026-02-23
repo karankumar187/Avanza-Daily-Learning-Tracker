@@ -555,8 +555,7 @@ const Dashboard = () => {
                 .map((item, index) => (
                   <div
                     key={index}
-                    className={`flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 transition-colors ${item.learningObjective?.url ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700' : ''}`}
-                    onClick={() => item.learningObjective?.url ? window.open(item.learningObjective.url, '_blank') : null}
+                    className={`flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 transition-colors`}
                   >
                     <div
                       className="w-1 h-10 rounded-full"
