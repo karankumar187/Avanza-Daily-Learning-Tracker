@@ -96,12 +96,18 @@ Important:
           temperature: 0.7
         });
 
-        if (response && response.choices && response.choices.length > 0) {
-          aiResponse = response.choices[0].message.content;
-          console.log('AI Response:', aiResponse);
+        if (hfResponse && hfResponse.choices && hfResponse.choices.length > 0) {
+          try {
+            const content = hfResponse.choices[0].message.content;
+            aiResponse = typeof content === 'string' ? JSON.parse(content) : content;
+          } catch (parseError) {
+            console.error('Failed to parse Hugging Face AI response as JSON:', parseError.message);
+            // Fallback to raw content if JSON parsing fails, parseAIResponse will handle it
+            aiResponse = hfResponse.choices[0].message.content;
+          }
         }
       } catch (apiError) {
-        console.log('Hugging Face schedule API error, using fallback:', apiError.message);
+        console.error('Hugging Face schedule API error, using fallback:', apiError.message);
       }
     }
 
@@ -112,7 +118,7 @@ Important:
 
     // If parsing failed or no API key, use intelligent fallback
     if (!suggestedSchedule || !suggestedSchedule.schedule || suggestedSchedule.schedule.length === 0) {
-      console.log('Using fallback schedule generator');
+      console.warn('Using fallback schedule generator');
       suggestedSchedule = generateIntelligentSchedule(prompt, studyHoursPerDay, preferredTime, existingObjectives);
     }
 
@@ -498,8 +504,18 @@ function generateIntelligentSchedule(prompt, studyHoursPerDay = 4, preferredTime
 // Helper function to parse AI response
 function parseAIResponse(aiResponse, originalPrompt) {
   try {
-    // Remove markdown code blocks if present
-    let cleanedResponse = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    // If aiResponse is already an object (from direct JSON.parse in try block)
+    if (typeof aiResponse === 'object' && aiResponse !== null) {
+      if (aiResponse.schedule && Array.isArray(aiResponse.schedule)) {
+        return {
+          schedule: aiResponse.schedule,
+          summary: aiResponse.summary || 'AI-generated learning schedule'
+        };
+      }
+    }
+
+    // Otherwise, assume it's a string and try to parse
+    let cleanedResponse = String(aiResponse).replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
     // Try to find JSON object
     const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
@@ -527,7 +543,7 @@ function parseAIResponse(aiResponse, originalPrompt) {
       }
     }
   } catch (e) {
-    console.log('Failed to parse AI response as JSON:', e.message);
+    console.error('Failed to parse AI response as JSON:', e.message);
   }
 
   return null;
