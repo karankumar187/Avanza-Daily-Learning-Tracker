@@ -48,8 +48,12 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
 
             const weekDaysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-            // 2. Loop through recent days and backfill missing records
-            for (let i = daysToLookBack; i >= 0; i--) {
+            // Calculate how many days left in the week (forward-fill)
+            const endOfWeek = today.clone().endOf('week');
+            const daysLookAhead = endOfWeek.diff(today, 'days');
+
+            // 2. Loop through recent days and backfill/forward-fill missing records
+            for (let i = daysToLookBack; i >= -daysLookAhead; i--) {
                 const targetDate = moment.tz(TIMEZONE).subtract(i, 'days').startOf('day');
                 const targetDayName = weekDaysMap[targetDate.day()];
 
@@ -127,13 +131,11 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
                     const objectiveId = item.learningObjective.toString();
                     if (!existingObjectiveIds.includes(objectiveId)) {
                         // Task was scheduled but no record exists yet
-                        const isToday = i === 0;
-
                         recordsToCreate.push({
                             user: userId,
                             learningObjective: item.learningObjective,
                             date: targetDate.clone().startOf('day').toDate(),
-                            status: isToday ? 'pending' : 'missed',
+                            status: i <= 0 ? 'pending' : 'missed',
                             timeSpent: 0
                         });
                     }
