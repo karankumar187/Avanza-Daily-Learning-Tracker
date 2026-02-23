@@ -4,7 +4,7 @@ const LearningObjective = require('../models/LearningObjective');
 const Schedule = require('../models/Schedule');
 const syncProgress = require('../utils/syncProgress');
 
-const TIMEZONE = 'UTC';
+const TIMEZONE = 'Asia/Kolkata';
 
 // @desc    Get overall analytics
 // @route   GET /api/analytics/overall
@@ -106,16 +106,17 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
     });
 
     // Get progress for each objective
+    const currentEndOfDay = moment.tz(TIMEZONE).endOf('day');
     const objectiveAnalytics = await Promise.all(
       objectives.map(async (objective) => {
-        const rawProgress = await DailyProgress.find({
+        let progress = await DailyProgress.find({
           user: req.user.id,
           learningObjective: objective._id,
           ...dateFilter
         });
 
-        const todayEnd = moment.tz(TIMEZONE).endOf('day').toDate();
-        const progress = rawProgress.filter(p => p.date <= todayEnd);
+        // Exclude future tasks from objective performance metrics
+        progress = progress.filter(p => !moment.tz(p.date, TIMEZONE).isAfter(currentEndOfDay));
 
         const total = progress.length;
         const completed = progress.filter(p => p.status === 'completed').length;
@@ -410,11 +411,15 @@ exports.getCategoryAnalytics = async (req, res, next) => {
         };
       }
 
-      const progress = await DailyProgress.find({
+      let progress = await DailyProgress.find({
         user: req.user.id,
         learningObjective: objective._id,
         ...dateFilter
       });
+
+      // Exclude future tasks from category performance metrics
+      const currentEndOfDay = moment.tz(TIMEZONE).endOf('day');
+      progress = progress.filter(p => !moment.tz(p.date, TIMEZONE).isAfter(currentEndOfDay));
 
       const objStats = {
         objectiveId: objective._id,
