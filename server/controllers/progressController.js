@@ -84,7 +84,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
         progress._id,
         updateData,
         { new: true, runValidators: true }
-      ).populate('learningObjective', 'title color icon category');
+      ).populate('learningObjective', 'title color icon category url');
     } else {
       // Create new progress
       progress = await DailyProgress.create({
@@ -95,7 +95,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
       });
 
       progress = await DailyProgress.findById(progress._id)
-        .populate('learningObjective', 'title color icon category');
+        .populate('learningObjective', 'title color icon category url');
     }
 
     // --- Notification triggers for completed tasks ---
@@ -207,7 +207,7 @@ exports.getDailyProgress = async (req, res, next) => {
         $gte: queryDateStart,
         $lte: queryDateEnd
       }
-    }).populate('learningObjective', 'title color icon category estimatedTime');
+    }).populate('learningObjective', 'title color icon category estimatedTime url');
 
     res.status(200).json({
       success: true,
@@ -243,7 +243,7 @@ exports.getProgressRange = async (req, res, next) => {
       user: req.user.id,
       date: { $gte: start, $lte: end }
     })
-      .populate('learningObjective', 'title color icon category')
+      .populate('learningObjective', 'title color icon category url')
       .sort({ date: -1 });
 
     res.status(200).json({
@@ -278,7 +278,7 @@ exports.getObjectiveProgress = async (req, res, next) => {
     }
 
     const progress = await DailyProgress.find(query)
-      .populate('learningObjective', 'title color icon category')
+      .populate('learningObjective', 'title color icon category url')
       .sort({ date: -1 });
 
     res.status(200).json({
@@ -317,7 +317,7 @@ exports.skipProgress = async (req, res, next) => {
         progress._id,
         updateData,
         { new: true, runValidators: true }
-      ).populate('learningObjective', 'title color icon category');
+      ).populate('learningObjective', 'title color icon category url');
     } else {
       progress = await DailyProgress.create({
         user: req.user.id,
@@ -327,7 +327,7 @@ exports.skipProgress = async (req, res, next) => {
       });
 
       progress = await DailyProgress.findById(progress._id)
-        .populate('learningObjective', 'title color icon category');
+        .populate('learningObjective', 'title color icon category url');
     }
 
     res.status(200).json({

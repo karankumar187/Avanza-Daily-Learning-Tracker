@@ -211,7 +211,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
         $gte: startOfMonth.toDate(),
         $lte: endOfMonth.toDate()
       }
-    }).populate('learningObjective', 'title color icon');
+    }).populate('learningObjective', 'title color icon url');
 
     // Group by date
     const dailyData = {};

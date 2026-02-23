@@ -15,7 +15,7 @@ exports.createObjective = async (req, res, next) => {
       });
     }
 
-    const { title, description, category, priority, estimatedTime, color, icon } = req.body;
+    const { title, description, category, priority, estimatedTime, color, icon, url } = req.body;
 
     const objective = await LearningObjective.create({
       user: req.user.id,
@@ -25,7 +25,8 @@ exports.createObjective = async (req, res, next) => {
       priority,
       estimatedTime,
       color,
-      icon
+      icon,
+      url
     });
 
     res.status(201).json({
@@ -43,9 +44,9 @@ exports.createObjective = async (req, res, next) => {
 exports.getObjectives = async (req, res, next) => {
   try {
     const { category, priority, isActive } = req.query;
-    
+
     let query = { user: req.user.id };
-    
+
     if (category) query.category = category;
     if (priority) query.priority = priority;
     if (isActive !== undefined) query.isActive = isActive === 'true';
@@ -105,21 +106,24 @@ exports.updateObjective = async (req, res, next) => {
       });
     }
 
-    const { title, description, category, priority, estimatedTime, color, icon, isActive } = req.body;
+    const { title, description, category, priority, estimatedTime, color, icon, url, isActive } = req.body;
+
+    // Build update object
+    const updateFields = {};
+    if (title) updateFields.title = title;
+    if (description !== undefined) updateFields.description = description;
+    if (category) updateFields.category = category;
+    if (priority) updateFields.priority = priority;
+    if (estimatedTime) updateFields.estimatedTime = estimatedTime;
+    if (color) updateFields.color = color;
+    if (icon) updateFields.icon = icon;
+    if (url !== undefined) updateFields.url = url;
+    if (isActive !== undefined) updateFields.isActive = isActive;
+    updateFields.updatedAt = Date.now();
 
     objective = await LearningObjective.findByIdAndUpdate(
       req.params.id,
-      {
-        title,
-        description,
-        category,
-        priority,
-        estimatedTime,
-        color,
-        icon,
-        isActive,
-        updatedAt: Date.now()
-      },
+      updateFields,
       { new: true, runValidators: true }
     );
 
@@ -188,7 +192,7 @@ exports.getCategories = async (req, res, next) => {
 exports.getObjectiveWithProgress = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     const objective = await LearningObjective.findOne({
       _id: req.params.id,
       user: req.user.id
