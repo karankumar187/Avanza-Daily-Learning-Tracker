@@ -2,7 +2,7 @@ const Notification = require('../models/Notification');
 const DailyProgress = require('../models/DailyProgress');
 const moment = require('moment-timezone');
 
-const TIMEZONE = 'UTC';
+const TIMEZONE = 'Asia/Kolkata';
 
 // @desc    Get all notifications for user
 // @route   GET /api/notifications

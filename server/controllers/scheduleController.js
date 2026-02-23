@@ -239,7 +239,7 @@ exports.setDefaultSchedule = async (req, res, next) => {
 exports.getTodaySchedule = async (req, res, next) => {
   try {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const today = days[new Date().getUTCDay()];
+    const today = days[new Date().getDay()];
 
     const schedule = await Schedule.findOne({
       user: req.user.id,

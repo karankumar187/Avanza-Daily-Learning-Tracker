@@ -32,10 +32,10 @@ import {
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
-function getTodayInIST() {
+const getTodayInIST = () => {
   const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
   return new Date(istString);
-}
+};
 
 const Dashboard = () => {
   const [stats, setStats] = useState({

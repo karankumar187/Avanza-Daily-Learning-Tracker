@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const DailyProgress = require('../models/DailyProgress');
 const Schedule = require('../models/Schedule');
 
-const TIMEZONE = 'UTC';
+const TIMEZONE = 'Asia/Kolkata';
 
 // In-memory lock to prevent race conditions when multiple API endpoints call syncProgress concurrently
 const syncLocks = new Map();

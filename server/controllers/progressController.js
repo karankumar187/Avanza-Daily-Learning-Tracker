@@ -6,7 +6,7 @@ const Schedule = require('../models/Schedule');
 const Notification = require('../models/Notification');
 const syncProgress = require('../utils/syncProgress');
 
-const TIMEZONE = 'UTC';
+const TIMEZONE = 'Asia/Kolkata';
 
 // @desc    Create or update daily progress
 // @route   POST /api/progress
@@ -22,6 +22,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
     }
 
     const { learningObjectiveId, date, status, remarks, notes, timeSpent } = req.body;
+    console.log(`[createOrUpdate] Request for obj=${learningObjectiveId}, date=${date}, status=${status}`);
 
     // Verify the objective belongs to user
     const objective = await LearningObjective.findOne({
@@ -47,6 +48,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
         $lte: progressDateEnd
       }
     });
+    console.log(`[createOrUpdate] Found existing progress? ${!!progress} (ID: ${progress?._id})`);
 
     const updateData = {
       status,
@@ -97,6 +99,8 @@ exports.createOrUpdateProgress = async (req, res, next) => {
       progress = await DailyProgress.findById(progress._id)
         .populate('learningObjective', 'title color icon category');
     }
+
+    console.log(`[createOrUpdate] Returning saved status: ${progress.status}`);
 
     // --- Notification triggers for completed tasks ---
     if (status === 'completed') {

@@ -98,6 +98,7 @@ Important:
 
         if (response && response.choices && response.choices.length > 0) {
           aiResponse = response.choices[0].message.content;
+          console.log('AI Response:', aiResponse);
         }
       } catch (apiError) {
         console.log('Hugging Face schedule API error, using fallback:', apiError.message);

@@ -86,14 +86,15 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
-    let dateFilter = {};
+    let dateFilter = {
+      date: {
+        $lte: moment.tz(TIMEZONE).endOf('day').toDate()
+      }
+    };
+
     if (startDate && endDate) {
-      dateFilter = {
-        date: {
-          $gte: moment.tz(startDate, TIMEZONE).startOf('day').toDate(),
-          $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
-        }
-      };
+      dateFilter.date.$gte = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
+      dateFilter.date.$lte = moment.tz(endDate, TIMEZONE).endOf('day').toDate();
     }
 
     // Sync before fetching
@@ -106,17 +107,13 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
     });
 
     // Get progress for each objective
-    const currentEndOfDay = moment.tz(TIMEZONE).endOf('day');
     const objectiveAnalytics = await Promise.all(
       objectives.map(async (objective) => {
-        let progress = await DailyProgress.find({
+        const progress = await DailyProgress.find({
           user: req.user.id,
           learningObjective: objective._id,
           ...dateFilter
         });
-
-        // Exclude future tasks from objective performance metrics
-        progress = progress.filter(p => !moment.tz(p.date, TIMEZONE).isAfter(currentEndOfDay));
 
         const total = progress.length;
         const completed = progress.filter(p => p.status === 'completed').length;
@@ -373,14 +370,15 @@ exports.getCategoryAnalytics = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
-    let dateFilter = {};
+    let dateFilter = {
+      date: {
+        $lte: moment.tz(TIMEZONE).endOf('day').toDate()
+      }
+    };
+
     if (startDate && endDate) {
-      dateFilter = {
-        date: {
-          $gte: moment.tz(startDate, TIMEZONE).startOf('day').toDate(),
-          $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
-        }
-      };
+      dateFilter.date.$gte = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
+      dateFilter.date.$lte = moment.tz(endDate, TIMEZONE).endOf('day').toDate();
     }
 
     // Sync before fetching
@@ -411,15 +409,11 @@ exports.getCategoryAnalytics = async (req, res, next) => {
         };
       }
 
-      let progress = await DailyProgress.find({
+      const progress = await DailyProgress.find({
         user: req.user.id,
         learningObjective: objective._id,
         ...dateFilter
       });
-
-      // Exclude future tasks from category performance metrics
-      const currentEndOfDay = moment.tz(TIMEZONE).endOf('day');
-      progress = progress.filter(p => !moment.tz(p.date, TIMEZONE).isAfter(currentEndOfDay));
 
       const objStats = {
         objectiveId: objective._id,

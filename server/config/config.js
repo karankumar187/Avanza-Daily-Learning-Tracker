@@ -4,6 +4,5 @@ module.exports = {
   PORT: process.env.PORT || 5000,
   NODE_ENV: process.env.NODE_ENV || 'development',
   HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY,
-  MONGO_URI: process.env.MONGO_URI,
-  TIMEZONE: 'UTC'
+  TIMEZONE: 'Asia/Kolkata'
 };
