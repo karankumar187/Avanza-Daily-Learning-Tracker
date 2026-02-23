@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
 const Schedule = require('../models/Schedule');
 const LearningObjective = require('../models/LearningObjective');
+const DailyProgress = require('../models/DailyProgress');
+const moment = require('moment-timezone');
 
 // @desc    Create schedule
 // @route   POST /api/schedules
@@ -298,7 +300,7 @@ exports.updateDaySchedule = async (req, res, next) => {
 
     // Find and update the specific day
     const dayIndex = schedule.weeklySchedule.findIndex(s => s.day === day.toLowerCase());
-    
+
     if (dayIndex >= 0) {
       schedule.weeklySchedule[dayIndex].items = items || [];
     } else {
@@ -364,7 +366,7 @@ exports.addItemToDay = async (req, res, next) => {
 
     // Find the day schedule
     const dayIndex = schedule.weeklySchedule.findIndex(s => s.day === day.toLowerCase());
-    
+
     const newItem = {
       learningObjective: learningObjectiveId,
       startTime: null,
@@ -377,14 +379,14 @@ exports.addItemToDay = async (req, res, next) => {
       const existingIndex = schedule.weeklySchedule[dayIndex].items.findIndex(
         item => item.learningObjective.toString() === learningObjectiveId
       );
-      
+
       if (existingIndex >= 0) {
         return res.status(400).json({
           success: false,
           message: 'Objective already in schedule for this day'
         });
       }
-      
+
       schedule.weeklySchedule[dayIndex].items.push(newItem);
     } else {
       schedule.weeklySchedule.push({
@@ -427,7 +429,7 @@ exports.removeItemFromDay = async (req, res, next) => {
     }
 
     const dayIndex = schedule.weeklySchedule.findIndex(s => s.day === day.toLowerCase());
-    
+
     if (dayIndex >= 0) {
       schedule.weeklySchedule[dayIndex].items = schedule.weeklySchedule[dayIndex].items.filter(
         item => item.learningObjective.toString() !== objectiveId
@@ -436,6 +438,24 @@ exports.removeItemFromDay = async (req, res, next) => {
 
     schedule.updatedAt = Date.now();
     await schedule.save();
+
+    // Clean up corresponding phantom DailyProgress entries (pending/missed) for this weekday
+    const progressRecords = await DailyProgress.find({
+      user: req.user.id,
+      learningObjective: objectiveId,
+      status: { $in: ['pending', 'missed'] }
+    });
+
+    const idsToDelete = progressRecords
+      .filter(p => {
+        const pDay = moment.tz(p.date, 'Asia/Kolkata').format('dddd').toLowerCase();
+        return pDay === day.toLowerCase();
+      })
+      .map(p => p._id);
+
+    if (idsToDelete.length > 0) {
+      await DailyProgress.deleteMany({ _id: { $in: idsToDelete } });
+    }
 
     res.status(200).json({
       success: true,
