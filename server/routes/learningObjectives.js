@@ -37,7 +37,11 @@ const objectiveValidation = [
     .trim(),
   body('icon')
     .optional()
-    .trim()
+    .trim(),
+  body('url')
+    .optional({ checkFalsy: true }) // allow empty strings
+    .isURL({ require_protocol: true, require_valid_protocol: true })
+    .withMessage('Please provide a valid URL including http:// or https://')
 ];
 
 // Routes

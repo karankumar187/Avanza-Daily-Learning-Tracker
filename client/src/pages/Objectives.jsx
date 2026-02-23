@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { objectivesAPI, progressAPI } from '../services/api';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker, X, FileText, BookOpen } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker, X, FileText, BookOpen, ExternalLink } from 'lucide-react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -42,7 +42,8 @@ const Objectives = () => {
     category: '',
     priority: 'medium',
     color: '#4A7C59',
-    icon: 'Book'
+    icon: 'Book',
+    url: ''
   });
 
   useEffect(() => {
@@ -120,7 +121,8 @@ const Objectives = () => {
       category: objective.category,
       priority: objective.priority,
       color: objective.color,
-      icon: objective.icon
+      icon: objective.icon,
+      url: objective.url || ''
     });
     setShowModal(true);
   };
@@ -146,7 +148,8 @@ const Objectives = () => {
       category: '',
       priority: 'medium',
       color: '#4A7C59',
-      icon: 'Book'
+      icon: 'Book',
+      url: ''
     });
   };
 
@@ -324,7 +327,22 @@ const Objectives = () => {
                   </div>
                 </div>
 
-                <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2 line-clamp-1 group-hover:text-green-800 dark:group-hover:text-green-400 transition-colors pl-3">{objective.title}</h3>
+                <div className="flex justify-between items-start mb-2 pr-2">
+                  <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 line-clamp-1 group-hover:text-green-800 dark:group-hover:text-green-400 transition-colors pl-3">{objective.title}</h3>
+                  {objective.url && (
+                    <a
+                      href={objective.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors p-1"
+                      onClick={(e) => e.stopPropagation()}
+                      title="Open Learning Resource"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </a>
+                  )}
+                </div>
+
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 line-clamp-2 leading-relaxed pl-3">{objective.description}</p>
 
                 <div className="flex items-center justify-between pl-3">
@@ -392,6 +410,22 @@ const Objectives = () => {
                   className="form-input resize-none"
                   placeholder="Enter description"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Learning Resource URL (Optional)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <ExternalLink className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    className="form-input pl-10"
+                    placeholder="https://example.com/course"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

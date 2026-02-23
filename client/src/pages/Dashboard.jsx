@@ -2,21 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsAPI, progressAPI, objectivesAPI } from '../services/api';
 import { toast } from 'sonner';
-import {
-  Target,
-  CheckCircle,
-  XCircle,
-  Clock,
-  TrendingUp,
-  Calendar,
-  Sparkles,
-  ArrowRight,
-  Flame,
-  BookOpen,
-  MoreHorizontal,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Target, ArrowRight, TrendingUp, Award, Flame, Zap, BookOpen, Star, MoreHorizontal, ChevronLeft, ChevronRight, XCircle, Sparkles, Plus, ExternalLink } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -464,9 +450,23 @@ const Dashboard = () => {
                         {getStatusIcon(item.status)}
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-800 dark:text-gray-100">
-                          {item.learningObjective?.title || 'Unknown Objective'}
-                        </h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-gray-800 dark:text-gray-100">
+                            {item.learningObjective?.title || 'Unknown Objective'}
+                          </h4>
+                          {item.learningObjective?.url && (
+                            <a
+                              href={item.learningObjective.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                              title="Open Learning Resource"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {item.learningObjective?.category || 'General'}
                         </p>
@@ -559,9 +559,23 @@ const Dashboard = () => {
                       style={{ backgroundColor: item.learningObjective?.color || '#4A7C59' }}
                     />
                     <div className="flex-1">
-                      <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
-                        {item.learningObjective?.title}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
+                          {item.learningObjective?.title}
+                        </p>
+                        {item.learningObjective?.url && (
+                          <a
+                            href={item.learningObjective.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Open Learning Resource"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {item.learningObjective?.category}
                       </p>

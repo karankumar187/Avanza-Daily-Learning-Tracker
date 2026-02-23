@@ -23,6 +23,11 @@ const learningObjectiveSchema = new mongoose.Schema({
     trim: true,
     default: 'General'
   },
+  url: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   priority: {
     type: String,
     enum: ['low', 'medium', 'high'],

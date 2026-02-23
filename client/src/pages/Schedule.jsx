@@ -11,7 +11,8 @@ import {
   Save,
   SkipForward,
   BookOpen,
-  FileText
+  FileText,
+  ExternalLink
 } from 'lucide-react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -183,7 +184,7 @@ const Schedule = () => {
       if (!pendingCompleteId) return;
 
       const d = new Date();
-      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const today = `${d.getFullYear()} -${String(d.getMonth() + 1).padStart(2, '0')} -${String(d.getDate()).padStart(2, '0')} `;
 
       // Parse time spent — accept minutes as number
       const timeSpentMinutes = notesForm.timeSpent ? parseInt(notesForm.timeSpent, 10) : undefined;
@@ -198,7 +199,7 @@ const Schedule = () => {
 
       // Celebration animation on completion
       gsap.fromTo(
-        `[data-objective-id="${pendingCompleteId}"]`,
+        `[data - objective - id= "${pendingCompleteId}"]`,
         { scale: 0.9, boxShadow: '0 0 0 rgba(34,197,94,0)' },
         {
           scale: 1.06,
@@ -233,7 +234,7 @@ const Schedule = () => {
         return;
       }
       const d = new Date();
-      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const today = `${d.getFullYear()} -${String(d.getMonth() + 1).padStart(2, '0')} -${String(d.getDate()).padStart(2, '0')} `;
       await progressAPI.skip({
         learningObjectiveId: objectiveId,
         date: today,
@@ -301,10 +302,10 @@ const Schedule = () => {
               <button
                 key={schedule._id}
                 onClick={() => setSelectedSchedule(schedule)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSchedule?._id === schedule._id
-                  ? 'bg-green-700 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                className={`px - 4 py - 2 rounded - lg font - medium transition - all ${selectedSchedule?._id === schedule._id
+                    ? 'bg-green-700 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } `}
               >
                 {schedule.name}
                 {schedule.isDefault && (
@@ -345,10 +346,10 @@ const Schedule = () => {
                 <button
                   key={day}
                   onClick={() => setSelectedDay(day)}
-                  className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${selectedDay === day
-                    ? 'bg-gray-800 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                  className={`px - 4 py - 2 rounded - lg font - medium capitalize transition - all ${selectedDay === day
+                      ? 'bg-gray-800 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    } `}
                 >
                   {day}
                 </button>
@@ -390,7 +391,7 @@ const Schedule = () => {
 
                   return (
                     <div
-                      key={`${item._id}-${index}`}
+                      key={`${item._id} -${index} `}
                       data-objective-id={objectiveId}
                       className="stagger-item flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
                     >
@@ -402,7 +403,21 @@ const Schedule = () => {
                           <BookOpen className="w-5 h-5" style={{ color: objective.color }} />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-800 dark:text-gray-100">{objective.title}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-gray-800 dark:text-gray-100">{objective.title}</h4>
+                            {objective.url && (
+                              <a
+                                href={objective.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                                title="Open Learning Resource"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
                           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                             <span>{objective.category}</span>
                             <span>•</span>
