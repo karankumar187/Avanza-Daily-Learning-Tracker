@@ -92,8 +92,7 @@ export const analyticsAPI = {
   getStreak: () => api.get('/analytics/streak'),
   getWeeklyChart: () => api.get('/analytics/weekly-chart'),
   getByCategory: (params) => api.get('/analytics/by-category', { params }),
-  cleanupPhantom: () => api.delete('/analytics/cleanup-phantom'),
-  dedup: () => api.delete('/analytics/dedup')
+  cleanupPhantom: () => api.delete('/analytics/cleanup-phantom')
 };
 
 // AI Assistant APIs

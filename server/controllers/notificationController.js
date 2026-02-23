@@ -2,8 +2,7 @@ const Notification = require('../models/Notification');
 const DailyProgress = require('../models/DailyProgress');
 const moment = require('moment-timezone');
 
-// Timezone from user preferences (falls back to IST)
-const getUserTZ = (user) => user?.preferences?.timezone || 'Asia/Kolkata';
+const TIMEZONE = 'Asia/Kolkata';
 
 // @desc    Get all notifications for user
 // @route   GET /api/notifications
@@ -93,8 +92,11 @@ exports.createNotification = async (req, res, next) => {
 // @access  Private
 exports.triggerPendingReminder = async (req, res, next) => {
     try {
-        const todayStart = moment.tz(getUserTZ(req.user)).startOf('day').toDate();
-        const todayEnd = moment.tz(getUserTZ(req.user)).endOf('day').toDate();
+        // Use user's saved timezone, fall back to UTC
+        const userTimezone = req.user.preferences?.timezone || 'UTC';
+        const now = moment.tz(userTimezone);
+        const todayStart = now.clone().startOf('day').toDate();
+        const todayEnd = now.clone().endOf('day').toDate();
 
         const pendingEntries = await DailyProgress.find({
             user: req.user.id,
@@ -109,34 +111,36 @@ exports.triggerPendingReminder = async (req, res, next) => {
             });
         }
 
-        // Deduplication: skip if an unread pending reminder was already sent in the last 4 hours
-        const fourHoursAgo = moment.tz(getUserTZ(req.user)).subtract(4, 'hours').toDate();
-        const recentReminder = await Notification.findOne({
+        // --- DEDUP: only create one reminder notification per day ---
+        // Use a date-keyed reference string to identify today's reminder
+        const todayKey = now.format('YYYY-MM-DD');
+        const alreadySent = await Notification.findOne({
             user: req.user.id,
             type: 'warning',
-            read: false,
-            createdAt: { $gte: fourHoursAgo }
+            // Match notifications created today (UTC range covers any timezone)
+            createdAt: { $gte: todayStart, $lte: todayEnd },
+            title: { $in: ['Pending Tasks Reminder', 'Late Night Reminder'] }
         });
 
-        if (recentReminder) {
-            return res.status(200).json({
-                success: true,
-                message: 'Reminder already sent recently.',
-                data: recentReminder,
-                pendingCount: pendingEntries.length
-            });
+        if (alreadySent) {
+            // Update the existing notification with fresh count instead of creating a duplicate
+            const taskCount = pendingEntries.length;
+            const taskList = pendingEntries.slice(0, 3).map(e => e.learningObjective?.title || 'Unnamed task').join(', ');
+            const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
+            alreadySent.message = `You have ${taskCount} pending task${taskCount > 1 ? 's' : ''} today: ${taskList}${extra}. Keep going!`;
+            alreadySent.read = false; // mark unread so it resurfaces
+            await alreadySent.save();
+            return res.status(200).json({ success: true, data: alreadySent, pendingCount: taskCount, updated: true });
         }
 
         const taskCount = pendingEntries.length;
         const taskList = pendingEntries.slice(0, 3).map(e => e.learningObjective?.title || 'Unnamed task').join(', ');
         const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
-
-        const hour = moment.tz(getUserTZ(req.user)).hour();
-        const isNight = hour >= 20;
+        const isNight = now.hour() >= 20;
 
         const notification = await Notification.create({
             user: req.user.id,
-            title: isNight ? 'Late Night Reminder 🌙' : 'Pending Tasks Reminder ⏰',
+            title: isNight ? 'Late Night Reminder' : 'Pending Tasks Reminder',
             message: `You have ${taskCount} pending task${taskCount > 1 ? 's' : ''} today: ${taskList}${extra}. Keep going!`,
             type: 'warning'
         });

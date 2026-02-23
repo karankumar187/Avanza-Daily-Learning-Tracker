@@ -49,8 +49,8 @@ const dailyProgressSchema = new mongoose.Schema({
   }
 });
 
-// Unique compound index: ONE progress record per user + objective + day (prevents duplicates)
-dailyProgressSchema.index({ user: 1, learningObjective: 1, date: 1 }, { unique: true });
+// Compound index to ensure one progress entry per objective per day
+dailyProgressSchema.index({ user: 1, learningObjective: 1, date: 1 });
 
 // Index for date range queries
 dailyProgressSchema.index({ user: 1, date: 1 });

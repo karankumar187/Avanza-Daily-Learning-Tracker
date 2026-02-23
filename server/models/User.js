@@ -49,8 +49,7 @@ const userSchema = new mongoose.Schema({
     },
     timezone: {
       type: String,
-      enum: ['Asia/Kolkata', 'UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney'],
-      default: 'Asia/Kolkata'
+      default: 'UTC'
     }
   },
   createdAt: {

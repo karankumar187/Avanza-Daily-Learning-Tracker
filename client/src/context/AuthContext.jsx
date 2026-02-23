@@ -98,20 +98,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateTimezone = async (timezone) => {
-    try {
-      const response = await authAPI.updateProfile({
-        preferences: { ...user?.preferences, timezone }
-      });
-      setUser(response.data.user);
-      toast.success(`Timezone set to ${timezone}`);
-      return { success: true };
-    } catch (error) {
-      toast.error('Failed to update timezone');
-      return { success: false };
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -122,8 +108,7 @@ export const AuthProvider = ({ children }) => {
         loginWithToken,
         register,
         logout,
-        updateProfile,
-        updateTimezone
+        updateProfile
       }}
     >
       {children}

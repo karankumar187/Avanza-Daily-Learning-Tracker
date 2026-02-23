@@ -74,10 +74,9 @@ const Analytics = () => {
     }
   }, [loading, overallStats]);
 
-  // One-time cleanup on mount: remove phantom entries AND deduplicate existing records
+  // One-time cleanup: remove phantom progress records from before first schedule
   useEffect(() => {
-    analyticsAPI.cleanupPhantom().catch(() => { }); // silent
-    analyticsAPI.dedup().catch(() => { });           // removes existing duplicates
+    analyticsAPI.cleanupPhantom().catch(() => { }); // silent, best-effort
   }, []);
 
   useEffect(() => {

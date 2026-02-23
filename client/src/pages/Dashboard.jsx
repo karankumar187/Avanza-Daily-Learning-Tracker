@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { analyticsAPI, progressAPI, objectivesAPI } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { analyticsAPI, progressAPI, objectivesAPI, authAPI } from '../services/api';
 import { toast } from 'sonner';
 import {
   Target,
@@ -34,25 +33,37 @@ import {
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
-const getTodayInIST = () => {
-  const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-  return new Date(istString);
-};
-
-const TIMEZONE_OPTIONS = [
-  { value: 'Asia/Kolkata', label: 'IST (India)' },
-  { value: 'UTC', label: 'UTC' },
-  { value: 'America/New_York', label: 'EST (New York)' },
-  { value: 'America/Los_Angeles', label: 'PST (Los Angeles)' },
-  { value: 'Europe/London', label: 'GMT (London)' },
-  { value: 'Europe/Paris', label: 'CET (Paris)' },
-  { value: 'Asia/Singapore', label: 'SGT (Singapore)' },
-  { value: 'Asia/Tokyo', label: 'JST (Tokyo)' },
-  { value: 'Australia/Sydney', label: 'AEST (Sydney)' },
+const COMMON_TIMEZONES = [
+  { label: 'UTC', value: 'UTC' },
+  { label: 'IST — India (UTC+5:30)', value: 'Asia/Kolkata' },
+  { label: 'EST — New York (UTC-5)', value: 'America/New_York' },
+  { label: 'CST — Chicago (UTC-6)', value: 'America/Chicago' },
+  { label: 'MST — Denver (UTC-7)', value: 'America/Denver' },
+  { label: 'PST — Los Angeles (UTC-8)', value: 'America/Los_Angeles' },
+  { label: 'GMT — London (UTC+0)', value: 'Europe/London' },
+  { label: 'CET — Paris/Berlin (UTC+1)', value: 'Europe/Paris' },
+  { label: 'EET — Athens (UTC+2)', value: 'Europe/Athens' },
+  { label: 'MSK — Moscow (UTC+3)', value: 'Europe/Moscow' },
+  { label: 'GST — Dubai (UTC+4)', value: 'Asia/Dubai' },
+  { label: 'PKT — Pakistan (UTC+5)', value: 'Asia/Karachi' },
+  { label: 'BST — Bangladesh (UTC+6)', value: 'Asia/Dhaka' },
+  { label: 'ICT — Bangkok (UTC+7)', value: 'Asia/Bangkok' },
+  { label: 'CST — China (UTC+8)', value: 'Asia/Shanghai' },
+  { label: 'JST — Tokyo (UTC+9)', value: 'Asia/Tokyo' },
+  { label: 'AEST — Sydney (UTC+10)', value: 'Australia/Sydney' },
+  { label: 'NZST — Auckland (UTC+12)', value: 'Pacific/Auckland' },
 ];
 
+const getTodayInTZ = (tz = 'UTC') => {
+  try {
+    const s = new Date().toLocaleString('en-US', { timeZone: tz });
+    return new Date(s);
+  } catch {
+    return new Date();
+  }
+};
+
 const Dashboard = () => {
-  const { user, updateTimezone } = useAuth();
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -68,7 +79,10 @@ const Dashboard = () => {
   const [objectives, setObjectives] = useState([]);
   const [weeklyData, setWeeklyData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentDate] = useState(getTodayInIST());
+  // Timezone: load from localStorage (synced with backend on save)
+  const [timezone, setTimezone] = useState(() => localStorage.getItem('avanza:timezone') || 'UTC');
+  const [showTzPicker, setShowTzPicker] = useState(false);
+  const [currentDate, setCurrentDate] = useState(() => getTodayInTZ(localStorage.getItem('avanza:timezone') || 'UTC'));
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [dailyAnalytics, setDailyAnalytics] = useState({});
 
@@ -118,6 +132,19 @@ const Dashboard = () => {
       }
     );
   }, []);
+
+  const handleTimezoneChange = async (tz) => {
+    setTimezone(tz);
+    setCurrentDate(getTodayInTZ(tz));
+    setShowTzPicker(false);
+    localStorage.setItem('avanza:timezone', tz);
+    try {
+      await authAPI.updateProfile({ preferences: { timezone: tz } });
+      toast.success(`Timezone set to ${tz}`);
+    } catch {
+      toast.error('Could not save timezone to server (local preference applied)');
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -315,22 +342,36 @@ const Dashboard = () => {
               Here's your learning progress for today
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap" data-welcome-anim>
-            {/* Timezone Selector */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-              <Globe className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <select
-                value={user?.preferences?.timezone || 'Asia/Kolkata'}
-                onChange={async (e) => {
-                  await updateTimezone(e.target.value);
-                  fetchDashboardData();
-                }}
-                className="text-sm text-gray-700 dark:text-gray-200 bg-transparent outline-none cursor-pointer"
+          <div className="flex items-center gap-3">
+            {/* Timezone picker */}
+            <div className="relative">
+              <button
+                onClick={() => setShowTzPicker(p => !p)}
+                title="Change timezone"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 text-sm font-medium hover:border-green-600 transition-colors"
               >
-                {TIMEZONE_OPTIONS.map(tz => (
-                  <option key={tz.value} value={tz.value}>{tz.label}</option>
-                ))}
-              </select>
+                <Globe className="w-4 h-4 text-green-700" />
+                <span className="max-w-[120px] truncate">{COMMON_TIMEZONES.find(t => t.value === timezone)?.label.split(' —')[0] || timezone}</span>
+              </button>
+              {showTzPicker && (
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl w-72 max-h-72 overflow-y-auto">
+                  <div className="p-2 border-b border-gray-100 dark:border-slate-700">
+                    <p className="text-xs font-semibold text-gray-500 px-2 py-1">Select your timezone</p>
+                  </div>
+                  {COMMON_TIMEZONES.map(tz => (
+                    <button
+                      key={tz.value}
+                      onClick={() => handleTimezoneChange(tz.value)}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-green-50 dark:hover:bg-slate-800 ${timezone === tz.value
+                          ? 'text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-slate-800'
+                          : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                    >
+                      {tz.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <Link
               to="/ai-assistant"
