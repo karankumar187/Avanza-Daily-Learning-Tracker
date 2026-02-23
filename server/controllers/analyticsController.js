@@ -4,23 +4,7 @@ const LearningObjective = require('../models/LearningObjective');
 const Schedule = require('../models/Schedule');
 const syncProgress = require('../utils/syncProgress');
 
-// Timezone from user preferences (falls back to IST)
-const getUserTZ = (user) => user?.preferences?.timezone || 'Asia/Kolkata';
-
-/**
- * Returns the start-of-day date for when the user first created a schedule.
- * All analytics queries use this as a $gte floor so phantom entries from
- * before schedule setup are never counted.
- */
-const getScheduleStartDate = async (userId, user) => {
-  const schedule = await Schedule.findOne(
-    { user: userId, isActive: true },
-    { createdAt: 1 },
-    { sort: { createdAt: 1 } }  // oldest first
-  );
-  if (!schedule) return null;
-  return moment.tz(schedule.createdAt, getUserTZ(user)).startOf('day').toDate();
-};
+const TIMEZONE = 'Asia/Kolkata';
 
 // @desc    Get overall analytics
 // @route   GET /api/analytics/overall
@@ -30,7 +14,7 @@ exports.getOverallAnalytics = async (req, res, next) => {
     const { period } = req.query; // 'daily', 'weekly', 'monthly', 'all'
 
     let dateFilter = {};
-    const now = moment.tz(getUserTZ(req.user));
+    const now = moment.tz(TIMEZONE);
 
     if (period === 'daily') {
       dateFilter = {
@@ -56,23 +40,12 @@ exports.getOverallAnalytics = async (req, res, next) => {
     }
 
     // Sync before fetching analytics
-    const userTz = req.user.preferences?.timezone || 'UTC';
-    await syncProgress(req.user.id, 7, userTz);
-
-    // Never show data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id, req.user);
+    await syncProgress(req.user.id);
 
     // Get all progress for the period
     const query = { user: req.user.id };
     if (Object.keys(dateFilter).length > 0) {
       query.date = dateFilter.date;
-      // Clamp lower bound to schedule creation date
-      if (scheduleStart && (!query.date.$gte || scheduleStart > query.date.$gte)) {
-        query.date.$gte = scheduleStart;
-      }
-    } else if (scheduleStart) {
-      // 'all' period — floor at schedule creation
-      query.date = { $gte: scheduleStart };
     }
 
     const progress = await DailyProgress.find(query);
@@ -113,26 +86,18 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
-    // Sync before fetching
-    const userTz = req.user.preferences?.timezone || 'UTC';
-    await syncProgress(req.user.id, 7, userTz);
-
-    // Never show data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id, req.user);
-
     let dateFilter = {};
     if (startDate && endDate) {
-      const fromDate = moment.tz(startDate, getUserTZ(req.user)).startOf('day').toDate();
       dateFilter = {
         date: {
-          // clamp lower bound to scheduleStart
-          $gte: scheduleStart && scheduleStart > fromDate ? scheduleStart : fromDate,
-          $lte: moment.tz(endDate, getUserTZ(req.user)).endOf('day').toDate()
+          $gte: moment.tz(startDate, TIMEZONE).startOf('day').toDate(),
+          $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
         }
       };
-    } else if (scheduleStart) {
-      dateFilter = { date: { $gte: scheduleStart } };
     }
+
+    // Sync before fetching
+    await syncProgress(req.user.id);
 
     // Get all active objectives
     const objectives = await LearningObjective.find({
@@ -200,15 +165,14 @@ exports.getDailyAnalytics = async (req, res, next) => {
   try {
     const { month, year } = req.query;
 
-    const targetMonth = month ? parseInt(month) - 1 : moment.tz(getUserTZ(req.user)).month();
-    const targetYear = year ? parseInt(year) : moment.tz(getUserTZ(req.user)).year();
+    const targetMonth = month ? parseInt(month) - 1 : moment.tz(TIMEZONE).month();
+    const targetYear = year ? parseInt(year) : moment.tz(TIMEZONE).year();
 
     const startOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).startOf('month');
     const endOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).endOf('month');
 
     // Sync before fetching
-    const userTz14 = req.user.preferences?.timezone || 'UTC';
-    await syncProgress(req.user.id, 14, userTz14); // slightly longer sync for calendar context
+    await syncProgress(req.user.id, 14); // slightly longer sync for calendar context
 
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -237,7 +201,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
 
     // Populate with actual data
     progress.forEach(p => {
-      const dateKey = moment.tz(p.date, getUserTZ(req.user)).format('YYYY-MM-DD');
+      const dateKey = moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD');
       if (dailyData[dateKey]) {
         dailyData[dateKey].total++;
         dailyData[dateKey][p.status]++;
@@ -271,8 +235,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
 exports.getStreakInfo = async (req, res, next) => {
   try {
     // Sync before fetching
-    const userTz14 = req.user.preferences?.timezone || 'UTC';
-    await syncProgress(req.user.id, 14, userTz14);
+    await syncProgress(req.user.id, 14);
 
     // Get all completed progress ordered by date
     const progress = await DailyProgress.find({
@@ -293,20 +256,20 @@ exports.getStreakInfo = async (req, res, next) => {
 
     // Get unique dates with completions
     const completedDates = [...new Set(progress.map(p =>
-      moment.tz(p.date, getUserTZ(req.user)).format('YYYY-MM-DD')
+      moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD')
     ))].sort().reverse();
 
     // Calculate current streak
     let currentStreak = 0;
-    const today = moment.tz(getUserTZ(req.user)).format('YYYY-MM-DD');
-    const yesterday = moment.tz(getUserTZ(req.user)).subtract(1, 'day').format('YYYY-MM-DD');
+    const today = moment.tz(TIMEZONE).format('YYYY-MM-DD');
+    const yesterday = moment.tz(TIMEZONE).subtract(1, 'day').format('YYYY-MM-DD');
 
     // Check if streak is still active (completed today or yesterday)
     if (completedDates[0] === today || completedDates[0] === yesterday) {
       currentStreak = 1;
       for (let i = 1; i < completedDates.length; i++) {
-        const prevDate = moment.tz(completedDates[i - 1], getUserTZ(req.user));
-        const currDate = moment.tz(completedDates[i], getUserTZ(req.user));
+        const prevDate = moment.tz(completedDates[i - 1], TIMEZONE);
+        const currDate = moment.tz(completedDates[i], TIMEZONE);
 
         if (prevDate.diff(currDate, 'days') === 1) {
           currentStreak++;
@@ -322,8 +285,8 @@ exports.getStreakInfo = async (req, res, next) => {
 
     const sortedDates = [...completedDates].sort();
     for (let i = 1; i < sortedDates.length; i++) {
-      const prevDate = moment.tz(sortedDates[i - 1], getUserTZ(req.user));
-      const currDate = moment.tz(sortedDates[i], getUserTZ(req.user));
+      const prevDate = moment.tz(sortedDates[i - 1], TIMEZONE);
+      const currDate = moment.tz(sortedDates[i], TIMEZONE);
 
       if (currDate.diff(prevDate, 'days') === 1) {
         currentLongest++;
@@ -352,21 +315,17 @@ exports.getStreakInfo = async (req, res, next) => {
 // @access  Private
 exports.getWeeklyChartData = async (req, res, next) => {
   try {
-    const now = moment.tz(getUserTZ(req.user));
+    const now = moment.tz(TIMEZONE);
     const startOfWeek = now.clone().startOf('week');
     const endOfWeek = now.clone().endOf('week');
 
     // Sync before fetching
-    const userTz = req.user.preferences?.timezone || 'UTC';
-    await syncProgress(req.user.id, 7, userTz);
-
-    // Never count data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id, req.user);
+    await syncProgress(req.user.id);
 
     const progress = await DailyProgress.find({
       user: req.user.id,
       date: {
-        $gte: scheduleStart && scheduleStart > startOfWeek.toDate() ? scheduleStart : startOfWeek.toDate(),
+        $gte: startOfWeek.toDate(),
         $lte: endOfWeek.toDate()
       }
     });
@@ -376,13 +335,8 @@ exports.getWeeklyChartData = async (req, res, next) => {
       const dayStart = startOfWeek.clone().add(index, 'days').startOf('day');
       const dayEnd = startOfWeek.clone().add(index, 'days').endOf('day');
 
-      // Zero out days that occurred before the schedule was created
-      if (scheduleStart && dayEnd.toDate() < scheduleStart) {
-        return { day, completed: 0, missed: 0, pending: 0, partial: 0, total: 0, timeSpent: 0, timeSpentMinutes: 0 };
-      }
-
       const dayProgress = progress.filter(p => {
-        const pDate = moment.tz(p.date, getUserTZ(req.user));
+        const pDate = moment.tz(p.date, TIMEZONE);
         return pDate.isBetween(dayStart, dayEnd, null, '[]');
       });
 
@@ -393,8 +347,8 @@ exports.getWeeklyChartData = async (req, res, next) => {
         pending: dayProgress.filter(p => p.status === 'pending').length,
         partial: dayProgress.filter(p => p.status === 'partial').length,
         total: dayProgress.length,
-        timeSpent: parseFloat((dayProgress.reduce((sum, p) => sum + (p.timeSpent || 0), 0) / 60).toFixed(2)),
-        timeSpentMinutes: dayProgress.reduce((sum, p) => sum + (p.timeSpent || 0), 0)
+        timeSpent: parseFloat((dayProgress.reduce((sum, p) => sum + (p.timeSpent || 0), 0) / 60).toFixed(2)), // precise decimal hours for chart
+        timeSpentMinutes: dayProgress.reduce((sum, p) => sum + (p.timeSpent || 0), 0) // raw minutes for tooltip formatting
       };
     });
 
@@ -414,25 +368,18 @@ exports.getCategoryAnalytics = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
-    // Sync before fetching
-    const userTz = req.user.preferences?.timezone || 'UTC';
-    await syncProgress(req.user.id, 7, userTz);
-
-    // Never count data from before the schedule was created
-    const scheduleStart = await getScheduleStartDate(req.user.id, req.user);
-
     let dateFilter = {};
     if (startDate && endDate) {
-      const fromDate = moment.tz(startDate, getUserTZ(req.user)).startOf('day').toDate();
       dateFilter = {
         date: {
-          $gte: scheduleStart && scheduleStart > fromDate ? scheduleStart : fromDate,
-          $lte: moment.tz(endDate, getUserTZ(req.user)).endOf('day').toDate()
+          $gte: moment.tz(startDate, TIMEZONE).startOf('day').toDate(),
+          $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
         }
       };
-    } else if (scheduleStart) {
-      dateFilter = { date: { $gte: scheduleStart } };
     }
+
+    // Sync before fetching
+    await syncProgress(req.user.id);
 
     // Get all objectives with their categories
     const objectives = await LearningObjective.find({
@@ -497,60 +444,6 @@ exports.getCategoryAnalytics = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: categoryAnalytics
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Delete phantom DailyProgress records created before first schedule + remove duplicates
-// @route   DELETE /api/analytics/cleanup-phantom
-// @access  Private
-exports.cleanupPhantomProgress = async (req, res, next) => {
-  try {
-    const scheduleStart = await getScheduleStartDate(req.user.id, req.user);
-    let phantomDeleted = 0;
-
-    // 1. Remove pre-schedule phantom entries
-    if (scheduleStart) {
-      const phantom = await DailyProgress.deleteMany({
-        user: req.user.id,
-        date: { $lt: scheduleStart }
-      });
-      phantomDeleted = phantom.deletedCount;
-    }
-
-    // 2. Remove duplicate entries (same user + objective + date)
-    const STATUS_RANK = { completed: 4, partial: 3, pending: 2, missed: 1, skipped: 0 };
-    const duplicates = await DailyProgress.aggregate([
-      { $match: { user: req.user._id } },
-      {
-        $group: {
-          _id: { learningObjective: '$learningObjective', date: '$date' },
-          ids: { $push: '$_id' },
-          count: { $sum: 1 }
-        }
-      },
-      { $match: { count: { $gt: 1 } } }
-    ]);
-
-    let dupDeleted = 0;
-    for (const group of duplicates) {
-      const docs = await DailyProgress.find({ _id: { $in: group.ids } });
-      docs.sort((a, b) => (STATUS_RANK[b.status] ?? 0) - (STATUS_RANK[a.status] ?? 0));
-      const [, ...rest] = docs;
-      if (rest.length) {
-        await DailyProgress.deleteMany({ _id: { $in: rest.map(d => d._id) } });
-        dupDeleted += rest.length;
-      }
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `Cleaned up ${phantomDeleted} phantom + ${dupDeleted} duplicate progress records.`,
-      phantomDeleted,
-      dupDeleted,
-      scheduleStartDate: scheduleStart
     });
   } catch (error) {
     next(error);

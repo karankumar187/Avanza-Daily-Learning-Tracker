@@ -152,14 +152,10 @@ exports.updateProfile = async (req, res, next) => {
   try {
     const { name, preferences } = req.body;
 
-    const updateData = { $set: { updatedAt: Date.now() } };
-    if (name) updateData.$set.name = name;
-    // Merge preference fields individually so we don't overwrite sibling keys
-    if (preferences && typeof preferences === 'object') {
-      for (const [key, val] of Object.entries(preferences)) {
-        updateData.$set[`preferences.${key}`] = val;
-      }
-    }
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (preferences) updateData.preferences = preferences;
+    updateData.updatedAt = Date.now();
 
     const user = await User.findByIdAndUpdate(
       req.user.id,

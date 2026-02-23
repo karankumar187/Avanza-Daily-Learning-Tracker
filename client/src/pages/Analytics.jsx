@@ -74,11 +74,6 @@ const Analytics = () => {
     }
   }, [loading, overallStats]);
 
-  // One-time cleanup: remove phantom progress records from before first schedule
-  useEffect(() => {
-    analyticsAPI.cleanupPhantom().catch(() => { }); // silent, best-effort
-  }, []);
-
   useEffect(() => {
     fetchAnalyticsData();
   }, [period]);

@@ -1,8 +1,6 @@
 const { validationResult } = require('express-validator');
 const Schedule = require('../models/Schedule');
 const LearningObjective = require('../models/LearningObjective');
-const DailyProgress = require('../models/DailyProgress');
-const moment = require('moment-timezone');
 
 // @desc    Create schedule
 // @route   POST /api/schedules
@@ -438,24 +436,6 @@ exports.removeItemFromDay = async (req, res, next) => {
 
     schedule.updatedAt = Date.now();
     await schedule.save();
-
-    // Clean up corresponding phantom DailyProgress entries (pending/missed) for this weekday
-    const progressRecords = await DailyProgress.find({
-      user: req.user.id,
-      learningObjective: objectiveId,
-      status: { $in: ['pending', 'missed'] }
-    });
-
-    const idsToDelete = progressRecords
-      .filter(p => {
-        const pDay = moment.tz(p.date, 'Asia/Kolkata').format('dddd').toLowerCase();
-        return pDay === day.toLowerCase();
-      })
-      .map(p => p._id);
-
-    if (idsToDelete.length > 0) {
-      await DailyProgress.deleteMany({ _id: { $in: idsToDelete } });
-    }
 
     res.status(200).json({
       success: true,

@@ -6,17 +6,17 @@ const TIMEZONE = 'Asia/Kolkata';
 
 /**
  * Synchronizes a user's progress for the past given days up to today.
- * By default it looks back 7 days, but NEVER before the schedule was created.
- *
+ * By default it looks back 7 days.
+ * 
  * Logic:
  * 1. Checks what tasks were scheduled on each day.
- * 2. If a past day has a scheduled task but no DailyProgress record,
+ * 2. If a past day has a scheduled task but no corresponding DailyProgress record,
  *    it creates a "missed" record.
- * 3. If today has a scheduled task but no DailyProgress record,
+ * 3. If today has a scheduled task but no DailyProgress record, 
  *    it creates a "pending" record.
  * 4. Ensures any pending tasks from past days are transitioned to "missed".
  */
-const syncProgress = async (userId, daysToLookBack = 7, timezone = 'UTC') => {
+const syncProgress = async (userId, daysToLookBack = 7) => {
     try {
         const schedule = await Schedule.findOne({
             user: userId,
@@ -28,19 +28,13 @@ const syncProgress = async (userId, daysToLookBack = 7, timezone = 'UTC') => {
             return;
         }
 
-        const today = moment.tz(timezone).startOf('day');
+        const today = moment.tz(TIMEZONE).startOf('day');
 
-        const scheduleCreatedAt = moment.tz(schedule.createdAt, timezone).startOf('day');
-        const earliestAllowedDate = scheduleCreatedAt;
-
-        // 1. Mark past 'pending' items as 'missed', but only from scheduleCreatedAt onwards
+        // 1. Mark past 'pending' items as 'missed' first
         await DailyProgress.updateMany(
             {
                 user: userId,
-                date: {
-                    $gte: earliestAllowedDate.toDate(),
-                    $lt: today.toDate()
-                },
+                date: { $lt: today.toDate() },
                 status: 'pending'
             },
             {
@@ -53,14 +47,9 @@ const syncProgress = async (userId, daysToLookBack = 7, timezone = 'UTC') => {
 
         // 2. Loop through recent days and backfill missing records
         for (let i = daysToLookBack; i >= 0; i--) {
-            const targetDate = moment.tz(timezone).subtract(i, 'days').startOf('day');
-
-            // Skip any date before the schedule was first created
-            if (targetDate.isBefore(earliestAllowedDate)) {
-                continue;
-            }
-
+            const targetDate = moment.tz(TIMEZONE).subtract(i, 'days').startOf('day');
             const targetDayName = weekDaysMap[targetDate.day()];
+
             const daySchedule = schedule.weeklySchedule.find(s => s.day === targetDayName);
 
             if (!daySchedule || !daySchedule.isActive || daySchedule.items.length === 0) {
@@ -76,31 +65,41 @@ const syncProgress = async (userId, daysToLookBack = 7, timezone = 'UTC') => {
                 }
             });
 
+            const scheduledObjectiveIds = daySchedule.items.map(i => i.learningObjective.toString());
             const existingObjectiveIds = existingProgress.map(p => p.learningObjective.toString());
+
+            // 2a. Delete 'pending' or 'missed' records that are NO LONGER in the schedule for this day
+            const orphanedProgressIds = existingProgress
+                .filter(p =>
+                    (p.status === 'pending' || p.status === 'missed') &&
+                    !scheduledObjectiveIds.includes(p.learningObjective.toString())
+                )
+                .map(p => p._id);
+
+            if (orphanedProgressIds.length > 0) {
+                await DailyProgress.deleteMany({ _id: { $in: orphanedProgressIds } });
+            }
+
+            const recordsToCreate = [];
 
             for (const item of daySchedule.items) {
                 const objectiveId = item.learningObjective.toString();
                 if (!existingObjectiveIds.includes(objectiveId)) {
+                    // Task was scheduled but no record exists yet
                     const isToday = i === 0;
-                    // Use upsert to prevent duplicate-insert from concurrent sync calls
-                    await DailyProgress.updateOne(
-                        {
-                            user: userId,
-                            learningObjective: item.learningObjective,
-                            date: targetDate.clone().startOf('day').toDate()
-                        },
-                        {
-                            $setOnInsert: {
-                                user: userId,
-                                learningObjective: item.learningObjective,
-                                date: targetDate.clone().startOf('day').toDate(),
-                                status: isToday ? 'pending' : 'missed',
-                                timeSpent: 0
-                            }
-                        },
-                        { upsert: true }
-                    );
+
+                    recordsToCreate.push({
+                        user: userId,
+                        learningObjective: item.learningObjective,
+                        date: targetDate.clone().startOf('day').toDate(),
+                        status: isToday ? 'pending' : 'missed',
+                        timeSpent: 0
+                    });
                 }
+            }
+
+            if (recordsToCreate.length > 0) {
+                await DailyProgress.insertMany(recordsToCreate);
             }
         }
     } catch (error) {

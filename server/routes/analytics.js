@@ -5,8 +5,7 @@ const {
   getDailyAnalytics,
   getStreakInfo,
   getWeeklyChartData,
-  getCategoryAnalytics,
-  cleanupPhantomProgress
+  getCategoryAnalytics
 } = require('../controllers/analyticsController');
 const { protect } = require('../middleware/auth');
 
@@ -19,6 +18,5 @@ router.get('/daily', protect, getDailyAnalytics);
 router.get('/streak', protect, getStreakInfo);
 router.get('/weekly-chart', protect, getWeeklyChartData);
 router.get('/by-category', protect, getCategoryAnalytics);
-router.delete('/cleanup-phantom', protect, cleanupPhantomProgress);
 
 module.exports = router;

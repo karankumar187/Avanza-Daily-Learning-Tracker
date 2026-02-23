@@ -352,18 +352,6 @@ async function sendIncompleteTaskReminder(timeOfDay) {
 
   // Create a notification for each user
   for (const [userId, tasks] of Object.entries(userMap)) {
-    // Check if an unread reminder already exists today
-    const existingReminder = await Notification.findOne({
-      user: userId,
-      title: { $in: ['Pending Tasks Reminder', 'Late Night Reminder', 'Evening Reminder'] },
-      read: false,
-      createdAt: { $gte: todayStart, $lte: todayEnd }
-    });
-
-    if (existingReminder) {
-      continue; // Don't spam the user if they already have an unread reminder today
-    }
-
     const taskCount = tasks.length;
     const taskList = tasks.slice(0, 3).join(', ');
     const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';

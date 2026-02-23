@@ -22,6 +22,7 @@ exports.protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    // Select only fields needed for auth — never load password hash into req.user
     req.user = await User.findById(decoded.id).select('_id name email preferences authProvider');
 
     if (!req.user) {

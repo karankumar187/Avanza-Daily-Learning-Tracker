@@ -109,24 +109,6 @@ exports.triggerPendingReminder = async (req, res, next) => {
         }
 
         const taskCount = pendingEntries.length;
-
-        // Check if an unread reminder already exists today
-        const existingReminder = await Notification.findOne({
-            user: req.user.id,
-            title: { $in: ['Pending Tasks Reminder', 'Late Night Reminder', 'Evening Reminder'] },
-            read: false,
-            createdAt: { $gte: todayStart, $lte: todayEnd }
-        });
-
-        if (existingReminder) {
-            return res.status(200).json({
-                success: true,
-                message: 'Unread reminder already exists for today.',
-                data: existingReminder,
-                pendingCount: taskCount
-            });
-        }
-
         const taskList = pendingEntries.slice(0, 3).map(e => e.learningObjective?.title || 'Unnamed task').join(', ');
         const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
 
