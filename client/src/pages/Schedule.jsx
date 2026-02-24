@@ -408,8 +408,6 @@ const Schedule = () => {
                           </div>
                           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                             <span>{objective.category}</span>
-                            <span>•</span>
-                            <span>{objective.estimatedTime} min</span>
                           </div>
                           {progress?.notes && (
                             <div className="flex items-center gap-1 mt-1">
@@ -604,7 +602,7 @@ const Schedule = () => {
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-800">{objective.title}</h4>
-                      <p className="text-sm text-gray-500">{objective.category} • {objective.estimatedTime} min</p>
+                      <p className="text-sm text-gray-500">{objective.category}</p>
                     </div>
                     <Plus className="w-5 h-5 text-gray-400" />
                   </button>

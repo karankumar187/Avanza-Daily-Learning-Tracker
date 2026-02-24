@@ -349,10 +349,6 @@ const Objectives = () => {
                   <span className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide ${getPriorityClass(objective.priority)}`}>
                     {objective.priority.toUpperCase()}
                   </span>
-                  <div className="flex items-center gap-1.5 text-sm font-medium text-gray-400">
-                    <Clock className="w-4 h-4" />
-                    <span>{objective.estimatedTime} min</span>
-                  </div>
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-gray-50 dark:border-slate-800/50 flex justify-between items-center pl-3">
