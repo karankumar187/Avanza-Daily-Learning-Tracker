@@ -199,7 +199,7 @@ const Schedule = () => {
 
       // Celebration animation on completion
       gsap.fromTo(
-        `[data - objective - id= "${pendingCompleteId}"]`,
+        `[data-objective-id="${pendingCompleteId}"]`,
         { scale: 0.9, boxShadow: '0 0 0 rgba(34,197,94,0)' },
         {
           scale: 1.06,
