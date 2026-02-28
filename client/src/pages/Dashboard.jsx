@@ -314,7 +314,7 @@ const Dashboard = () => {
         {/* Left Column - Stats & Charts */}
         <div className="xl:col-span-2 space-y-6">
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="stagger-item stat-card">
               <div className="stat-icon blue">
                 <Target className="w-6 h-6" />
@@ -329,14 +329,6 @@ const Dashboard = () => {
               </div>
               <div className="stat-value" style={{ color: '#1B4332' }}>{stats.completed}</div>
               <div className="stat-label">Completed</div>
-            </div>
-
-            <div className="stagger-item stat-card">
-              <div className="stat-icon sage">
-                <TrendingUp className="w-6 h-6" />
-              </div>
-              <div className="stat-value" style={{ color: '#2D6A4F' }}>{stats.completionRate}%</div>
-              <div className="stat-label">Completion</div>
             </div>
 
             <div className="stagger-item stat-card">
