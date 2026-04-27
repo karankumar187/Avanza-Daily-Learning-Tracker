@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsAPI, progressAPI, objectivesAPI } from '../services/api';
+import { fetchWithCache } from '../utils/cache';
 import { toast } from 'sonner';
 import { Calendar, CheckCircle, Clock, Target, ArrowRight, TrendingUp, Award, Flame, Zap, BookOpen, Star, MoreHorizontal, ChevronLeft, ChevronRight, XCircle, Sparkles, Plus, ExternalLink } from 'lucide-react';
 import {
@@ -46,7 +47,7 @@ const Dashboard = () => {
   const [todayProgress, setTodayProgress] = useState([]);
   const [objectives, setObjectives] = useState([]);
   const [weeklyData, setWeeklyData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!localStorage.getItem('learnflow:dashboard'));
   const [currentDate] = useState(getTodayUTC());
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [dailyAnalytics, setDailyAnalytics] = useState({});
@@ -100,25 +101,37 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      if (!localStorage.getItem('learnflow:dashboard')) {
+        setLoading(true);
+      }
 
-      const [overallRes, streakRes, dailyRes, objectivesRes, weeklyRes] = await Promise.all([
-        analyticsAPI.getOverall('daily'),
-        analyticsAPI.getStreak(),
-        progressAPI.getDaily(),
-        objectivesAPI.getAll({ isActive: true }),
-        analyticsAPI.getWeeklyChart()
-      ]);
-
-      setStats(overallRes.data.data);
-      setStreak(streakRes.data.data);
-      setTodayProgress(dailyRes.data.data || []);
-      setObjectives(objectivesRes.data.data || []);
-      setWeeklyData(weeklyRes.data.data || []);
+      await fetchWithCache('learnflow:dashboard', async () => {
+        const [overallRes, streakRes, dailyRes, objectivesRes, weeklyRes] = await Promise.all([
+          analyticsAPI.getOverall('daily'),
+          analyticsAPI.getStreak(),
+          progressAPI.getDaily(),
+          objectivesAPI.getAll({ isActive: true }),
+          analyticsAPI.getWeeklyChart()
+        ]);
+        
+        return {
+          stats: overallRes.data.data,
+          streak: streakRes.data.data,
+          todayProgress: dailyRes.data.data || [],
+          objectives: objectivesRes.data.data || [],
+          weeklyData: weeklyRes.data.data || []
+        };
+      }, (data) => {
+        setStats(data.stats);
+        setStreak(data.streak);
+        setTodayProgress(data.todayProgress);
+        setObjectives(data.objectives);
+        setWeeklyData(data.weeklyData);
+        setLoading(false);
+      });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Failed to load dashboard data');
-    } finally {
       setLoading(false);
     }
   };
@@ -127,12 +140,17 @@ const Dashboard = () => {
     try {
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
-      const res = await analyticsAPI.getDaily(month, year);
-      const map = {};
-      (res.data.data || []).forEach((day) => {
-        map[day.date] = day;
+      
+      await fetchWithCache(`learnflow:calendar:${month}:${year}`, async () => {
+        const res = await analyticsAPI.getDaily(month, year);
+        return res.data.data || [];
+      }, (data) => {
+        const map = {};
+        data.forEach((day) => {
+          map[day.date] = day;
+        });
+        setDailyAnalytics(map);
       });
-      setDailyAnalytics(map);
     } catch (error) {
       console.error('Error fetching calendar analytics:', error);
     }

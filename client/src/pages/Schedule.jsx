@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { scheduleAPI, objectivesAPI, progressAPI } from '../services/api';
+import { fetchWithCache } from '../utils/cache';
 import { toast } from 'sonner';
 import {
   Plus,
@@ -24,7 +25,7 @@ const Schedule = () => {
   const [objectives, setObjectives] = useState([]);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [selectedDay, setSelectedDay] = useState(days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!localStorage.getItem('learnflow:schedule'));
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -64,26 +65,38 @@ const Schedule = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [schedulesRes, objectivesRes, todayRes] = await Promise.all([
-        scheduleAPI.getAll(),
-        objectivesAPI.getAll({ isActive: true }),
-        progressAPI.getDaily()
-      ]);
-
-      setSchedules(schedulesRes.data.data);
-      setObjectives(objectivesRes.data.data);
-      setTodayProgress(todayRes.data.data || []);
-
-      const defaultSchedule = schedulesRes.data.data.find(s => s.isDefault);
-      if (defaultSchedule) {
-        setSelectedSchedule(defaultSchedule);
-      } else if (schedulesRes.data.data.length > 0) {
-        setSelectedSchedule(schedulesRes.data.data[0]);
+      if (!localStorage.getItem('learnflow:schedule')) {
+        setLoading(true);
       }
+
+      await fetchWithCache('learnflow:schedule', async () => {
+        const [schedulesRes, objectivesRes, todayRes] = await Promise.all([
+          scheduleAPI.getAll(),
+          objectivesAPI.getAll({ isActive: true }),
+          progressAPI.getDaily()
+        ]);
+        return {
+          schedules: schedulesRes.data.data,
+          objectives: objectivesRes.data.data,
+          todayProgress: todayRes.data.data || []
+        };
+      }, (data) => {
+        setSchedules(data.schedules);
+        setObjectives(data.objectives);
+        setTodayProgress(data.todayProgress);
+
+        const defaultSchedule = data.schedules.find(s => s.isDefault);
+        if (defaultSchedule) {
+          setSelectedSchedule(defaultSchedule);
+        } else if (data.schedules.length > 0) {
+          setSelectedSchedule(data.schedules[0]);
+        }
+        
+        setLoading(false);
+      });
     } catch (error) {
+      console.error('Error fetching schedule data:', error);
       toast.error('Failed to fetch data');
-    } finally {
       setLoading(false);
     }
   };
