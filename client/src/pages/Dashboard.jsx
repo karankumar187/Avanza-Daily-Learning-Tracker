@@ -18,9 +18,8 @@ import {
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
-const getTodayInIST = () => {
-  const istString = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-  return new Date(istString);
+const getTodayUTC = () => {
+  return new Date();
 };
 
 const formatTime = (totalMinutes) => {
@@ -48,7 +47,7 @@ const Dashboard = () => {
   const [objectives, setObjectives] = useState([]);
   const [weeklyData, setWeeklyData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentDate] = useState(getTodayInIST());
+  const [currentDate] = useState(getTodayUTC());
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [dailyAnalytics, setDailyAnalytics] = useState({});
 
@@ -185,19 +184,19 @@ const Dashboard = () => {
 
   const isToday = (dayItem) => {
     if (!dayItem?.date) return false;
-    const today = getTodayInIST();
+    const today = getTodayUTC();
     return dayItem.date.toDateString() === today.toDateString();
   };
 
   const getDayStatus = (dateObj) => {
-    // Build date key in the same timezone as analytics (Asia/Kolkata)
-    const istFormatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Kolkata',
+    // Build date key in UTC to match analytics data
+    const utcFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'UTC',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     });
-    const key = istFormatter.format(dateObj); // YYYY-MM-DD
+    const key = utcFormatter.format(dateObj); // YYYY-MM-DD (UTC)
     const data = dailyAnalytics[key];
     if (!data || data.total === 0) return null;
 

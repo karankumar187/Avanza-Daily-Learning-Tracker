@@ -4,7 +4,7 @@ const LearningObjective = require('../models/LearningObjective');
 const Schedule = require('../models/Schedule');
 const syncProgress = require('../utils/syncProgress');
 
-const TIMEZONE = 'Asia/Kolkata';
+const TIMEZONE = 'UTC';
 
 // @desc    Get overall analytics
 // @route   GET /api/analytics/overall
