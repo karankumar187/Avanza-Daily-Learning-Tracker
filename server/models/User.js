@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  timezone: {
+    type: String,
+    default: 'UTC'
+  },
   preferences: {
     studyHoursPerDay: {
       type: Number,

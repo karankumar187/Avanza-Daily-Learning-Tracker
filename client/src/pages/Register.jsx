@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Lock, Eye, EyeOff, Sparkles, Check, Crosshair } from 'lucide-react';
@@ -19,6 +19,11 @@ const Register = () => {
   const [agreed, setAgreed] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Silently ping the server on page load so Render wakes up before the user hits register
+  useEffect(() => {
+    fetch(`${API_URL}/health`, { method: 'GET' }).catch(() => {});
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

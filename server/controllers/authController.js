@@ -108,6 +108,12 @@ exports.login = async (req, res, next) => {
     // Generate token
     const token = generateToken(user._id);
 
+    const clientTimezone = req.headers['x-timezone'];
+    if (clientTimezone && user.timezone !== clientTimezone) {
+      user.timezone = clientTimezone;
+      await user.save();
+    }
+
     res.status(200).json({
       success: true,
       token,
@@ -129,6 +135,13 @@ exports.login = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+    
+    const clientTimezone = req.headers['x-timezone'];
+    if (clientTimezone && user.timezone !== clientTimezone) {
+      user.timezone = clientTimezone;
+      await user.save();
+    }
+
     res.status(200).json({
       success: true,
       user: {

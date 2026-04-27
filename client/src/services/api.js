@@ -18,6 +18,14 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add timezone header
+    try {
+      config.headers['x-timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {
+      config.headers['x-timezone'] = 'UTC';
+    }
+    
     return config;
   },
   (error) => {

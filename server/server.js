@@ -183,143 +183,117 @@ connectDB()
        CRON JOBS
     ========================= */
 
-    // Auto-mark missed progress (11:59 PM IST)
-    cron.schedule('29 18 * * *', async () => {
-      console.log('Running auto-mark missed progress cron job...');
-
-      try {
-        const yesterday = moment.tz('UTC').subtract(1, 'day').startOf('day').toDate();
-        const endOfYesterday = moment.tz('UTC').subtract(1, 'day').endOf('day').toDate();
-
-        const result = await DailyProgress.updateMany(
-          {
-            date: { $gte: yesterday, $lte: endOfYesterday },
-            status: 'pending'
-          },
-          {
-            status: 'missed',
-            updatedAt: Date.now()
-          }
-        );
-
-        console.log(`Auto-marked ${result.modifiedCount} entries as missed`);
-      } catch (error) {
-        console.error('Error in auto-mark cron job:', error);
-      }
-    }, {
-      timezone: 'UTC'
-    });
-
-    // Create daily progress (12:01 AM IST)
-    cron.schedule('31 18 * * *', async () => {
-      console.log('Running daily progress creation cron job...');
-
-      try {
-        const today = moment.tz('UTC').startOf('day').toDate();
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const todayDay = days[moment.tz('UTC').day()];
-
-        const schedules = await Schedule.find({
-          isDefault: true,
-          isActive: true
-        });
-
-        let createdCount = 0;
-
-        for (const schedule of schedules) {
-          const todaySchedule = schedule.weeklySchedule.find(s => s.day === todayDay);
-
-          if (todaySchedule && todaySchedule.items.length > 0) {
-            for (const item of todaySchedule.items) {
-              const existing = await DailyProgress.findOne({
-                user: schedule.user,
-                learningObjective: item.learningObjective,
-                date: today
-              });
-
-              if (!existing) {
-                await DailyProgress.create({
-                  user: schedule.user,
-                  learningObjective: item.learningObjective,
-                  date: today,
-                  status: 'pending',
-                  timeSpent: 0
-                });
-                createdCount++;
-              }
-            }
-          }
-        }
-
-        console.log(`Created ${createdCount} daily progress entries`);
-      } catch (error) {
-        console.error('Error in daily progress cron job:', error);
-      }
-    }, {
-      timezone: 'UTC'
-    });
-
-    // Incomplete task reminder (5:00 PM IST)
-    cron.schedule('0 17 * * *', async () => {
-      console.log('Running 5 PM incomplete task reminder...');
-      try {
-        await sendIncompleteTaskReminder('evening');
-      } catch (error) {
-        console.error('Error in 5 PM reminder cron:', error);
-      }
-    }, {
-      timezone: 'UTC'
-    });
-
-    // Incomplete task reminder (10:00 PM IST)
-    cron.schedule('0 22 * * *', async () => {
-      console.log('Running 10 PM incomplete task reminder...');
-      try {
-        await sendIncompleteTaskReminder('night');
-      } catch (error) {
-        console.error('Error in 10 PM reminder cron:', error);
-      }
-    }, {
-      timezone: 'UTC'
-    });
-
-    // Weekly motivation (Monday 9:00 AM IST)
-    cron.schedule('0 9 * * 1', async () => {
-      console.log('Running weekly motivation notification...');
+    // Auto-mark missed progress dynamically (runs hourly, checks if it's 11:59 PM in user's timezone)
+    cron.schedule('59 * * * *', async () => {
+      console.log('Running dynamic auto-mark missed progress cron job...');
       try {
         const users = await User.find({});
         for (const user of users) {
-          // Count last week's completed tasks
-          const weekAgo = moment.tz('UTC').subtract(7, 'days').startOf('day').toDate();
-          const now = moment.tz('UTC').endOf('day').toDate();
-          const completedLastWeek = await DailyProgress.countDocuments({
-            user: user._id,
-            status: 'completed',
-            date: { $gte: weekAgo, $lte: now }
-          });
+          const userTz = user.timezone || 'UTC';
+          const userNow = moment.tz(userTz);
+          
+          if (userNow.hour() === 23) {
+            const yesterday = moment.tz(userTz).subtract(1, 'day').startOf('day').toDate();
+            const endOfYesterday = moment.tz(userTz).subtract(1, 'day').endOf('day').toDate();
 
-          if (completedLastWeek > 0) {
-            await Notification.create({
-              user: user._id,
-              title: 'Weekly Summary',
-              message: `Last week you completed ${completedLastWeek} tasks. Let's make this week even better!`,
-              type: 'info'
-            });
-          } else {
-            await Notification.create({
-              user: user._id,
-              title: 'New Week, Fresh Start!',
-              message: 'A new week begins! Set your learning goals and start building momentum.',
-              type: 'info'
-            });
+            await DailyProgress.updateMany(
+              {
+                user: user._id,
+                date: { $gte: yesterday, $lte: endOfYesterday },
+                status: 'pending'
+              },
+              {
+                status: 'missed',
+                updatedAt: Date.now()
+              }
+            );
           }
         }
-        console.log('Weekly motivation notifications sent.');
+      } catch (error) {
+        console.error('Error in dynamic auto-mark cron job:', error);
+      }
+    });
+
+    // Create daily progress dynamically for each user (runs hourly, triggers shortly after user's local midnight)
+    cron.schedule('5 * * * *', async () => {
+      console.log('Running dynamic hourly daily progress creation cron job...');
+      try {
+        const users = await User.find({});
+        for (const user of users) {
+          const userTz = user.timezone || 'UTC';
+          const userNow = moment.tz(userTz);
+          
+          // If it's between 12:00 AM and 1:00 AM in the user's timezone, generate their daily progress
+          if (userNow.hour() === 0) {
+            const syncProgress = require('./utils/syncProgress');
+            await syncProgress(user._id, userTz, 2);
+            console.log(`Synced progress for user ${user._id} in timezone ${userTz}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error in dynamic daily progress cron job:', error);
+      }
+    });
+
+    // Incomplete task reminder hourly check
+    cron.schedule('0 * * * *', async () => {
+      console.log('Running hourly incomplete task reminder check...');
+      try {
+        const users = await User.find({});
+        for (const user of users) {
+          const userTz = user.timezone || 'UTC';
+          const userHour = moment.tz(userTz).hour();
+          
+          if (userHour === 17) {
+            await sendIncompleteTaskReminderForUser(user, 'evening');
+          } else if (userHour === 22) {
+            await sendIncompleteTaskReminderForUser(user, 'night');
+          }
+        }
+      } catch (error) {
+        console.error('Error in dynamic reminder cron:', error);
+      }
+    });
+
+    // Weekly motivation (Hourly check, runs Monday 9:00 AM user local time)
+    cron.schedule('0 * * * *', async () => {
+      console.log('Checking weekly motivation notifications...');
+      try {
+        const users = await User.find({});
+        for (const user of users) {
+          const userTz = user.timezone || 'UTC';
+          const userNow = moment.tz(userTz);
+          
+          if (userNow.day() === 1 && userNow.hour() === 9) { // Monday 9 AM
+            const weekAgo = moment.tz(userTz).subtract(7, 'days').startOf('day').toDate();
+            const now = moment.tz(userTz).endOf('day').toDate();
+            
+            const completedLastWeek = await DailyProgress.countDocuments({
+              user: user._id,
+              status: 'completed',
+              date: { $gte: weekAgo, $lte: now }
+            });
+
+            if (completedLastWeek > 0) {
+              await Notification.create({
+                user: user._id,
+                title: 'Weekly Summary',
+                message: `Last week you completed ${completedLastWeek} tasks. Let's make this week even better!`,
+                type: 'info'
+              });
+            } else {
+              await Notification.create({
+                user: user._id,
+                title: 'New Week, Fresh Start!',
+                message: 'A new week begins! Set your learning goals and start building momentum.',
+                type: 'info'
+              });
+            }
+          }
+        }
       } catch (error) {
         console.error('Error in weekly motivation cron:', error);
       }
-    }, {
-      timezone: 'UTC'
     });
 
     console.log('Cron jobs scheduled successfully.');
@@ -329,48 +303,39 @@ connectDB()
     process.exit(1);
   });
 
-// Helper: Send incomplete task reminders to all users with pending tasks
-async function sendIncompleteTaskReminder(timeOfDay) {
-  const todayStart = moment.tz('UTC').startOf('day').toDate();
-  const todayEnd = moment.tz('UTC').endOf('day').toDate();
+// Helper: Send incomplete task reminders for a specific user
+async function sendIncompleteTaskReminderForUser(user, timeOfDay) {
+  const userTz = user.timezone || 'UTC';
+  const todayStart = moment.tz(userTz).startOf('day').toDate();
+  const todayEnd = moment.tz(userTz).endOf('day').toDate();
 
-  // Find all users who have pending tasks today
   const pendingEntries = await DailyProgress.find({
+    user: user._id,
     date: { $gte: todayStart, $lte: todayEnd },
     status: 'pending'
   }).populate('learningObjective', 'title');
 
-  // Group by user
-  const userMap = {};
-  for (const entry of pendingEntries) {
-    const userId = entry.user.toString();
-    if (!userMap[userId]) {
-      userMap[userId] = [];
-    }
-    userMap[userId].push(entry.learningObjective?.title || 'Unnamed task');
-  }
+  if (pendingEntries.length === 0) return;
 
-  // Create a notification for each user
-  for (const [userId, tasks] of Object.entries(userMap)) {
-    const taskCount = tasks.length;
-    const taskList = tasks.slice(0, 3).join(', ');
-    const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
+  const tasks = pendingEntries.map(entry => entry.learningObjective?.title || 'Unnamed task');
+  const taskCount = tasks.length;
+  const taskList = tasks.slice(0, 3).join(', ');
+  const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
 
-    const title = timeOfDay === 'evening'
-      ? 'Evening Reminder'
-      : 'Late Night Reminder';
+  const title = timeOfDay === 'evening'
+    ? 'Evening Reminder'
+    : 'Late Night Reminder';
 
-    const message = timeOfDay === 'evening'
-      ? `You still have ${taskCount} pending task${taskCount > 1 ? 's' : ''}: ${taskList}${extra}. Complete them before the day ends!`
-      : `Don't forget! ${taskCount} task${taskCount > 1 ? 's are' : ' is'} still pending: ${taskList}${extra}. Wrap up before midnight!`;
+  const message = timeOfDay === 'evening'
+    ? `You still have ${taskCount} pending task${taskCount > 1 ? 's' : ''}: ${taskList}${extra}. Complete them before the day ends!`
+    : `Don't forget! ${taskCount} task${taskCount > 1 ? 's are' : ' is'} still pending: ${taskList}${extra}. Wrap up before midnight!`;
 
-    await Notification.create({
-      user: userId,
-      title,
-      message,
-      type: 'warning'
-    });
-  }
-
-  console.log(`Sent incomplete task reminders to ${Object.keys(userMap).length} users (${timeOfDay})`);
+  await Notification.create({
+    user: user._id,
+    title,
+    message,
+    type: 'warning'
+  });
+  
+  console.log(`Sent ${timeOfDay} reminder to user ${user._id}`);
 }

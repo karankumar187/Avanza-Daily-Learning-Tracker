@@ -2,7 +2,6 @@ const moment = require('moment-timezone');
 const DailyProgress = require('../models/DailyProgress');
 const Schedule = require('../models/Schedule');
 
-const TIMEZONE = 'UTC';
 
 // In-memory lock to prevent race conditions when multiple API endpoints call syncProgress concurrently
 const syncLocks = new Map();
@@ -11,7 +10,7 @@ const syncLocks = new Map();
  * Synchronizes a user's progress for the past given days up to today.
  * Auto-cleans orphaned tasks and duplicate tasks to heal corrupted state.
  */
-const syncProgress = async (userId, daysToLookBack = 7) => {
+const syncProgress = async (userId, userTimezone = 'UTC', daysToLookBack = 7) => {
     const lockKey = userId.toString() + '_' + daysToLookBack;
 
     // If a sync is already running for this user, precisely share that promise
@@ -31,7 +30,7 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
                 return;
             }
 
-            const today = moment.tz(TIMEZONE).startOf('day');
+            const today = moment.tz(userTimezone).startOf('day');
 
             // 1. Mark past 'pending' items as 'missed' first
             await DailyProgress.updateMany(
@@ -49,8 +48,8 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
             const weekDaysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
             const scheduleCreatedAtDate = schedule.createdAt
-                ? moment.tz(schedule.createdAt, TIMEZONE).startOf('day')
-                : moment.tz(TIMEZONE).subtract(30, 'days').startOf('day');
+                ? moment.tz(schedule.createdAt, userTimezone).startOf('day')
+                : moment.tz(userTimezone).subtract(30, 'days').startOf('day');
 
             // --- AUTO-HEAL: Wipe corrupted past 'missed' tasks & forward-filled future tasks ---
             await DailyProgress.deleteMany({
@@ -63,7 +62,7 @@ const syncProgress = async (userId, daysToLookBack = 7) => {
 
             // 2. Loop through recent days and backfill missing records up to TODAY
             for (let i = daysToLookBack; i >= 0; i--) {
-                const targetDate = moment.tz(TIMEZONE).subtract(i, 'days').startOf('day');
+                const targetDate = moment.tz(userTimezone).subtract(i, 'days').startOf('day');
 
                 // Do not create or expect tasks for days before the schedule even existed
                 if (targetDate.isBefore(scheduleCreatedAtDate)) {

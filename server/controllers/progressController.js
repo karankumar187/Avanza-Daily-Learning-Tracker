@@ -6,8 +6,9 @@ const Schedule = require('../models/Schedule');
 const Notification = require('../models/Notification');
 const syncProgress = require('../utils/syncProgress');
 
-const TIMEZONE = 'Asia/Kolkata';
-
+const getUserTimezone = (req) => {
+  return req.headers['x-timezone'] || (req.user && req.user.timezone) || 'UTC';
+};
 // @desc    Create or update daily progress
 // @route   POST /api/progress
 // @access  Private
@@ -36,8 +37,9 @@ exports.createOrUpdateProgress = async (req, res, next) => {
       });
     }
 
-    const progressDateStart = moment.tz(date || new Date(), TIMEZONE).startOf('day').toDate();
-    const progressDateEnd = moment.tz(date || new Date(), TIMEZONE).endOf('day').toDate();
+    const userTz = getUserTimezone(req);
+    const progressDateStart = moment.tz(date || new Date(), userTz).startOf('day').toDate();
+    const progressDateEnd = moment.tz(date || new Date(), userTz).endOf('day').toDate();
 
     let progress = await DailyProgress.findOne({
       user: req.user.id,
@@ -66,7 +68,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
     }
 
     if (status === 'completed') {
-      updateData.completedAt = moment.tz(TIMEZONE).toDate();
+      updateData.completedAt = moment.tz(userTz).toDate();
       // Auto-fill timeSpent using objective's estimated time if not explicitly provided
       if (updateData.timeSpent === undefined) {
         // Only override if progress doesn't already have timeSpent recorded
@@ -112,8 +114,8 @@ exports.createOrUpdateProgress = async (req, res, next) => {
         });
 
         // 2) Check if ALL of today's tasks are now complete
-        const todayStart = moment.tz(TIMEZONE).startOf('day').toDate();
-        const todayEnd = moment.tz(TIMEZONE).endOf('day').toDate();
+        const todayStart = moment.tz(userTz).startOf('day').toDate();
+        const todayEnd = moment.tz(userTz).endOf('day').toDate();
         const todayEntries = await DailyProgress.find({
           user: req.user.id,
           date: { $gte: todayStart, $lte: todayEnd }
@@ -132,7 +134,7 @@ exports.createOrUpdateProgress = async (req, res, next) => {
         }
 
         // 3) Streak milestone check
-        const consecutiveDays = await calculateStreak(req.user.id);
+        const consecutiveDays = await calculateStreak(req.user.id, userTz);
         const milestones = [3, 5, 7, 14, 21, 30, 50, 100];
         if (milestones.includes(consecutiveDays)) {
           await Notification.create({
@@ -158,9 +160,9 @@ exports.createOrUpdateProgress = async (req, res, next) => {
 };
 
 // Helper: calculate consecutive days with at least 1 completed task
-async function calculateStreak(userId) {
+async function calculateStreak(userId, userTz) {
   let streak = 0;
-  let checkDate = moment.tz(TIMEZONE).startOf('day');
+  let checkDate = moment.tz(userTz).startOf('day');
 
   while (true) {
     const dayStart = checkDate.toDate();
@@ -190,16 +192,18 @@ exports.getDailyProgress = async (req, res, next) => {
   try {
     const { date } = req.query;
 
+    const userTz = getUserTimezone(req);
+
     // Sync before fetching
-    await syncProgress(req.user.id);
+    await syncProgress(req.user.id, userTz);
 
     const queryDateStart = date
-      ? moment.tz(date, TIMEZONE).startOf('day').toDate()
-      : moment.tz(TIMEZONE).startOf('day').toDate();
+      ? moment.tz(date, userTz).startOf('day').toDate()
+      : moment.tz(userTz).startOf('day').toDate();
 
     const queryDateEnd = date
-      ? moment.tz(date, TIMEZONE).endOf('day').toDate()
-      : moment.tz(TIMEZONE).endOf('day').toDate();
+      ? moment.tz(date, userTz).endOf('day').toDate()
+      : moment.tz(userTz).endOf('day').toDate();
 
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -233,11 +237,13 @@ exports.getProgressRange = async (req, res, next) => {
       });
     }
 
-    // Sync before fetching
-    await syncProgress(req.user.id);
+    const userTz = getUserTimezone(req);
 
-    const start = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
-    const end = moment.tz(endDate, TIMEZONE).endOf('day').toDate();
+    // Sync before fetching
+    await syncProgress(req.user.id, userTz);
+
+    const start = moment.tz(startDate, userTz).startOf('day').toDate();
+    const end = moment.tz(endDate, userTz).endOf('day').toDate();
 
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -270,10 +276,12 @@ exports.getObjectiveProgress = async (req, res, next) => {
       learningObjective: req.params.objectiveId
     };
 
+    const userTz = getUserTimezone(req);
+
     if (startDate && endDate) {
       query.date = {
-        $gte: moment.tz(startDate, TIMEZONE).startOf('day').toDate(),
-        $lte: moment.tz(endDate, TIMEZONE).endOf('day').toDate()
+        $gte: moment.tz(startDate, userTz).startOf('day').toDate(),
+        $lte: moment.tz(endDate, userTz).endOf('day').toDate()
       };
     }
 
@@ -297,7 +305,8 @@ exports.skipProgress = async (req, res, next) => {
   try {
     const { learningObjectiveId, date, remarks } = req.body;
 
-    const progressDate = moment.tz(date || new Date(), TIMEZONE).startOf('day').toDate();
+    const userTz = getUserTimezone(req);
+    const progressDate = moment.tz(date || new Date(), userTz).startOf('day').toDate();
 
     let progress = await DailyProgress.findOne({
       user: req.user.id,
@@ -344,8 +353,9 @@ exports.skipProgress = async (req, res, next) => {
 // @access  Private (Internal)
 exports.markMissedProgress = async (req, res, next) => {
   try {
-    const yesterday = moment.tz(TIMEZONE).subtract(1, 'day').startOf('day').toDate();
-    const endOfYesterday = moment.tz(TIMEZONE).subtract(1, 'day').endOf('day').toDate();
+    const userTz = getUserTimezone(req);
+    const yesterday = moment.tz(userTz).subtract(1, 'day').startOf('day').toDate();
+    const endOfYesterday = moment.tz(userTz).subtract(1, 'day').endOf('day').toDate();
 
     // Find all pending progress from yesterday and mark as missed
     const result = await DailyProgress.updateMany(

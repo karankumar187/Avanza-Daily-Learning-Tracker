@@ -4,8 +4,9 @@ const LearningObjective = require('../models/LearningObjective');
 const Schedule = require('../models/Schedule');
 const syncProgress = require('../utils/syncProgress');
 
-const TIMEZONE = 'UTC';
-
+const getUserTimezone = (req) => {
+  return req.headers['x-timezone'] || (req.user && req.user.timezone) || 'UTC';
+};
 // @desc    Get overall analytics
 // @route   GET /api/analytics/overall
 // @access  Private
@@ -13,8 +14,9 @@ exports.getOverallAnalytics = async (req, res, next) => {
   try {
     const { period } = req.query; // 'daily', 'weekly', 'monthly', 'all'
 
+    const userTz = getUserTimezone(req);
     let dateFilter = {};
-    const now = moment.tz(TIMEZONE);
+    const now = moment.tz(userTz);
 
     if (period === 'daily') {
       dateFilter = {
@@ -66,8 +68,8 @@ exports.getOverallAnalytics = async (req, res, next) => {
     // Add future scheduled tasks for period views (weekly/monthly)
     if (schedule && schedule.weeklySchedule && Object.keys(dateFilter).length > 0) {
       const { $gte: start, $lte: end } = dateFilter.date;
-      const startDate = moment.tz(start, TIMEZONE);
-      const endDate = moment.tz(end, TIMEZONE);
+      const startDate = moment.tz(start, userTz);
+      const endDate = moment.tz(end, userTz);
       const weekDaysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
       let curr = startDate.clone().startOf('day');
@@ -116,15 +118,17 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
+    const userTz = getUserTimezone(req);
     let dateFilter = {
       date: {
-        $lte: moment.tz(TIMEZONE).endOf('day').toDate()
+        $lte: moment.tz(userTz).endOf('day').toDate()
       }
     };
 
     if (startDate && endDate) {
-      dateFilter.date.$gte = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
-      dateFilter.date.$lte = moment.tz(endDate, TIMEZONE).endOf('day').toDate();
+      const userTz = getUserTimezone(req);
+      dateFilter.date.$gte = moment.tz(startDate, userTz).startOf('day').toDate();
+      dateFilter.date.$lte = moment.tz(endDate, userTz).endOf('day').toDate();
     }
 
     // Sync before fetching
@@ -196,11 +200,12 @@ exports.getDailyAnalytics = async (req, res, next) => {
   try {
     const { month, year } = req.query;
 
-    const targetMonth = month ? parseInt(month) - 1 : moment.tz(TIMEZONE).month();
-    const targetYear = year ? parseInt(year) : moment.tz(TIMEZONE).year();
+    const userTz = getUserTimezone(req);
+    const targetMonth = month ? parseInt(month) - 1 : moment.tz(userTz).month();
+    const targetYear = year ? parseInt(year) : moment.tz(userTz).year();
 
-    const startOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).startOf('month');
-    const endOfMonth = moment.tz({ year: targetYear, month: targetMonth }, TIMEZONE).endOf('month');
+    const startOfMonth = moment.tz({ year: targetYear, month: targetMonth }, userTz).startOf('month');
+    const endOfMonth = moment.tz({ year: targetYear, month: targetMonth }, userTz).endOf('month');
 
     // Sync before fetching
     await syncProgress(req.user.id, 14); // slightly longer sync for calendar context
@@ -222,12 +227,12 @@ exports.getDailyAnalytics = async (req, res, next) => {
       isDefault: true,
       isActive: true
     });
-    const now = moment.tz(TIMEZONE).startOf('day');
+    const now = moment.tz(userTz).startOf('day');
     const weekDaysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
     // Initialize all days of the month
     for (let day = 1; day <= endOfMonth.date(); day++) {
-      const currDate = moment.tz({ year: targetYear, month: targetMonth, day }, TIMEZONE);
+      const currDate = moment.tz({ year: targetYear, month: targetMonth, day }, userTz);
       const dateKey = currDate.format('YYYY-MM-DD');
 
       let dayTotal = 0;
@@ -257,7 +262,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
 
     // Populate with actual data
     progress.forEach(p => {
-      const dateKey = moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD');
+      const dateKey = moment.tz(p.date, userTz).format('YYYY-MM-DD');
       if (dailyData[dateKey]) {
         dailyData[dateKey].total++;
         dailyData[dateKey][p.status]++;
@@ -290,8 +295,9 @@ exports.getDailyAnalytics = async (req, res, next) => {
 // @access  Private
 exports.getStreakInfo = async (req, res, next) => {
   try {
+    const userTz = getUserTimezone(req);
     // Sync before fetching
-    await syncProgress(req.user.id, 14);
+    await syncProgress(req.user.id, userTz, 14);
 
     // Get all completed progress ordered by date
     const progress = await DailyProgress.find({
@@ -312,20 +318,20 @@ exports.getStreakInfo = async (req, res, next) => {
 
     // Get unique dates with completions
     const completedDates = [...new Set(progress.map(p =>
-      moment.tz(p.date, TIMEZONE).format('YYYY-MM-DD')
+      moment.tz(p.date, userTz).format('YYYY-MM-DD')
     ))].sort().reverse();
 
     // Calculate current streak
     let currentStreak = 0;
-    const today = moment.tz(TIMEZONE).format('YYYY-MM-DD');
-    const yesterday = moment.tz(TIMEZONE).subtract(1, 'day').format('YYYY-MM-DD');
+    const today = moment.tz(userTz).format('YYYY-MM-DD');
+    const yesterday = moment.tz(userTz).subtract(1, 'day').format('YYYY-MM-DD');
 
     // Check if streak is still active (completed today or yesterday)
     if (completedDates[0] === today || completedDates[0] === yesterday) {
       currentStreak = 1;
       for (let i = 1; i < completedDates.length; i++) {
-        const prevDate = moment.tz(completedDates[i - 1], TIMEZONE);
-        const currDate = moment.tz(completedDates[i], TIMEZONE);
+        const prevDate = moment.tz(completedDates[i - 1], userTz);
+        const currDate = moment.tz(completedDates[i], userTz);
 
         if (prevDate.diff(currDate, 'days') === 1) {
           currentStreak++;
@@ -341,8 +347,8 @@ exports.getStreakInfo = async (req, res, next) => {
 
     const sortedDates = [...completedDates].sort();
     for (let i = 1; i < sortedDates.length; i++) {
-      const prevDate = moment.tz(sortedDates[i - 1], TIMEZONE);
-      const currDate = moment.tz(sortedDates[i], TIMEZONE);
+      const prevDate = moment.tz(sortedDates[i - 1], userTz);
+      const currDate = moment.tz(sortedDates[i], userTz);
 
       if (currDate.diff(prevDate, 'days') === 1) {
         currentLongest++;
@@ -371,12 +377,13 @@ exports.getStreakInfo = async (req, res, next) => {
 // @access  Private
 exports.getWeeklyChartData = async (req, res, next) => {
   try {
-    const now = moment.tz(TIMEZONE);
+    const userTz = getUserTimezone(req);
+    const now = moment.tz(userTz);
     const startOfWeek = now.clone().startOf('week');
     const endOfWeek = now.clone().endOf('week');
 
     // Sync before fetching
-    await syncProgress(req.user.id);
+    await syncProgress(req.user.id, userTz);
 
     const progress = await DailyProgress.find({
       user: req.user.id,
@@ -400,7 +407,7 @@ exports.getWeeklyChartData = async (req, res, next) => {
       const dayEnd = startOfWeek.clone().add(index, 'days').endOf('day');
 
       const dayProgress = progress.filter(p => {
-        const pDate = moment.tz(p.date, TIMEZONE);
+        const pDate = moment.tz(p.date, userTz);
         return pDate.isBetween(dayStart, dayEnd, null, '[]');
       });
 
@@ -445,19 +452,20 @@ exports.getCategoryAnalytics = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
 
+    const userTz = getUserTimezone(req);
     let dateFilter = {
       date: {
-        $lte: moment.tz(TIMEZONE).endOf('day').toDate()
+        $lte: moment.tz(userTz).endOf('day').toDate()
       }
     };
 
     if (startDate && endDate) {
-      dateFilter.date.$gte = moment.tz(startDate, TIMEZONE).startOf('day').toDate();
-      dateFilter.date.$lte = moment.tz(endDate, TIMEZONE).endOf('day').toDate();
+      dateFilter.date.$gte = moment.tz(startDate, userTz).startOf('day').toDate();
+      dateFilter.date.$lte = moment.tz(endDate, userTz).endOf('day').toDate();
     }
 
     // Sync before fetching
-    await syncProgress(req.user.id);
+    await syncProgress(req.user.id, userTz);
 
     // Get all objectives with their categories
     const objectives = await LearningObjective.find({

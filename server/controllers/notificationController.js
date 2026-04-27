@@ -2,8 +2,9 @@ const Notification = require('../models/Notification');
 const DailyProgress = require('../models/DailyProgress');
 const moment = require('moment-timezone');
 
-const TIMEZONE = 'Asia/Kolkata';
-
+const getUserTimezone = (req) => {
+  return req.headers['x-timezone'] || (req.user && req.user.timezone) || 'UTC';
+};
 // @desc    Get all notifications for user
 // @route   GET /api/notifications
 // @access  Private
@@ -92,8 +93,9 @@ exports.createNotification = async (req, res, next) => {
 // @access  Private
 exports.triggerPendingReminder = async (req, res, next) => {
     try {
-        const todayStart = moment.tz(TIMEZONE).startOf('day').toDate();
-        const todayEnd = moment.tz(TIMEZONE).endOf('day').toDate();
+        const userTz = getUserTimezone(req);
+        const todayStart = moment.tz(userTz).startOf('day').toDate();
+        const todayEnd = moment.tz(userTz).endOf('day').toDate();
 
         const pendingEntries = await DailyProgress.find({
             user: req.user.id,
