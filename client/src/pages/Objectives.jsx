@@ -1,21 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { objectivesAPI, progressAPI } from '../services/api';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker, X, FileText, BookOpen, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Plus, Target, Edit2, Trash2, Search, Book, Code, Briefcase, Heart, Star, Zap, Coffee, Music, Camera, Globe, Monitor, PenTool, Palette, Dumbbell, Languages, Calculator, Beaker, X, FileText, BookOpen, ExternalLink,
+  // CSE additions
+  Cpu, Database, Server, Network, Terminal, GitBranch, Cloud, Shield, Wifi, Bug, Smartphone, LayoutDashboard, BarChart2, Boxes, Braces, Binary, Layers, FlaskConical, BrainCircuit, Lock, TestTube2, Microchip, CodeXml, FolderGit2, CircuitBoard, HardDrive, Webhook, Workflow, Bot, FileCode2
+} from 'lucide-react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 const iconOptions = [
-  { value: 'Book', icon: Book, label: 'Book' },
-  { value: 'Code', icon: Code, label: 'Code' },
-  { value: 'Music', icon: Music, label: 'Music' },
-  { value: 'Art', icon: Palette, label: 'Art' },
-  { value: 'Fitness', icon: Dumbbell, label: 'Fitness' },
-  { value: 'Language', icon: Languages, label: 'Language' },
-  { value: 'Math', icon: Calculator, label: 'Math' },
-  { value: 'Science', icon: Beaker, label: 'Science' },
-  { value: 'General', icon: Target, label: 'General' },
-  { value: 'Globe', icon: Globe, label: 'Globe' },
+  // General / Study
+  { value: 'Book',       icon: Book,            label: 'Book' },
+  { value: 'General',   icon: Target,           label: 'Target' },
+  { value: 'Math',      icon: Calculator,       label: 'Math' },
+  { value: 'Science',   icon: Beaker,           label: 'Science' },
+  { value: 'Language',  icon: Languages,        label: 'Language' },
+  { value: 'Globe',     icon: Globe,            label: 'Globe' },
+  { value: 'Fitness',   icon: Dumbbell,         label: 'Fitness' },
+  { value: 'Music',     icon: Music,            label: 'Music' },
+  { value: 'Art',       icon: Palette,          label: 'Art' },
+
+  // Programming & CS Core
+  { value: 'Code',      icon: Code,             label: 'Code' },
+  { value: 'Terminal',  icon: Terminal,         label: 'Terminal' },
+  { value: 'Braces',    icon: Braces,           label: 'Braces' },
+  { value: 'Binary',    icon: Binary,           label: 'Binary' },
+  { value: 'Bug',       icon: Bug,              label: 'Debug' },
+  { value: 'FileCode',  icon: FileCode2,        label: 'FileCode' },
+  { value: 'CodeXml',   icon: CodeXml,          label: 'XML/HTML' },
+
+  // Data Structures & Algorithms
+  { value: 'Layers',    icon: Layers,           label: 'Layers / DSA' },
+  { value: 'Workflow',  icon: Workflow,         label: 'Workflow / Graphs' },
+  { value: 'Boxes',     icon: Boxes,            label: 'Boxes / DS' },
+
+  // Systems & Hardware
+  { value: 'Cpu',       icon: Cpu,              label: 'CPU' },
+  { value: 'Circuit',   icon: CircuitBoard,     label: 'Circuit' },
+  { value: 'HardDrive', icon: HardDrive,        label: 'OS / Storage' },
+  { value: 'Microchip', icon: Microchip,        label: 'Microchip' },
+
+  // Networks & Cloud
+  { value: 'Network',   icon: Network,          label: 'Networks' },
+  { value: 'Wifi',      icon: Wifi,             label: 'Wireless' },
+  { value: 'Server',    icon: Server,           label: 'Server' },
+  { value: 'Cloud',     icon: Cloud,            label: 'Cloud' },
+  { value: 'Webhook',   icon: Webhook,          label: 'API / Webhook' },
+
+  // Databases
+  { value: 'Database',  icon: Database,         label: 'Database' },
+  { value: 'HardDrive2',icon: HardDrive,        label: 'Storage' },
+
+  // AI / ML / Data Science
+  { value: 'Brain',     icon: BrainCircuit,     label: 'AI / ML' },
+  { value: 'Flask',     icon: FlaskConical,     label: 'ML Experiments' },
+  { value: 'BarChart',  icon: BarChart2,        label: 'Data Science' },
+  { value: 'Bot',       icon: Bot,              label: 'Bot / Automation' },
+
+  // Security & DevOps
+  { value: 'Shield',    icon: Shield,           label: 'Security' },
+  { value: 'Lock',      icon: Lock,             label: 'Cyber / Auth' },
+  { value: 'GitBranch', icon: GitBranch,        label: 'Git / VCS' },
+  { value: 'FolderGit', icon: FolderGit2,       label: 'Git Repo' },
+  { value: 'TestTube',  icon: TestTube2,        label: 'Testing' },
+
+  // Web & Mobile
+  { value: 'Monitor',   icon: Monitor,          label: 'Web / UI' },
+  { value: 'Layout',    icon: LayoutDashboard,  label: 'Dashboard / UI' },
+  { value: 'Smartphone',icon: Smartphone,       label: 'Mobile Dev' },
 ];
 
 const colorOptions = [
@@ -494,24 +546,36 @@ const Objectives = () => {
 
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Icon</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {iconOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, icon: option.value })}
-                        className={`p-3 rounded-lg border-2 transition-all ${formData.icon === option.value
-                          ? 'border-green-700 bg-green-50'
-                          : 'border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800'
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Icon <span className="text-xs font-normal text-gray-400 ml-1">({iconOptions.length} available — hover for label)</span>
+                </label>
+                <div className="max-h-48 overflow-y-auto pr-1 rounded-lg border border-gray-100 dark:border-slate-700 p-2 bg-gray-50 dark:bg-slate-800/50">
+                  <div className="grid grid-cols-8 gap-1.5">
+                    {iconOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          title={option.label}
+                          onClick={() => setFormData({ ...formData, icon: option.value })}
+                          className={`relative group/icon p-2 rounded-lg border transition-all flex items-center justify-center ${
+                            formData.icon === option.value
+                              ? 'border-green-600 bg-green-50 dark:bg-green-900/30 shadow-sm'
+                              : 'border-transparent hover:border-gray-200 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-700'
                           }`}
-                      >
-                        <Icon className="w-5 h-5 mx-auto" />
-                      </button>
-                    );
-                  })}
+                        >
+                          <Icon
+                            className={`w-4 h-4 ${formData.icon === option.value ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}
+                          />
+                          {/* Tooltip */}
+                          <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 text-white text-[10px] px-1.5 py-0.5 opacity-0 group-hover/icon:opacity-100 transition-opacity z-10">
+                            {option.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
