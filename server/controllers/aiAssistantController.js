@@ -228,7 +228,7 @@ exports.applySuggestion = async (req, res, next) => {
     // Create the new schedule
     const schedule = await Schedule.create({
       user: req.user.id,
-      name: name || `AI Schedule - ${new Date().toLocaleDateString()}`,
+      name: name || `AI Schedule - ${new Date().toLocaleDateString('en-US', { timeZone: 'UTC' })}`,
       description: description || `Generated from AI suggestion: ${suggestion.prompt.substring(0, 100)}...`,
       weeklySchedule,
       isDefault: true

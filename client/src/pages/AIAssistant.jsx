@@ -477,7 +477,7 @@ const AIAssistant = () => {
                         </p>
                         <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
                           <Calendar className="w-4 h-4" />
-                          {new Date(sugg.createdAt).toLocaleDateString()}
+                          {new Date(sugg.createdAt).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                           {sugg.isApplied && (
                             <span className="ml-2 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs">
                               Applied

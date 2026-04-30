@@ -240,7 +240,8 @@ const Schedule = () => {
         return;
       }
       const d = new Date();
-      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      // Use UTC date to match UTC-based scheduling
+      const today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
       await progressAPI.skip({
         learningObjectiveId: objectiveId,
         date: today,

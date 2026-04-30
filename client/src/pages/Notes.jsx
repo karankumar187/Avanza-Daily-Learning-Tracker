@@ -13,6 +13,10 @@ import {
     Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
+
+// Format date in UTC to match server-side UTC scheduling
+const fmtUTCDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+const fmtUTCTime = (dateStr) => new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
 import { toast } from 'sonner';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -348,7 +352,7 @@ const Notes = () => {
 
                                     <div className="flex items-center text-[10px] text-gray-400 dark:text-gray-500 gap-3">
                                         <span className="flex items-center gap-1 uppercase tracking-wider font-semibold">
-                                            {format(new Date(note.updatedAt || new Date()), 'MMM d, yyyy')}
+                                            {fmtUTCDate(note.updatedAt || new Date())}
                                         </span>
                                     </div>
                                 </div>
@@ -380,11 +384,11 @@ const Notes = () => {
                                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                         <span className="flex items-center gap-1">
                                             <Calendar className="w-3.5 h-3.5" />
-                                            Created: {format(new Date(activeNote.createdAt || new Date()), 'MMM d, yyyy')}
+                                            Created: {fmtUTCDate(activeNote.createdAt || new Date())}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <Clock className="w-3.5 h-3.5" />
-                                            Last edited {format(new Date(activeNote.updatedAt || new Date()), 'h:mm a')}
+                                            Last edited {fmtUTCTime(activeNote.updatedAt || new Date())}
                                         </span>
                                     </div>
                                 </div>
