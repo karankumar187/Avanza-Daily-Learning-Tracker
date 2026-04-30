@@ -42,7 +42,7 @@ exports.getOverallAnalytics = async (req, res, next) => {
     }
 
     // Sync before fetching analytics
-    await syncProgress(req.user.id);
+    await syncProgress(req.user.id, userTz);
 
     // Get all progress for the period
     const query = { user: req.user.id };
@@ -132,7 +132,7 @@ exports.getAnalyticsByObjective = async (req, res, next) => {
     }
 
     // Sync before fetching
-    await syncProgress(req.user.id);
+    await syncProgress(req.user.id, userTz);
 
     // Get all active objectives
     const objectives = await LearningObjective.find({
@@ -208,7 +208,7 @@ exports.getDailyAnalytics = async (req, res, next) => {
     const endOfMonth = moment.tz({ year: targetYear, month: targetMonth }, userTz).endOf('month');
 
     // Sync before fetching
-    await syncProgress(req.user.id, 14); // slightly longer sync for calendar context
+    await syncProgress(req.user.id, userTz, 14); // slightly longer sync for calendar context
 
     const progress = await DailyProgress.find({
       user: req.user.id,
