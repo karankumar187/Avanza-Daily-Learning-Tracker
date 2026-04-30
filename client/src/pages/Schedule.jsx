@@ -166,7 +166,9 @@ const Schedule = () => {
   };
 
   const isTodayTab = () => {
-    const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    // Use UTC day to match UTC-based scheduling
+    const utcDay = new Date().getUTCDay();
+    const todayIndex = utcDay === 0 ? 6 : utcDay - 1;
     const todayName = days[todayIndex];
     return selectedDay === todayName;
   };
@@ -187,7 +189,8 @@ const Schedule = () => {
       if (!pendingCompleteId) return;
 
       const d = new Date();
-      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      // Use UTC date to match UTC-based scheduling
+      const today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 
       // Parse time spent — accept minutes as number
       const timeSpentMinutes = notesForm.timeSpent ? parseInt(notesForm.timeSpent, 10) : undefined;
