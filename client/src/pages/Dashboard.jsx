@@ -68,6 +68,21 @@ const Dashboard = () => {
   }, [loading, stats]);
 
   useEffect(() => {
+    // Clear stale dashboard cache (stats can change day-to-day)
+    const today = new Date().toISOString().slice(0, 10);
+    const cacheKey = 'learnflow:dashboard';
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const cacheDate = parsed.savedAt ? new Date(parsed.savedAt).toISOString().slice(0, 10) : null;
+        if (cacheDate !== today) {
+          localStorage.removeItem(cacheKey);
+        }
+      } catch {
+        localStorage.removeItem(cacheKey);
+      }
+    }
     fetchDashboardData();
   }, []);
 
@@ -207,14 +222,14 @@ const Dashboard = () => {
   };
 
   const getDayStatus = (dateObj) => {
-    // Build date key in UTC to match analytics data
-    const utcFormatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'UTC',
+    // Format date key in LOCAL timezone to match backend (which stores YYYY-MM-DD in user's tz)
+    const localFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     });
-    const key = utcFormatter.format(dateObj); // YYYY-MM-DD (UTC)
+    const key = localFormatter.format(dateObj); // YYYY-MM-DD in user's local timezone
     const data = dailyAnalytics[key];
     if (!data || data.total === 0) return null;
 

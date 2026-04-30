@@ -11,7 +11,9 @@ export const fetchWithCache = async (cacheKey, fetchFn, onData) => {
   try {
     const cachedItem = localStorage.getItem(cacheKey);
     if (cachedItem) {
-      const parsedData = JSON.parse(cachedItem);
+      const parsedItem = JSON.parse(cachedItem);
+      // Support both old format (raw data) and new format ({ data, savedAt })
+      const parsedData = parsedItem?.savedAt ? parsedItem.data : parsedItem;
       onData(parsedData);
     }
   } catch (error) {
@@ -22,10 +24,10 @@ export const fetchWithCache = async (cacheKey, fetchFn, onData) => {
   try {
     const freshData = await fetchFn();
     
-    // Check if the fresh data is actually different before triggering another update
-    // For simplicity, we just save and trigger onData
+    // Wrap data with a savedAt timestamp for staleness detection
     try {
-      localStorage.setItem(cacheKey, JSON.stringify(freshData));
+      const cacheEntry = { data: freshData, savedAt: new Date().toISOString() };
+      localStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
     } catch (e) {
       console.warn(`[Cache] Error writing ${cacheKey} to localStorage:`, e);
     }
