@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: server/package-lock.json
 
       - name: Install server dependencies
-        run: npm ci
+        run: npm install
         working-directory: server
 
       - name: Check for syntax errors (dry run)
