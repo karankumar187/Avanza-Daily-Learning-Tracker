@@ -97,19 +97,26 @@ async function run() {
       groups.get(key).push(record);
     }
 
+    const todayKey = moment.utc().format('YYYY-MM-DD');
     const toDelete = [];
     for (const [key, records] of groups) {
       if (records.length <= 1) continue;
 
-      // Sort by status priority desc, keep highest priority
-      records.sort((a, b) =>
-        (STATUS_PRIORITY[b.status] || 0) - (STATUS_PRIORITY[a.status] || 0)
-      );
+      const dateKey = key.split(':')[0];
+      const isToday = dateKey === todayKey;
+
+      // For TODAY: pending > missed (day isn't over, nothing should be missed yet)
+      // For PAST: completed > partial > missed > pending (historical accuracy)
+      const STATUS_PRIORITY_TODAY    = { completed: 4, partial: 3, pending: 2, missed: 1, skipped: 0 };
+      const STATUS_PRIORITY_PAST     = { completed: 4, partial: 3, missed: 2, pending: 1, skipped: 0 };
+      const priority = isToday ? STATUS_PRIORITY_TODAY : STATUS_PRIORITY_PAST;
+
+      records.sort((a, b) => (priority[b.status] || 0) - (priority[a.status] || 0));
 
       // Keep first (highest priority), delete the rest
       const duplicates = records.slice(1);
       duplicates.forEach(d => toDelete.push(d._id));
-      console.log(`  Duplicate found for user ${user.email} on ${key.split(':')[0]}: keeping ${records[0].status}, deleting ${duplicates.length}`);
+      console.log(`  Duplicate found for user ${user.email} on ${dateKey}: keeping ${records[0].status}, deleting ${duplicates.length}`);
     }
 
     if (toDelete.length > 0) {
