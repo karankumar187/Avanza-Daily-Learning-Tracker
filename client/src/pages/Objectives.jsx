@@ -71,8 +71,37 @@ const iconOptions = [
 ];
 
 const colorOptions = [
-  '#4A7C59', '#6FAF82', '#B5895A', '#f59e0b', '#10b981',
-  '#ef4444', '#06b6d4', '#84cc16', '#f97316', '#3b82f6'
+  // Greens (site theme)
+  { hex: '#4A7C59', name: 'Forest Green' },
+  { hex: '#6FAF82', name: 'Sage Green' },
+  { hex: '#3D6B4F', name: 'Deep Forest' },
+  { hex: '#8fbc8f', name: 'Muted Green' },
+  // Browns & Beige (site accent)
+  { hex: '#B5895A', name: 'Warm Tan' },
+  { hex: '#8b6d4b', name: 'Shibumi Brown' },
+  { hex: '#c4a882', name: 'Camel' },
+  { hex: '#a0785a', name: 'Chestnut' },
+  // Blues
+  { hex: '#4a7fa5', name: 'Steel Blue' },
+  { hex: '#5b8fa8', name: 'Slate Blue' },
+  { hex: '#6b9ab8', name: 'Muted Sky' },
+  { hex: '#4a6fa5', name: 'Denim' },
+  // Purples
+  { hex: '#7b68a0', name: 'Muted Violet' },
+  { hex: '#9b89b4', name: 'Dusty Lavender' },
+  { hex: '#6b5b95', name: 'Plum' },
+  // Reds & Roses
+  { hex: '#a05555', name: 'Dusty Rose' },
+  { hex: '#b56b6b', name: 'Muted Red' },
+  { hex: '#c47a7a', name: 'Blush' },
+  // Oranges & Yellows
+  { hex: '#c47c3a', name: 'Burnt Orange' },
+  { hex: '#b8923a', name: 'Amber' },
+  { hex: '#b5a45a', name: 'Olive Gold' },
+  // Teals & Greys
+  { hex: '#4a8a8a', name: 'Teal' },
+  { hex: '#5a8585', name: 'Muted Teal' },
+  { hex: '#6b7c8a', name: 'Slate Grey' },
 ];
 
 const Objectives = () => {
@@ -345,7 +374,7 @@ const Objectives = () => {
               <div
                 key={objective._id}
                 data-objective-id={objective._id}
-                className="objective-card group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl border border-gray-100 dark:border-slate-800"
+                className="objective-card group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl border border-gray-200 dark:border-slate-700"
                 onClick={() => handleViewProgress(objective)}
               >
                 {/* Left accent stripe — only place objective color is prominent */}
@@ -578,17 +607,34 @@ const Objectives = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {colorOptions.map((color) => (
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Color <span className="text-xs font-normal text-gray-400 ml-1">({colorOptions.length} options — hover for name)</span>
+                </label>
+                <div className="grid grid-cols-8 gap-2 p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700">
+                  {colorOptions.map(({ hex, name }) => (
                     <button
-                      key={color}
+                      key={hex}
                       type="button"
-                      onClick={() => setFormData({ ...formData, color })}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${formData.color === color ? 'border-gray-800 scale-110' : 'border-transparent'
-                        }`}
-                      style={{ backgroundColor: color }}
-                    />
+                      title={name}
+                      onClick={() => setFormData({ ...formData, color: hex })}
+                      className={`relative group/color w-8 h-8 rounded-lg transition-all ${
+                        formData.color === hex
+                          ? 'ring-2 ring-offset-2 ring-gray-700 scale-110 shadow-md'
+                          : 'hover:scale-105 hover:shadow-sm'
+                      }`}
+                      style={{ backgroundColor: hex }}
+                    >
+                      {formData.color === hex && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
+                      )}
+                      <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 text-white text-[10px] px-1.5 py-0.5 opacity-0 group-hover/color:opacity-100 transition-opacity z-10">
+                        {name}
+                      </span>
+                    </button>
                   ))}
                 </div>
               </div>
