@@ -288,74 +288,113 @@ const Objectives = () => {
 
       {/* Objectives Grid */}
       {filteredObjectives.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredObjectives.map((objective) => {
             const IconComponent = getIconComponent(objective.icon);
             return (
               <div
                 key={objective._id}
                 data-objective-id={objective._id}
-                className="objective-card group relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer border border-gray-100 dark:border-slate-800"
+                className="objective-card group relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl"
+                style={{ boxShadow: `0 4px 24px 0 ${objective.color}22` }}
                 onClick={() => handleViewProgress(objective)}
               >
-                {/* Subtle side accent line */}
+                {/* ── HERO SECTION ─────────────────────────── */}
                 <div
-                  className="absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-all duration-300 group-hover:w-1.5"
-                  style={{ backgroundColor: objective.color }}
-                />
-
-                <div className="flex items-start justify-between mb-5 pl-3">
+                  className="relative h-44 flex items-center justify-center overflow-hidden"
+                  style={{ background: `linear-gradient(135deg, ${objective.color}ee 0%, ${objective.color}99 60%, #111827 100%)` }}
+                >
+                  {/* Decorative blurred orbs */}
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: objective.color + '20' }}
+                    className="absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-30 blur-2xl"
+                    style={{ background: objective.color }}
+                  />
+                  <div
+                    className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full opacity-20 blur-xl"
+                    style={{ background: objective.color }}
+                  />
+
+                  {/* Big centered icon */}
+                  <div
+                    className="relative z-10 w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm"
+                    style={{ background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)' }}
                   >
-                    <IconComponent className="w-6 h-6" style={{ color: objective.color }} />
+                    <IconComponent className="w-10 h-10 text-white drop-shadow" />
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" onClick={(e) => e.stopPropagation()}>
+
+                  {/* Priority badge — top left */}
+                  <span
+                    className={`absolute top-4 left-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow ${getPriorityClass(objective.priority)}`}
+                  >
+                    {objective.priority}
+                  </span>
+
+                  {/* Edit / Delete — top right, show on hover */}
+                  <div
+                    className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => handleEdit(objective)}
-                      className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                      className="p-1.5 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/35 transition-colors"
                     >
-                      <Edit2 className="w-4 h-4 text-gray-500" />
+                      <Edit2 className="w-3.5 h-3.5 text-white" />
                     </button>
                     <button
                       onClick={() => handleDelete(objective._id)}
-                      className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      className="p-1.5 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-red-500/70 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4 text-red-500" />
+                      <Trash2 className="w-3.5 h-3.5 text-white" />
                     </button>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-start mb-2 pr-2">
-                  <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 line-clamp-1 group-hover:text-green-800 dark:group-hover:text-green-400 transition-colors pl-3">{objective.title}</h3>
-                  {objective.url && (
-                    <a
-                      href={objective.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors p-1"
-                      onClick={(e) => e.stopPropagation()}
-                      title="Open Learning Resource"
+                {/* ── CARD BODY ─────────────────────────────── */}
+                <div className="bg-gray-900 dark:bg-gray-950 px-5 pt-4 pb-5">
+                  {/* Title + link */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-bold text-lg text-white leading-snug line-clamp-1 group-hover:text-green-400 transition-colors">
+                      {objective.title}
+                    </h3>
+                    {objective.url && (
+                      <a
+                        href={objective.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-shrink-0 text-gray-400 hover:text-green-400 transition-colors mt-0.5"
+                        title="Open learning resource"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 mb-4">
+                    {objective.description || 'No description provided.'}
+                  </p>
+
+                  {/* Footer: category + view progress CTA */}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                      style={{ background: `${objective.color}25`, color: objective.color }}
                     >
-                      <ExternalLink className="w-5 h-5" />
-                    </a>
-                  )}
-                </div>
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ background: objective.color }}
+                      />
+                      {objective.category || 'General'}
+                    </span>
 
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 line-clamp-2 leading-relaxed pl-3">{objective.description}</p>
-
-                <div className="flex items-center justify-between pl-3">
-                  <span className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide ${getPriorityClass(objective.priority)}`}>
-                    {objective.priority.toUpperCase()}
-                  </span>
-                </div>
-
-                <div className="mt-5 pt-4 border-t border-gray-50 dark:border-slate-800/50 flex justify-between items-center pl-3">
-                  <span className="px-3 py-1 bg-gray-50 dark:bg-slate-800 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400">
-                    {objective.category}
-                  </span>
-                  <div className="w-2 h-2 rounded-full opacity-60 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: objective.color }} />
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 group-hover:text-green-400 transition-colors font-medium">
+                      View Progress
+                      <svg className="w-3.5 h-3.5 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
                 </div>
               </div>
             );
