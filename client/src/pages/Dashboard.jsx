@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsAPI, progressAPI, objectivesAPI } from '../services/api';
-import { fetchWithCache } from '../utils/cache';
 import { toast } from 'sonner';
 import { Calendar, CheckCircle, Clock, Target, ArrowRight, TrendingUp, Award, Flame, Zap, BookOpen, Star, MoreHorizontal, ChevronLeft, ChevronRight, XCircle, Sparkles, Plus, ExternalLink } from 'lucide-react';
 import {
@@ -47,7 +46,7 @@ const Dashboard = () => {
   const [todayProgress, setTodayProgress] = useState([]);
   const [objectives, setObjectives] = useState([]);
   const [weeklyData, setWeeklyData] = useState([]);
-  const [loading, setLoading] = useState(!localStorage.getItem('learnflow:dashboard'));
+  const [loading, setLoading] = useState(true);
   const [currentDate] = useState(getTodayUTC());
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [dailyAnalytics, setDailyAnalytics] = useState({});
@@ -68,21 +67,6 @@ const Dashboard = () => {
   }, [loading, stats]);
 
   useEffect(() => {
-    // Clear stale dashboard cache (stats can change day-to-day)
-    const today = new Date().toISOString().slice(0, 10);
-    const cacheKey = 'learnflow:dashboard';
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        const cacheDate = parsed.savedAt ? new Date(parsed.savedAt).toISOString().slice(0, 10) : null;
-        if (cacheDate !== today) {
-          localStorage.removeItem(cacheKey);
-        }
-      } catch {
-        localStorage.removeItem(cacheKey);
-      }
-    }
     fetchDashboardData();
   }, []);
 
@@ -90,63 +74,25 @@ const Dashboard = () => {
     fetchCalendarAnalytics(calendarDate);
   }, [calendarDate]);
 
-  useEffect(() => {
-    const d = new Date();
-    const todayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const lastPlayed = localStorage.getItem('learnflow:lastWelcomeAnimDate');
-    if (lastPlayed === todayKey || !welcomeRef.current) return;
-
-    localStorage.setItem('learnflow:lastWelcomeAnimDate', todayKey);
-
-    const elements = welcomeRef.current.querySelectorAll('[data-welcome-anim]');
-    if (!elements.length) return;
-
-    gsap.fromTo(
-      elements,
-      { opacity: 0, y: 16 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger: 0.08,
-        ease: 'power3.out',
-      }
-    );
-  }, []);
-
   const fetchDashboardData = async () => {
     try {
-      if (!localStorage.getItem('learnflow:dashboard')) {
-        setLoading(true);
-      }
-
-      await fetchWithCache('learnflow:dashboard', async () => {
-        const [overallRes, streakRes, dailyRes, objectivesRes, weeklyRes] = await Promise.all([
-          analyticsAPI.getOverall('daily'),
-          analyticsAPI.getStreak(),
-          progressAPI.getDaily(),
-          objectivesAPI.getAll({ isActive: true }),
-          analyticsAPI.getWeeklyChart()
-        ]);
-        
-        return {
-          stats: overallRes.data.data,
-          streak: streakRes.data.data,
-          todayProgress: dailyRes.data.data || [],
-          objectives: objectivesRes.data.data || [],
-          weeklyData: weeklyRes.data.data || []
-        };
-      }, (data) => {
-        setStats(data.stats);
-        setStreak(data.streak);
-        setTodayProgress(data.todayProgress);
-        setObjectives(data.objectives);
-        setWeeklyData(data.weeklyData);
-        setLoading(false);
-      });
+      setLoading(true);
+      const [overallRes, streakRes, dailyRes, objectivesRes, weeklyRes] = await Promise.all([
+        analyticsAPI.getOverall('daily'),
+        analyticsAPI.getStreak(),
+        progressAPI.getDaily(),
+        objectivesAPI.getAll({ isActive: true }),
+        analyticsAPI.getWeeklyChart()
+      ]);
+      setStats(overallRes.data.data);
+      setStreak(streakRes.data.data);
+      setTodayProgress(dailyRes.data.data || []);
+      setObjectives(objectivesRes.data.data || []);
+      setWeeklyData(weeklyRes.data.data || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Failed to load dashboard data');
+    } finally {
       setLoading(false);
     }
   };
@@ -155,30 +101,15 @@ const Dashboard = () => {
     try {
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
-      
-      await fetchWithCache(`learnflow:calendar:${month}:${year}`, async () => {
-        const res = await analyticsAPI.getDaily(month, year);
-        return res.data.data || [];
-      }, (data) => {
-        const map = {};
-        data.forEach((day) => {
-          map[day.date] = day;
-        });
-        console.log('[Calendar] Keys from API:', Object.keys(map).slice(0, 5), 'Total days with data:', Object.values(map).filter(d => d.total > 0).length);
-        setDailyAnalytics(map);
-      });
+      const res = await analyticsAPI.getDaily(month, year);
+      const data = res.data.data || [];
+      const map = {};
+      data.forEach((day) => { map[day.date] = day; });
+      setDailyAnalytics(map);
     } catch (error) {
       console.error('Error fetching calendar analytics:', error);
     }
   };
-
-  // Debug: log what getDayStatus returns for today
-  const debugTodayKey = (() => {
-    try {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-    } catch { return 'error'; }
-  })();
-  console.log('[Calendar] Today key (UTC):', debugTodayKey, '| dailyAnalytics[today]:', dailyAnalytics[debugTodayKey]);
 
   // Calendar functions
   const getDaysInMonth = (date) => {

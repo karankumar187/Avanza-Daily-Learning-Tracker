@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsAPI } from '../services/api';
-import { fetchWithCache } from '../utils/cache';
 import { toast } from 'sonner';
 import {
   ComposedChart,
@@ -59,7 +58,7 @@ const Analytics = () => {
   const [categoryStats, setCategoryStats] = useState([]);
   const [streakInfo, setStreakInfo] = useState(null);
   const [weeklyChartData, setWeeklyChartData] = useState([]);
-  const [loading, setLoading] = useState(!localStorage.getItem(`learnflow:analytics:${period}`));
+  const [loading, setLoading] = useState(true);
   const [selectedObjective, setSelectedObjective] = useState(null);
 
   useGSAP(() => {
@@ -81,38 +80,23 @@ const Analytics = () => {
 
   const fetchAnalyticsData = async () => {
     try {
-      const cacheKey = `learnflow:analytics:${period}`;
-      if (!localStorage.getItem(cacheKey)) {
-        setLoading(true);
-      }
-
-      await fetchWithCache(cacheKey, async () => {
-        const [overallRes, objectiveRes, categoryRes, streakRes, weeklyRes] = await Promise.all([
-          analyticsAPI.getOverall(period),
-          analyticsAPI.getByObjective(),
-          analyticsAPI.getByCategory(),
-          analyticsAPI.getStreak(),
-          analyticsAPI.getWeeklyChart()
-        ]);
-        
-        return {
-          overallStats: overallRes.data.data,
-          objectiveStats: objectiveRes.data.data,
-          categoryStats: categoryRes.data.data,
-          streakInfo: streakRes.data.data,
-          weeklyChartData: weeklyRes.data.data
-        };
-      }, (data) => {
-        setOverallStats(data.overallStats);
-        setObjectiveStats(data.objectiveStats);
-        setCategoryStats(data.categoryStats);
-        setStreakInfo(data.streakInfo);
-        setWeeklyChartData(data.weeklyChartData);
-        setLoading(false);
-      });
+      setLoading(true);
+      const [overallRes, objectiveRes, categoryRes, streakRes, weeklyRes] = await Promise.all([
+        analyticsAPI.getOverall(period),
+        analyticsAPI.getByObjective(),
+        analyticsAPI.getByCategory(),
+        analyticsAPI.getStreak(),
+        analyticsAPI.getWeeklyChart()
+      ]);
+      setOverallStats(overallRes.data.data);
+      setObjectiveStats(objectiveRes.data.data);
+      setCategoryStats(categoryRes.data.data);
+      setStreakInfo(streakRes.data.data);
+      setWeeklyChartData(weeklyRes.data.data);
     } catch (error) {
-      console.error('Error fetching analytics data:', error);
-      toast.error('Failed to fetch analytics data');
+      console.error('Failed to fetch analytics:', error);
+      toast.error('Failed to load analytics data');
+    } finally {
       setLoading(false);
     }
   };
