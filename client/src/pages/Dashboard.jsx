@@ -48,7 +48,11 @@ const Dashboard = () => {
   const [weeklyData, setWeeklyData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentDate] = useState(getTodayUTC());
-  const [calendarDate, setCalendarDate] = useState(new Date());
+  // Initialize calendar to UTC month (not local month)
+  const [calendarDate, setCalendarDate] = useState(() => {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  });
   const [dailyAnalytics, setDailyAnalytics] = useState({});
 
   const welcomeRef = useRef(null);
@@ -99,8 +103,9 @@ const Dashboard = () => {
 
   const fetchCalendarAnalytics = async (date) => {
     try {
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
+      // Use UTC month/year so we fetch the right month's data
+      const month = date.getUTCMonth() + 1;
+      const year = date.getUTCFullYear();
       const res = await analyticsAPI.getDaily(month, year);
       const data = res.data.data || [];
       const map = {};
@@ -111,45 +116,33 @@ const Dashboard = () => {
     }
   };
 
-  // Calendar functions
+  // All calendar math uses UTC to stay consistent with UTC scheduling
   const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const firstDay = new Date(Date.UTC(year, month, 1));
+    const lastDay = new Date(Date.UTC(year, month + 1, 0));
+    const daysInMonth = lastDay.getUTCDate();
+    const startingDay = firstDay.getUTCDay();
 
     const days = [];
 
     // Previous month days
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    const prevMonthLastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
     for (let i = startingDay - 1; i >= 0; i--) {
       const day = prevMonthLastDay - i;
-      days.push({
-        day,
-        currentMonth: false,
-        date: new Date(year, month - 1, day),
-      });
+      days.push({ day, currentMonth: false, date: new Date(Date.UTC(year, month - 1, day)) });
     }
 
     // Current month days
     for (let i = 1; i <= daysInMonth; i++) {
-      days.push({
-        day: i,
-        currentMonth: true,
-        date: new Date(year, month, i),
-      });
+      days.push({ day: i, currentMonth: true, date: new Date(Date.UTC(year, month, i)) });
     }
 
     // Next month days
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
-      days.push({
-        day: i,
-        currentMonth: false,
-        date: new Date(year, month + 1, i),
-      });
+      days.push({ day: i, currentMonth: false, date: new Date(Date.UTC(year, month + 1, i)) });
     }
 
     return days;
@@ -157,8 +150,12 @@ const Dashboard = () => {
 
   const isToday = (dayItem) => {
     if (!dayItem?.date) return false;
-    const today = getTodayUTC();
-    return dayItem.date.toDateString() === today.toDateString();
+    const now = new Date();
+    return (
+      dayItem.date.getUTCFullYear() === now.getUTCFullYear() &&
+      dayItem.date.getUTCMonth() === now.getUTCMonth() &&
+      dayItem.date.getUTCDate() === now.getUTCDate()
+    );
   };
 
   const getDayStatus = (dateObj) => {
@@ -199,11 +196,11 @@ const Dashboard = () => {
   };
 
   const prevMonth = () => {
-    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1));
+    setCalendarDate(d => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)));
   };
 
   const nextMonth = () => {
-    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1));
+    setCalendarDate(d => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)));
   };
 
   const getStatusIcon = (status) => {
@@ -472,7 +469,7 @@ const Dashboard = () => {
           <div className="stagger-item glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}
               </h3>
               <div className="flex gap-1">
                 <button onClick={prevMonth} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
