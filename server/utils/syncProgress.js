@@ -6,16 +6,21 @@ const Schedule = require('../models/Schedule');
 // In-memory lock to prevent race conditions when multiple API endpoints call syncProgress concurrently
 const syncLocks = new Map();
 
+// In-memory guard: only sync once per day per user to avoid repeatedly re-evaluating status
+const lastSyncedDate = new Map();
+
 /**
  * Synchronizes a user's progress for the past given days up to today.
  * Auto-cleans orphaned tasks and duplicate tasks to heal corrupted state.
  */
 const syncProgress = async (userId, userTimezone = 'UTC', daysToLookBack = 7) => {
     const lockKey = userId.toString() + '_' + daysToLookBack;
+    const todayKey = userId.toString() + '_' + moment.tz(userTimezone).format('YYYY-MM-DD');
 
-    // If a sync is already running for this user, precisely share that promise
-    if (syncLocks.has(lockKey)) {
-        return syncLocks.get(lockKey);
+    // Skip if already synced today for this user (prevents repeated missed-marking on every API call)
+    if (lastSyncedDate.get(todayKey)) {
+        if (syncLocks.has(lockKey)) return syncLocks.get(lockKey);
+        return;
     }
 
     const syncPromise = (async () => {
@@ -162,6 +167,8 @@ const syncProgress = async (userId, userTimezone = 'UTC', daysToLookBack = 7) =>
         } catch (error) {
             console.error('Error syncing progress:', error);
         } finally {
+            // Mark as synced for today so subsequent API calls skip re-running
+            lastSyncedDate.set(todayKey, true);
             syncLocks.delete(lockKey);
         }
     })();
