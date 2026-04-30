@@ -164,12 +164,22 @@ const Dashboard = () => {
         data.forEach((day) => {
           map[day.date] = day;
         });
+        console.log('[Calendar] Keys from API:', Object.keys(map).slice(0, 5), 'Total days with data:', Object.values(map).filter(d => d.total > 0).length);
         setDailyAnalytics(map);
       });
     } catch (error) {
       console.error('Error fetching calendar analytics:', error);
     }
   };
+
+  // Debug: log what getDayStatus returns for today
+  const debugTodayKey = (() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    } catch { return 'error'; }
+  })();
+  console.log('[Calendar] Today key (local tz):', debugTodayKey, '| dailyAnalytics[today]:', dailyAnalytics[debugTodayKey]);
 
   // Calendar functions
   const getDaysInMonth = (date) => {
