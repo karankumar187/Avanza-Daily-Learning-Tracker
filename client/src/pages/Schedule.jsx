@@ -201,46 +201,73 @@ const Schedule = () => {
   };
 
   const handleConfirmComplete = async () => {
+    if (!pendingCompleteId) return;
+
+    const objectiveId = pendingCompleteId;
+    const d = new Date();
+    // Use UTC date to match UTC-based scheduling
+    const today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    const timeSpentMinutes = notesForm.timeSpent ? parseInt(notesForm.timeSpent, 10) : undefined;
+    const notes = notesForm.notes || undefined;
+
+    // ── OPTIMISTIC UPDATE ──────────────────────────────────────────────
+    // 1. Close modal & update local progress state IMMEDIATELY (feels instant)
+    setShowNotesModal(false);
+    setPendingCompleteId(null);
+    setNotesForm({ notes: '', timeSpent: '' });
+
+    // Optimistically mark as completed in local state
+    setTodayProgress(prev => {
+      const exists = prev.find(p => p.learningObjective?._id === objectiveId);
+      if (exists) {
+        return prev.map(p =>
+          p.learningObjective?._id === objectiveId
+            ? { ...p, status: 'completed', timeSpent: timeSpentMinutes || p.timeSpent, notes }
+            : p
+        );
+      }
+      // Record didn't exist yet in local state — add a placeholder
+      return [...prev, { learningObjective: { _id: objectiveId }, status: 'completed', timeSpent: timeSpentMinutes, notes }];
+    });
+
+    // 2. Play celebration animation immediately
+    gsap.fromTo(
+      `[data-objective-id="${objectiveId}"]`,
+      { scale: 0.9, boxShadow: '0 0 0 rgba(34,197,94,0)' },
+      {
+        scale: 1.06,
+        boxShadow: '0 0 35px rgba(34,197,94,0.75)',
+        duration: 0.5,
+        yoyo: true,
+        repeat: 2,
+        ease: 'power3.out',
+      }
+    );
+    toast.success('Marked as completed!');
+    memDel('dashboard:main'); // dashboard will refresh on next visit
+
+    // ── BACKGROUND API CALL ────────────────────────────────────────────
+    // 3. Persist to server in background — rollback only if it fails
     try {
-      if (!pendingCompleteId) return;
-
-      const d = new Date();
-      // Use UTC date to match UTC-based scheduling
-      const today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-
-      // Parse time spent — accept minutes as number
-      const timeSpentMinutes = notesForm.timeSpent ? parseInt(notesForm.timeSpent, 10) : undefined;
-
       await progressAPI.createOrUpdate({
-        learningObjectiveId: pendingCompleteId,
+        learningObjectiveId: objectiveId,
         date: today,
         status: 'completed',
-        notes: notesForm.notes || undefined,
+        notes,
         timeSpent: timeSpentMinutes && !isNaN(timeSpentMinutes) ? timeSpentMinutes : undefined
       });
-
-      // Celebration animation on completion
-      gsap.fromTo(
-        `[data-objective-id="${pendingCompleteId}"]`,
-        { scale: 0.9, boxShadow: '0 0 0 rgba(34,197,94,0)' },
-        {
-          scale: 1.06,
-          boxShadow: '0 0 35px rgba(34,197,94,0.75)',
-          duration: 0.5,
-          yoyo: true,
-          repeat: 2,
-          ease: 'power3.out',
-        }
-      );
-
-      toast.success('Marked as completed!');
-      memDel('dashboard:main'); // so dashboard reflects updated progress
-      setShowNotesModal(false);
-      setPendingCompleteId(null);
-      setNotesForm({ notes: '', timeSpent: '' });
+      // Silently refresh schedule cache in background (no loading spinner)
       fetchData(true);
     } catch (error) {
-      toast.error('Failed to update progress');
+      // Rollback optimistic update on failure
+      setTodayProgress(prev =>
+        prev.map(p =>
+          p.learningObjective?._id === objectiveId
+            ? { ...p, status: 'pending' }
+            : p
+        )
+      );
+      toast.error('Failed to save — please try again.');
     }
   };
 
