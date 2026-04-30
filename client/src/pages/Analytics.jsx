@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsAPI } from '../services/api';
+import { memGet, memSet } from '../utils/memCache';
 import { toast } from 'sonner';
 import {
   ComposedChart,
@@ -79,6 +80,17 @@ const Analytics = () => {
   }, [period]);
 
   const fetchAnalyticsData = async () => {
+    const cacheKey = `analytics:${period}`;
+    const cached = memGet(cacheKey);
+    if (cached) {
+      setOverallStats(cached.overallStats);
+      setObjectiveStats(cached.objectiveStats);
+      setCategoryStats(cached.categoryStats);
+      setStreakInfo(cached.streakInfo);
+      setWeeklyChartData(cached.weeklyChartData);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [overallRes, objectiveRes, categoryRes, streakRes, weeklyRes] = await Promise.all([
@@ -88,11 +100,19 @@ const Analytics = () => {
         analyticsAPI.getStreak(),
         analyticsAPI.getWeeklyChart()
       ]);
-      setOverallStats(overallRes.data.data);
-      setObjectiveStats(objectiveRes.data.data);
-      setCategoryStats(categoryRes.data.data);
-      setStreakInfo(streakRes.data.data);
-      setWeeklyChartData(weeklyRes.data.data);
+      const data = {
+        overallStats: overallRes.data.data,
+        objectiveStats: objectiveRes.data.data,
+        categoryStats: categoryRes.data.data,
+        streakInfo: streakRes.data.data,
+        weeklyChartData: weeklyRes.data.data
+      };
+      memSet(cacheKey, data, 60 * 1000); // 60s TTL
+      setOverallStats(data.overallStats);
+      setObjectiveStats(data.objectiveStats);
+      setCategoryStats(data.categoryStats);
+      setStreakInfo(data.streakInfo);
+      setWeeklyChartData(data.weeklyChartData);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
       toast.error('Failed to load analytics data');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { scheduleAPI, objectivesAPI, progressAPI } from '../services/api';
+import { memGet, memSet, memDel } from '../utils/memCache';
 import { toast } from 'sonner';
 import {
   Plus,
@@ -66,7 +67,22 @@ const Schedule = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (invalidate = false) => {
+    if (invalidate) { memDel('schedule:main'); memDel('schedule:progress'); }
+
+    const cachedMain = memGet('schedule:main');
+    const cachedProgress = memGet('schedule:progress');
+
+    if (cachedMain && cachedProgress) {
+      setSchedules(cachedMain.schedules);
+      setObjectives(cachedMain.objectives);
+      setTodayProgress(cachedProgress);
+      const defaultSchedule = cachedMain.schedules.find(s => s.isDefault);
+      if (defaultSchedule) setSelectedSchedule(defaultSchedule);
+      else if (cachedMain.schedules.length > 0) setSelectedSchedule(cachedMain.schedules[0]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [schedulesRes, objectivesRes, todayRes] = await Promise.all([
@@ -74,15 +90,15 @@ const Schedule = () => {
         objectivesAPI.getAll({ isActive: true }),
         progressAPI.getDaily()
       ]);
-      setSchedules(schedulesRes.data.data);
-      setObjectives(objectivesRes.data.data);
+      const scheduleData = { schedules: schedulesRes.data.data, objectives: objectivesRes.data.data };
+      memSet('schedule:main', scheduleData, 90 * 1000);    // schedules rarely change
+      memSet('schedule:progress', todayRes.data.data || [], 15 * 1000); // progress changes on completion
+      setSchedules(scheduleData.schedules);
+      setObjectives(scheduleData.objectives);
       setTodayProgress(todayRes.data.data || []);
       const defaultSchedule = schedulesRes.data.data.find(s => s.isDefault);
-      if (defaultSchedule) {
-        setSelectedSchedule(defaultSchedule);
-      } else if (schedulesRes.data.data.length > 0) {
-        setSelectedSchedule(schedulesRes.data.data[0]);
-      }
+      if (defaultSchedule) setSelectedSchedule(defaultSchedule);
+      else if (schedulesRes.data.data.length > 0) setSelectedSchedule(schedulesRes.data.data[0]);
     } catch (error) {
       console.error('Error fetching schedule data:', error);
       toast.error('Failed to load schedule');
@@ -109,7 +125,7 @@ const Schedule = () => {
       toast.success('Schedule created successfully');
       setShowCreateModal(false);
       setScheduleForm({ name: '', description: '' });
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error('Failed to create schedule');
     }
@@ -125,7 +141,7 @@ const Schedule = () => {
 
       toast.success('Objective added to schedule');
       setShowAddItemModal(false);
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add item');
     }
@@ -137,7 +153,7 @@ const Schedule = () => {
 
       await scheduleAPI.removeItemFromDay(selectedSchedule._id, selectedDay, objectiveId);
       toast.success('Item removed');
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error('Failed to remove item');
     }
@@ -147,7 +163,7 @@ const Schedule = () => {
     try {
       await scheduleAPI.setDefault(scheduleId);
       toast.success('Default schedule updated');
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error('Failed to update default schedule');
     }
@@ -159,7 +175,7 @@ const Schedule = () => {
     try {
       await scheduleAPI.delete(scheduleId);
       toast.success('Schedule deleted');
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error('Failed to delete schedule');
     }
@@ -218,10 +234,11 @@ const Schedule = () => {
       );
 
       toast.success('Marked as completed!');
+      memDel('dashboard:main'); // so dashboard reflects updated progress
       setShowNotesModal(false);
       setPendingCompleteId(null);
       setNotesForm({ notes: '', timeSpent: '' });
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error('Failed to update progress');
     }
@@ -249,7 +266,7 @@ const Schedule = () => {
       });
 
       toast.success('Marked as skipped');
-      fetchData();
+      fetchData(true);
     } catch (error) {
       toast.error('Failed to skip');
     }

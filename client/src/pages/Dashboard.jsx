@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsAPI, progressAPI, objectivesAPI } from '../services/api';
+import { memGet, memSet, memInvalidate } from '../utils/memCache';
 import { toast } from 'sonner';
 import { Calendar, CheckCircle, Clock, Target, ArrowRight, TrendingUp, Award, Flame, Zap, BookOpen, Star, MoreHorizontal, ChevronLeft, ChevronRight, XCircle, Sparkles, Plus, ExternalLink } from 'lucide-react';
 import {
@@ -79,6 +80,17 @@ const Dashboard = () => {
   }, [calendarDate]);
 
   const fetchDashboardData = async () => {
+    // Serve from cache if fresh (avoids cold start on re-navigation)
+    const cached = memGet('dashboard:main');
+    if (cached) {
+      setStats(cached.stats);
+      setStreak(cached.streak);
+      setTodayProgress(cached.todayProgress);
+      setObjectives(cached.objectives);
+      setWeeklyData(cached.weeklyData);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [overallRes, streakRes, dailyRes, objectivesRes, weeklyRes] = await Promise.all([
@@ -88,11 +100,19 @@ const Dashboard = () => {
         objectivesAPI.getAll({ isActive: true }),
         analyticsAPI.getWeeklyChart()
       ]);
-      setStats(overallRes.data.data);
-      setStreak(streakRes.data.data);
-      setTodayProgress(dailyRes.data.data || []);
-      setObjectives(objectivesRes.data.data || []);
-      setWeeklyData(weeklyRes.data.data || []);
+      const data = {
+        stats: overallRes.data.data,
+        streak: streakRes.data.data,
+        todayProgress: dailyRes.data.data || [],
+        objectives: objectivesRes.data.data || [],
+        weeklyData: weeklyRes.data.data || []
+      };
+      memSet('dashboard:main', data, 30 * 1000); // 30s TTL — progress can change
+      setStats(data.stats);
+      setStreak(data.streak);
+      setTodayProgress(data.todayProgress);
+      setObjectives(data.objectives);
+      setWeeklyData(data.weeklyData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Failed to load dashboard data');
@@ -102,14 +122,18 @@ const Dashboard = () => {
   };
 
   const fetchCalendarAnalytics = async (date) => {
+    const month = date.getUTCMonth() + 1;
+    const year = date.getUTCFullYear();
+    const cacheKey = `dashboard:calendar:${year}-${month}`;
+    const cached = memGet(cacheKey);
+    if (cached) { setDailyAnalytics(cached); return; }
     try {
       // Use UTC month/year so we fetch the right month's data
-      const month = date.getUTCMonth() + 1;
-      const year = date.getUTCFullYear();
       const res = await analyticsAPI.getDaily(month, year);
       const data = res.data.data || [];
       const map = {};
       data.forEach((day) => { map[day.date] = day; });
+      memSet(cacheKey, map, 60 * 1000);
       setDailyAnalytics(map);
     } catch (error) {
       console.error('Error fetching calendar analytics:', error);
