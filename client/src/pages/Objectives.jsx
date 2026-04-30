@@ -181,10 +181,8 @@ const Objectives = () => {
 
   const handleViewProgress = async (objective) => {
     try {
-      const response = await objectivesAPI.getWithProgress(objective._id, {
-        startDate: (() => { const d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; })(),
-        endDate: (() => { const d = new Date(); return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; })()
-      });
+      // No date range → backend returns ALL records for this objective
+      const response = await objectivesAPI.getWithProgress(objective._id);
       setSelectedObjective(response.data.data.objective);
       setProgressData(response.data.data.progress);
       setShowProgressModal(true);
@@ -631,8 +629,10 @@ const Objectives = () => {
                   })}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800">{selectedObjective.title}</h3>
-                  <p className="text-sm text-gray-500">Last 30 days progress</p>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{selectedObjective.title}</h3>
+                  <p className="text-sm text-gray-500">
+                    All-time record · {progressData.length} {progressData.length === 1 ? 'entry' : 'entries'}
+                  </p>
                 </div>
               </div>
               <button
@@ -642,6 +642,30 @@ const Objectives = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Stats summary bar */}
+            {progressData.length > 0 && (() => {
+              const completed = progressData.filter(p => p.status === 'completed').length;
+              const missed    = progressData.filter(p => p.status === 'missed').length;
+              const skipped   = progressData.filter(p => p.status === 'skipped').length;
+              const total     = progressData.length;
+              const rate      = Math.round((completed / total) * 100);
+              return (
+                <div className="grid grid-cols-4 gap-3 mb-5">
+                  {[
+                    { label: 'Total',     value: total,     color: 'text-gray-700 dark:text-gray-200',  bg: 'bg-gray-50 dark:bg-slate-800' },
+                    { label: 'Completed', value: completed, color: 'text-green-700 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20' },
+                    { label: 'Missed',    value: missed,    color: 'text-red-600 dark:text-red-400',    bg: 'bg-red-50 dark:bg-red-900/20' },
+                    { label: 'Rate',      value: `${rate}%`, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                  ].map(s => (
+                    <div key={s.label} className={`${s.bg} rounded-xl p-3 text-center`}>
+                      <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {progressData.length > 0 ? (
               <div className="space-y-3">
