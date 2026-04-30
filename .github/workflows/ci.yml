@@ -1,0 +1,91 @@
+name: CI — Lint & Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: Backend — dependency & syntax check
+  # ─────────────────────────────────────────────
+  server-check:
+    name: 🖥️ Server — Install & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Check for syntax errors (dry run)
+        run: node --check server.js
+        working-directory: server
+
+      - name: Validate all route files load without error
+        run: |
+          for f in routes/*.js; do node --check "$f" && echo "✅ $f OK"; done
+          for f in controllers/*.js; do node --check "$f" && echo "✅ $f OK"; done
+          for f in utils/*.js; do node --check "$f" && echo "✅ $f OK"; done
+        working-directory: server
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Frontend — lint + production build
+  # ─────────────────────────────────────────────
+  client-build:
+    name: 🌐 Client — Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: client
+
+      - name: Build production bundle
+        run: npm run build
+        working-directory: client
+        env:
+          # Dummy value so Vite doesn't fail on missing env vars during CI build
+          VITE_API_URL: https://api.learnflow.app/api
+
+      - name: Check build output exists
+        run: |
+          test -d dist && echo "✅ Build output found" || (echo "❌ Build failed" && exit 1)
+        working-directory: client
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Summary — blocks merge if either fails
+  # ─────────────────────────────────────────────
+  ci-success:
+    name: ✅ CI Passed
+    needs: [server-check, client-build]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: All checks passed
+        run: echo "🚀 All CI checks passed. Safe to deploy."

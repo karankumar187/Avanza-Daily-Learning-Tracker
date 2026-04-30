@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings=0"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -60,6 +61,7 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
@@ -69,6 +71,7 @@
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "globals": "^17.5.0",
     "postcss": "^8.5.6",
     "puppeteer": "^24.37.5",
     "tailwindcss": "^3.4.19",
