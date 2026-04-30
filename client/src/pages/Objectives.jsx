@@ -288,72 +288,70 @@ const Objectives = () => {
 
       {/* Objectives Grid */}
       {filteredObjectives.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredObjectives.map((objective) => {
             const IconComponent = getIconComponent(objective.icon);
             return (
               <div
                 key={objective._id}
                 data-objective-id={objective._id}
-                className="objective-card group relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl"
-                style={{ boxShadow: `0 4px 24px 0 ${objective.color}22` }}
+                className="objective-card group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl border border-gray-100 dark:border-slate-800"
                 onClick={() => handleViewProgress(objective)}
               >
-                {/* ── HERO SECTION ─────────────────────────── */}
+                {/* Left accent stripe — only place objective color is prominent */}
                 <div
-                  className="relative h-44 flex items-center justify-center overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${objective.color}ee 0%, ${objective.color}99 60%, #111827 100%)` }}
-                >
-                  {/* Decorative blurred orbs */}
-                  <div
-                    className="absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-30 blur-2xl"
-                    style={{ background: objective.color }}
-                  />
-                  <div
-                    className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full opacity-20 blur-xl"
-                    style={{ background: objective.color }}
+                  className="absolute left-0 top-0 bottom-0 w-1 rounded-r-sm"
+                  style={{ backgroundColor: objective.color }}
+                />
+
+                {/* ── HERO SECTION — themed, not objective-colored ─── */}
+                <div className="relative h-36 bg-gray-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden border-b border-gray-100 dark:border-slate-700">
+                  {/* Subtle warm pattern overlay */}
+                  <div className="absolute inset-0 opacity-[0.04]"
+                    style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #4A7C59 0%, transparent 60%), radial-gradient(circle at 80% 20%, #6FAF82 0%, transparent 50%)' }}
                   />
 
-                  {/* Big centered icon */}
+                  {/* Icon container — objective color used lightly as tint */}
                   <div
-                    className="relative z-10 w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm"
-                    style={{ background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)' }}
+                    className="relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm"
+                    style={{
+                      backgroundColor: `${objective.color}18`,
+                      border: `1.5px solid ${objective.color}30`
+                    }}
                   >
-                    <IconComponent className="w-10 h-10 text-white drop-shadow" />
+                    <IconComponent className="w-8 h-8" style={{ color: objective.color }} />
                   </div>
 
-                  {/* Priority badge — top left */}
-                  <span
-                    className={`absolute top-4 left-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow ${getPriorityClass(objective.priority)}`}
-                  >
+                  {/* Priority badge — uses theme green/grey, not objective color */}
+                  <span className={`absolute top-3 left-5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase ${getPriorityClass(objective.priority)}`}>
                     {objective.priority}
                   </span>
 
-                  {/* Edit / Delete — top right, show on hover */}
+                  {/* Edit / Delete — top right, appear on hover */}
                   <div
-                    className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    className="absolute top-2.5 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       onClick={() => handleEdit(objective)}
-                      className="p-1.5 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/35 transition-colors"
+                      className="p-1.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 shadow-sm transition-colors"
                     >
-                      <Edit2 className="w-3.5 h-3.5 text-white" />
+                      <Edit2 className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                     </button>
                     <button
                       onClick={() => handleDelete(objective._id)}
-                      className="p-1.5 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-red-500/70 transition-colors"
+                      className="p-1.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 shadow-sm transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-white" />
+                      <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
                     </button>
                   </div>
                 </div>
 
-                {/* ── CARD BODY ─────────────────────────────── */}
-                <div className="bg-gray-900 dark:bg-gray-950 px-5 pt-4 pb-5">
-                  {/* Title + link */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-lg text-white leading-snug line-clamp-1 group-hover:text-green-400 transition-colors">
+                {/* ── CARD BODY — full theme colors ─────────────── */}
+                <div className="pl-6 pr-5 pt-4 pb-4">
+                  {/* Title + resource link */}
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <h3 className="font-semibold text-base text-gray-800 dark:text-gray-100 leading-snug line-clamp-1 group-hover:text-green-800 dark:group-hover:text-green-400 transition-colors">
                       {objective.title}
                     </h3>
                     {objective.url && (
@@ -362,36 +360,35 @@ const Objectives = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="flex-shrink-0 text-gray-400 hover:text-green-400 transition-colors mt-0.5"
+                        className="flex-shrink-0 text-gray-300 dark:text-gray-600 hover:text-green-700 dark:hover:text-green-400 transition-colors mt-0.5"
                         title="Open learning resource"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     )}
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 mb-4">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed line-clamp-2 mb-4">
                     {objective.description || 'No description provided.'}
                   </p>
 
-                  {/* Footer: category + view progress CTA */}
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
-                      style={{ background: `${objective.color}25`, color: objective.color }}
-                    >
+                  {/* Footer divider */}
+                  <div className="border-t border-gray-50 dark:border-slate-800 pt-3 flex items-center justify-between">
+                    {/* Category — objective color as a small dot only */}
+                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
                       <span
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{ background: objective.color }}
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: objective.color }}
                       />
                       {objective.category || 'General'}
                     </span>
 
-                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 group-hover:text-green-400 transition-colors font-medium">
+                    {/* View Progress CTA */}
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors font-medium">
                       View Progress
-                      <svg className="w-3.5 h-3.5 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </span>
                   </div>
