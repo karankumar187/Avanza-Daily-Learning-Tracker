@@ -175,11 +175,10 @@ const Dashboard = () => {
   // Debug: log what getDayStatus returns for today
   const debugTodayKey = (() => {
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     } catch { return 'error'; }
   })();
-  console.log('[Calendar] Today key (local tz):', debugTodayKey, '| dailyAnalytics[today]:', dailyAnalytics[debugTodayKey]);
+  console.log('[Calendar] Today key (UTC):', debugTodayKey, '| dailyAnalytics[today]:', dailyAnalytics[debugTodayKey]);
 
   // Calendar functions
   const getDaysInMonth = (date) => {
@@ -232,14 +231,14 @@ const Dashboard = () => {
   };
 
   const getDayStatus = (dateObj) => {
-    // Format date key in LOCAL timezone to match backend (which stores YYYY-MM-DD in user's tz)
-    const localFormatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    // Format date key in UTC to match backend (now always using UTC)
+    const utcFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'UTC',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     });
-    const key = localFormatter.format(dateObj); // YYYY-MM-DD in user's local timezone
+    const key = utcFormatter.format(dateObj); // YYYY-MM-DD in UTC
     const data = dailyAnalytics[key];
     if (!data || data.total === 0) return null;
 
