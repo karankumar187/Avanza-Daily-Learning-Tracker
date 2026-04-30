@@ -27,6 +27,7 @@
     "node-cron": "^3.0.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "serverless-http": "^3.2.0",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {

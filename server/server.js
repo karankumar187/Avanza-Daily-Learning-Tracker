@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const cron = require('node-cron');
 const moment = require('moment-timezone');
 const passport = require('passport');
 const session = require('express-session');
@@ -31,6 +30,7 @@ const aiAssistantRoutes = require('./routes/aiAssistant');
 const feedbackRoutes = require('./routes/feedback');
 const noteRoutes = require('./routes/notes');
 const notificationRoutes = require('./routes/notifications');
+const cronRoutes = require('./routes/cron');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -121,6 +121,7 @@ app.use('/api/ai', aiAssistantRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/cron', cronRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -158,184 +159,34 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-connectDB()
-  .then(() => {
-    console.log('Database connected');
+// Export app for serverless execution (e.g. Netlify)
+module.exports = app;
 
-    // Setup Passport strategies
-    require('./config/passportConfig')();
+// If the file is run directly (not imported as a module), start the local server
+if (require.main === module) {
+  connectDB()
+    .then(() => {
+      console.log('Database connected');
 
-    const server = app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+      // Setup Passport strategies
+      require('./config/passportConfig')();
 
-    // Handle unhandled rejections safely
-    process.on('unhandledRejection', (err) => {
-      console.error('UNHANDLED REJECTION! 💥 Shutting down...');
-      console.error(err.name, err.message);
-
-      server.close(() => {
-        process.exit(1);
+      const server = app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
       });
+
+      // Handle unhandled rejections safely
+      process.on('unhandledRejection', (err) => {
+        console.error('UNHANDLED REJECTION! 💥 Shutting down...');
+        console.error(err.name, err.message);
+
+        server.close(() => {
+          process.exit(1);
+        });
+      });
+    })
+    .catch((err) => {
+      console.error('Database connection failed:', err);
+      process.exit(1);
     });
-
-    /* =========================
-       CRON JOBS
-    ========================= */
-
-    // Auto-mark missed progress dynamically (runs hourly, checks if it's 11:59 PM in user's timezone)
-    cron.schedule('59 * * * *', async () => {
-      console.log('Running dynamic auto-mark missed progress cron job...');
-      try {
-        const users = await User.find({});
-        for (const user of users) {
-          const userTz = user.timezone || 'UTC';
-          const userNow = moment.tz(userTz);
-          
-          if (userNow.hour() === 23) {
-            const yesterday = moment.tz(userTz).subtract(1, 'day').startOf('day').toDate();
-            const endOfYesterday = moment.tz(userTz).subtract(1, 'day').endOf('day').toDate();
-
-            await DailyProgress.updateMany(
-              {
-                user: user._id,
-                date: { $gte: yesterday, $lte: endOfYesterday },
-                status: 'pending'
-              },
-              {
-                status: 'missed',
-                updatedAt: Date.now()
-              }
-            );
-          }
-        }
-      } catch (error) {
-        console.error('Error in dynamic auto-mark cron job:', error);
-      }
-    });
-
-    // Create daily progress dynamically for each user (runs hourly, triggers shortly after user's local midnight)
-    cron.schedule('5 * * * *', async () => {
-      console.log('Running dynamic hourly daily progress creation cron job...');
-      try {
-        const users = await User.find({});
-        for (const user of users) {
-          const userTz = user.timezone || 'UTC';
-          const userNow = moment.tz(userTz);
-          
-          // If it's between 12:00 AM and 1:00 AM in the user's timezone, generate their daily progress
-          if (userNow.hour() === 0) {
-            const syncProgress = require('./utils/syncProgress');
-            await syncProgress(user._id, userTz, 2);
-            console.log(`Synced progress for user ${user._id} in timezone ${userTz}`);
-          }
-        }
-      } catch (error) {
-        console.error('Error in dynamic daily progress cron job:', error);
-      }
-    });
-
-    // Incomplete task reminder hourly check
-    cron.schedule('0 * * * *', async () => {
-      console.log('Running hourly incomplete task reminder check...');
-      try {
-        const users = await User.find({});
-        for (const user of users) {
-          const userTz = user.timezone || 'UTC';
-          const userHour = moment.tz(userTz).hour();
-          
-          if (userHour === 17) {
-            await sendIncompleteTaskReminderForUser(user, 'evening');
-          } else if (userHour === 22) {
-            await sendIncompleteTaskReminderForUser(user, 'night');
-          }
-        }
-      } catch (error) {
-        console.error('Error in dynamic reminder cron:', error);
-      }
-    });
-
-    // Weekly motivation (Hourly check, runs Monday 9:00 AM user local time)
-    cron.schedule('0 * * * *', async () => {
-      console.log('Checking weekly motivation notifications...');
-      try {
-        const users = await User.find({});
-        for (const user of users) {
-          const userTz = user.timezone || 'UTC';
-          const userNow = moment.tz(userTz);
-          
-          if (userNow.day() === 1 && userNow.hour() === 9) { // Monday 9 AM
-            const weekAgo = moment.tz(userTz).subtract(7, 'days').startOf('day').toDate();
-            const now = moment.tz(userTz).endOf('day').toDate();
-            
-            const completedLastWeek = await DailyProgress.countDocuments({
-              user: user._id,
-              status: 'completed',
-              date: { $gte: weekAgo, $lte: now }
-            });
-
-            if (completedLastWeek > 0) {
-              await Notification.create({
-                user: user._id,
-                title: 'Weekly Summary',
-                message: `Last week you completed ${completedLastWeek} tasks. Let's make this week even better!`,
-                type: 'info'
-              });
-            } else {
-              await Notification.create({
-                user: user._id,
-                title: 'New Week, Fresh Start!',
-                message: 'A new week begins! Set your learning goals and start building momentum.',
-                type: 'info'
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error in weekly motivation cron:', error);
-      }
-    });
-
-    console.log('Cron jobs scheduled successfully.');
-  })
-  .catch((err) => {
-    console.error('Database connection failed:', err);
-    process.exit(1);
-  });
-
-// Helper: Send incomplete task reminders for a specific user
-async function sendIncompleteTaskReminderForUser(user, timeOfDay) {
-  const userTz = user.timezone || 'UTC';
-  const todayStart = moment.tz(userTz).startOf('day').toDate();
-  const todayEnd = moment.tz(userTz).endOf('day').toDate();
-
-  const pendingEntries = await DailyProgress.find({
-    user: user._id,
-    date: { $gte: todayStart, $lte: todayEnd },
-    status: 'pending'
-  }).populate('learningObjective', 'title');
-
-  if (pendingEntries.length === 0) return;
-
-  const tasks = pendingEntries.map(entry => entry.learningObjective?.title || 'Unnamed task');
-  const taskCount = tasks.length;
-  const taskList = tasks.slice(0, 3).join(', ');
-  const extra = taskCount > 3 ? ` and ${taskCount - 3} more` : '';
-
-  const title = timeOfDay === 'evening'
-    ? 'Evening Reminder'
-    : 'Late Night Reminder';
-
-  const message = timeOfDay === 'evening'
-    ? `You still have ${taskCount} pending task${taskCount > 1 ? 's' : ''}: ${taskList}${extra}. Complete them before the day ends!`
-    : `Don't forget! ${taskCount} task${taskCount > 1 ? 's are' : ' is'} still pending: ${taskList}${extra}. Wrap up before midnight!`;
-
-  await Notification.create({
-    user: user._id,
-    title,
-    message,
-    type: 'warning'
-  });
-  
-  console.log(`Sent ${timeOfDay} reminder to user ${user._id}`);
 }
