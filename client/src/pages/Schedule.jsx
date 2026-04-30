@@ -257,7 +257,9 @@ const Schedule = () => {
   const getObjectiveById = (id) => objectives.find(o => o._id === id);
 
   const getProgressForObjective = (objectiveId) => {
-    const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    // Use UTC day to match UTC-based scheduling
+    const utcDay = new Date().getUTCDay();
+    const todayIndex = utcDay === 0 ? 6 : utcDay - 1;
     const todayName = days[todayIndex];
     // Only show / use progress when viewing today's schedule
     if (selectedDay !== todayName) return undefined;
