@@ -312,7 +312,8 @@ const Dashboard = () => {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'UTC'  // Always show UTC date to match UTC-based scheduling
     });
   };
 
@@ -473,7 +474,7 @@ const Dashboard = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Today's Progress</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' })}
                   </p>
                 </div>
               </div>

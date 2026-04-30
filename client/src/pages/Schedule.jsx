@@ -24,7 +24,11 @@ const Schedule = () => {
   const [schedules, setSchedules] = useState([]);
   const [objectives, setObjectives] = useState([]);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]);
+  // Use UTC day so schedule aligns with UTC-based task scheduling
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const utcDay = new Date().getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    return days[utcDay === 0 ? 6 : utcDay - 1];
+  });
   const [loading, setLoading] = useState(!localStorage.getItem('learnflow:schedule'));
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
