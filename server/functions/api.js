@@ -17,7 +17,11 @@ module.exports.handler = async (event, context) => {
   if (mongoose.connection.readyState !== 1) {
     try {
       console.log('Connecting to MongoDB...');
-      await mongoose.connect(process.env.MONGODB_URI);
+      await mongoose.connect(process.env.MONGODB_URI, {
+        maxPoolSize: 10, // reuse connections across warm serverless functions
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      });
       console.log('MongoDB connected');
     } catch (err) {
       console.error('MongoDB connection error:', err);

@@ -1,85 +1,69 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
 
-// Pages
+// ── Eagerly loaded (needed immediately for auth flow) ──────
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Objectives from './pages/Objectives';
-import Schedule from './pages/Schedule';
-import Analytics from './pages/Analytics';
-import AIAssistant from './pages/AIAssistant';
-import Notes from './pages/Notes';
-import Layout from './components/Layout';
 import OAuthCallback from './pages/OAuthCallback';
+import Layout from './components/Layout';
 
-// Protected Route Component
+// ── Lazily loaded (only fetched when first visited) ────────
+const Dashboard    = lazy(() => import('./pages/Dashboard'));
+const Objectives   = lazy(() => import('./pages/Objectives'));
+const Schedule     = lazy(() => import('./pages/Schedule'));
+const Analytics    = lazy(() => import('./pages/Analytics'));
+const AIAssistant  = lazy(() => import('./pages/AIAssistant'));
+const Notes        = lazy(() => import('./pages/Notes'));
+
+// ── Skeleton fallbacks ─────────────────────────────────────
+import {
+  DashboardSkeleton,
+  ObjectivesSkeleton,
+  ScheduleSkeleton,
+  AnalyticsSkeleton,
+  NotesSkeleton,
+  AIAssistantSkeleton,
+} from './components/Skeleton';
+
+// ── Auth loading spinner (themed) ─────────────────────────
+const AuthLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-10 h-10 rounded-full border-2 border-green-700 border-t-transparent animate-spin" />
+      <p className="text-sm text-gray-400 font-medium tracking-wide">Loading LearnFlow…</p>
+    </div>
+  </div>
+);
+
+// ── Route guards ───────────────────────────────────────────
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
+  if (loading) return <AuthLoader />;
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
-// Public Route Component (redirect if authenticated)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
+  if (loading) return <AuthLoader />;
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
 };
 
+// ── App ────────────────────────────────────────────────────
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Toaster position="top-right" richColors />
         <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
+          {/* Public */}
+          <Route path="/login"          element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register"       element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/oauth-callback" element={<PublicRoute><OAuthCallback /></PublicRoute>} />
 
-          <Route
-            path="/oauth-callback"
-            element={
-              <PublicRoute>
-                <OAuthCallback />
-              </PublicRoute>
-            }
-          />
-
-          {/* Protected Routes */}
+          {/* Protected — each route has its own Suspense + skeleton */}
           <Route
             path="/"
             element={
@@ -89,12 +73,42 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="objectives" element={<Objectives />} />
-            <Route path="schedule" element={<Schedule />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="ai-assistant" element={<AIAssistant />} />
-            <Route path="notes" element={<Notes />} />
+
+            <Route path="dashboard" element={
+              <Suspense fallback={<DashboardSkeleton />}>
+                <Dashboard />
+              </Suspense>
+            } />
+
+            <Route path="objectives" element={
+              <Suspense fallback={<ObjectivesSkeleton />}>
+                <Objectives />
+              </Suspense>
+            } />
+
+            <Route path="schedule" element={
+              <Suspense fallback={<ScheduleSkeleton />}>
+                <Schedule />
+              </Suspense>
+            } />
+
+            <Route path="analytics" element={
+              <Suspense fallback={<AnalyticsSkeleton />}>
+                <Analytics />
+              </Suspense>
+            } />
+
+            <Route path="ai-assistant" element={
+              <Suspense fallback={<AIAssistantSkeleton />}>
+                <AIAssistant />
+              </Suspense>
+            } />
+
+            <Route path="notes" element={
+              <Suspense fallback={<NotesSkeleton />}>
+                <Notes />
+              </Suspense>
+            } />
           </Route>
         </Routes>
       </Router>
