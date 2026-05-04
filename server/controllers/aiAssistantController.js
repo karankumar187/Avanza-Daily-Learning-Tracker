@@ -590,7 +590,7 @@ exports.chatWithAI = async (req, res, next) => {
         conversationContext.push({ role: 'user', content: prompt });
 
         const response = await hf.chatCompletion({
-          model: 'mistralai/Mistral-7B-Instruct-v0.2',
+          model: 'Qwen/Qwen2.5-72B-Instruct',
           messages: conversationContext,
           max_tokens: 1200,
           temperature: 0.7
@@ -600,7 +600,7 @@ exports.chatWithAI = async (req, res, next) => {
           reply = response.choices[0].message.content.trim();
         }
       } catch (apiError) {
-        console.log('Hugging Face chat API error, using fallback:', apiError.message);
+        console.error('Hugging Face chat API error, using fallback. Error details:', apiError);
       }
     }
 
