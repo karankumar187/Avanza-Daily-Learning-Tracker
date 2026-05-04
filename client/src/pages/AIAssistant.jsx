@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { aiAPI, objectivesAPI } from "../services/api";
 import { toast } from "sonner";
 import {
@@ -71,6 +71,19 @@ const AIAssistant = () => {
   useEffect(() => {
     cachedChatMessages = chatMessages;
   }, [chatMessages]);
+
+  // Auto-scroll to bottom of chat
+  const messagesEndRef = useRef(null);
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (activeTab === "chat") {
+      scrollToBottom();
+    }
+  }, [chatMessages, chatLoading, activeTab]);
 
   // GSAP animations for tab switching
   useGSAP(() => {
@@ -541,7 +554,7 @@ const AIAssistant = () => {
             </div>
           </div>
         ) : (
-          <div className="glass-card rounded-xl flex flex-col h-[600px] overflow-hidden">
+          <div className="glass-card rounded-xl flex flex-col h-[calc(100vh-280px)] min-h-[400px] max-h-[800px] overflow-hidden">
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {chatMessages.map((msg, idx) => (
                 <div
@@ -587,6 +600,8 @@ const AIAssistant = () => {
                   </div>
                 </div>
               )}
+              
+              <div ref={messagesEndRef} />
             </div>
 
             <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
