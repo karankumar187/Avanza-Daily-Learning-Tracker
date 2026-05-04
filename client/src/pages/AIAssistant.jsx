@@ -240,41 +240,7 @@ const AIAssistant = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
-      <div className="glass-card rounded-2xl p-4">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center ">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-              AI Learning Assistant
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Get personalized learning schedules and smart study suggestions
-            </p>
-          </div>
-        </div>
 
-        <div className="flex flex-wrap gap-2 mt-2">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
-            <Lightbulb className="w-4 h-4" />
-            Smart Planning
-          </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
-            <Target className="w-4 h-4" />
-            Goal Oriented
-          </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">
-            <Calendar className="w-4 h-4" />
-            Time Optimized
-          </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-sky-100 text-sky-700 text-sm">
-            <BookOpen className="w-4 h-4" />
-            Tips from your objectives
-          </span>
-        </div>
-      </div>
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 dark:border-slate-800">
@@ -562,7 +528,7 @@ const AIAssistant = () => {
             </div>
           </div>
         ) : (
-          <div className="glass-card rounded-xl flex flex-col h-[calc(100vh-280px)] min-h-[400px] max-h-[800px] overflow-hidden">
+          <div className="glass-card rounded-xl flex flex-col h-[calc(100vh-140px)] min-h-[400px] overflow-hidden">
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {chatMessages.map((msg, idx) => (
                 <div
