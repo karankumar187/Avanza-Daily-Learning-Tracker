@@ -195,7 +195,9 @@ const AIAssistant = () => {
       setChatLoading(true);
       const response = await aiAPI.chat({
         prompt: userMessage,
-        messages: activeChatId ? chatMessages : chatMessages.slice(1),
+        messages: chatMessages.length > 0 && chatMessages[0].role === "assistant" 
+          ? chatMessages.slice(1) 
+          : chatMessages,
         chatId: activeChatId
       });
 

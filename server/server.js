@@ -45,8 +45,8 @@ const LearningObjective = require('./models/LearningObjective');
 const app = express();
 
 // Middleware
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Guard: crash loudly if session secret is missing in production
 if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET && !process.env.JWT_SECRET) {
