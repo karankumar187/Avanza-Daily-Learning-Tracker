@@ -591,7 +591,7 @@ exports.chatWithAI = async (req, res, next) => {
         conversationContext.push({ role: 'user', content: prompt });
 
         const response = await hf.chatCompletion({
-          model: 'Qwen/Qwen2.5-72B-Instruct',
+          model: 'Qwen/Qwen2.5-7B-Instruct',
           messages: conversationContext,
           max_tokens: 1200,
           temperature: 0.7
