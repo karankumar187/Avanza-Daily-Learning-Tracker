@@ -81,9 +81,9 @@ const AIAssistant = () => {
 
   useEffect(() => {
     if (activeTab === "chat") {
-      scrollToBottom();
+      setTimeout(scrollToBottom, 100);
     }
-  }, [chatMessages, chatLoading, activeTab]);
+  }, [activeTab]);
 
   // GSAP animations for tab switching
   useGSAP(() => {
@@ -154,6 +154,9 @@ const AIAssistant = () => {
       ...prev,
       { role: "user", content: userMessage },
     ]);
+    
+    // Auto scroll right after user asks a question
+    setTimeout(scrollToBottom, 100);
 
     try {
       setChatLoading(true);
@@ -233,22 +236,22 @@ const AIAssistant = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="glass-card rounded-2xl p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center ">
-            <Sparkles className="w-7 h-7 text-white" />
+      <div className="glass-card rounded-2xl p-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center ">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
               AI Learning Assistant
             </h2>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Get personalized learning schedules and smart study suggestions
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-2">
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
             <Lightbulb className="w-4 h-4" />
             Smart Planning
@@ -563,7 +566,7 @@ const AIAssistant = () => {
                 >
                   <div
                     className={`max-w-[80%] rounded-2xl px-5 py-3 ${msg.role === "user"
-                      ? "bg-green-700 text-white rounded-br-none"
+                      ? "bg-slate-800 dark:bg-slate-700 text-white rounded-br-none shadow-sm"
                       : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-100 rounded-bl-none"
                       }`}
                   >
@@ -573,7 +576,9 @@ const AIAssistant = () => {
                         AI Coach
                       </div>
                     )}
-                    <div className="prose prose-sm dark:prose-invert max-w-none text-[15px] leading-relaxed">
+                    <div className={`prose prose-sm max-w-none text-[15px] leading-relaxed ${
+                      msg.role === "user" ? "prose-invert" : "dark:prose-invert"
+                    }`}>
                       <ReactMarkdown>
                         {msg.content}
                       </ReactMarkdown>
