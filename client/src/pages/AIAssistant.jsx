@@ -203,8 +203,10 @@ const AIAssistant = () => {
 
       if (response.data.data.chatId && !activeChatId) {
         setActiveChatId(response.data.data.chatId);
-        fetchChatSessions();
       }
+      
+      // Always refresh to bubble the active chat to the top of the sidebar
+      fetchChatSessions();
 
       setChatMessages((prev) => [
         ...prev,
