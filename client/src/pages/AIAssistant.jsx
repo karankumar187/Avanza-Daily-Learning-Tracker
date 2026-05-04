@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
+import ReactMarkdown from "react-markdown";
 
 const timeOptions = [
   { value: "morning", label: "Morning (6AM - 12PM)" },
@@ -559,9 +560,11 @@ const AIAssistant = () => {
                         AI Coach
                       </div>
                     )}
-                    <p className="whitespace-pre-wrap leading-relaxed text-[15px]">
-                      {msg.content}
-                    </p>
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-[15px] leading-relaxed">
+                      <ReactMarkdown>
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               ))}
