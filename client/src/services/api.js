@@ -107,7 +107,8 @@ export const aiAPI = {
   updateSuggestion: (id, data) => api.put(`/ai/suggestions/${id}`, data),
   deleteSuggestion: (id) => api.delete(`/ai/suggestions/${id}`),
   chat: (data) => api.post('/ai/chat', data),
-  getChatHistory: () => api.get('/ai/chat/history')
+  getChatSessions: () => api.get('/ai/chat/sessions'),
+  getChatSession: (id) => api.get(`/ai/chat/sessions/${id}`)
 };
 
 // Feedback APIs

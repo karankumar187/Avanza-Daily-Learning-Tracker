@@ -55,6 +55,8 @@ const AIAssistant = () => {
   // Chat State
   const [activeTab, setActiveTab] = useState("schedule"); // 'schedule' or 'chat'
   const [chatInput, setChatInput] = useState("");
+  const [chatSessions, setChatSessions] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
   const [chatMessages, setChatMessages] = useState([
     {
       role: "assistant",
@@ -91,19 +93,45 @@ const AIAssistant = () => {
   useEffect(() => {
     fetchSuggestions();
     fetchObjectives();
-    fetchChatHistory();
+    fetchChatSessions();
   }, []);
 
-  const fetchChatHistory = async () => {
+  const fetchChatSessions = async () => {
     try {
-      const response = await aiAPI.getChatHistory();
-      if (response.data.data && response.data.data.length > 0) {
-        // Hydrate UI with persistent history
-        setChatMessages(response.data.data);
+      const response = await aiAPI.getChatSessions();
+      setChatSessions(response.data.data || []);
+      
+      // Optionally auto-load the most recent chat if none is active
+      if (response.data.data && response.data.data.length > 0 && !activeChatId) {
+        // loadChatSession(response.data.data[0]._id);
       }
     } catch (error) {
-      console.error("Error fetching chat history:", error);
+      console.error("Error fetching chat sessions:", error);
     }
+  };
+
+  const loadChatSession = async (id) => {
+    try {
+      setActiveChatId(id);
+      const response = await aiAPI.getChatSession(id);
+      if (response.data.data) {
+        setChatMessages(response.data.data.messages);
+        setTimeout(scrollToBottom, 100);
+      }
+    } catch (error) {
+      toast.error("Failed to load chat session");
+    }
+  };
+
+  const startNewChat = () => {
+    setActiveChatId(null);
+    setChatMessages([
+      {
+        role: "assistant",
+        content:
+          "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
+      },
+    ]);
   };
 
   const fetchSuggestions = async () => {
@@ -165,11 +193,16 @@ const AIAssistant = () => {
 
     try {
       setChatLoading(true);
-      // Send chat history (excuding the initial greeting to satisfy Mistral's role sequence rules)
       const response = await aiAPI.chat({
         prompt: userMessage,
-        messages: chatMessages.slice(1)
+        messages: activeChatId ? chatMessages : chatMessages.slice(1),
+        chatId: activeChatId
       });
+
+      if (response.data.data.chatId && !activeChatId) {
+        setActiveChatId(response.data.data.chatId);
+        fetchChatSessions();
+      }
 
       setChatMessages((prev) => [
         ...prev,
@@ -528,8 +561,44 @@ const AIAssistant = () => {
             </div>
           </div>
         ) : (
-          <div className="glass-card rounded-xl flex flex-col h-[calc(100vh-140px)] min-h-[400px] overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="glass-card rounded-xl flex h-[calc(100vh-140px)] min-h-[400px] overflow-hidden">
+            {/* Sidebar for Chat Sessions */}
+            <div className="w-64 border-r border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex-col hidden md:flex">
+              <div className="p-4 border-b border-gray-200 dark:border-slate-800">
+                <button 
+                  onClick={startNewChat}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Chat
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                {chatSessions.length === 0 && (
+                  <p className="text-center text-sm text-gray-500 mt-4">No recent chats</p>
+                )}
+                {chatSessions.map((session) => (
+                  <button
+                    key={session._id}
+                    onClick={() => loadChatSession(session._id)}
+                    className={`w-full text-left p-3 rounded-xl transition-colors text-sm block ${
+                      activeChatId === session._id 
+                        ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-100 ring-1 ring-green-200 dark:ring-green-800'
+                        : 'hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <div className="font-medium truncate">{session.title}</div>
+                    <div className="text-xs opacity-60 mt-1">
+                      {new Date(session.updatedAt).toLocaleDateString()}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col relative">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {chatMessages.map((msg, idx) => (
                 <div
                   key={idx}
@@ -607,6 +676,7 @@ const AIAssistant = () => {
                 </button>
               </form>
             </div>
+          </div>
           </div>
         )}
       </div>

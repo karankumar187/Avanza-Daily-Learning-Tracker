@@ -3,7 +3,7 @@ const { validationResult } = require('express-validator');
 const AISuggestion = require('../models/AISuggestion');
 const Schedule = require('../models/Schedule');
 const LearningObjective = require('../models/LearningObjective');
-const ChatHistory = require('../models/ChatHistory');
+const ChatSession = require('../models/ChatHistory');
 const { HUGGINGFACE_API_KEY } = require('../config/config');
 
 const { HfInference } = require('@huggingface/inference');
@@ -563,7 +563,7 @@ exports.chatWithAI = async (req, res, next) => {
       });
     }
 
-    const { prompt, messages = [] } = req.body;
+    const { prompt, messages = [], chatId } = req.body;
 
     let reply = null;
 
@@ -609,30 +609,95 @@ exports.chatWithAI = async (req, res, next) => {
       reply = `Here's a quick suggestion based on what you asked: ${prompt}\n\nBreak this into small sessions, focus on one clear objective at a time, and always finish by writing down what you learned or what you'll do next.`;
     }
 
-    // Save to ChatHistory (limit to 20 messages / 10 interactions)
+    let activeChatId = chatId;
+
     try {
-      await ChatHistory.findOneAndUpdate(
-        { user: req.user.id },
-        {
-          $push: {
-            messages: {
-              $each: [
-                { role: 'user', content: prompt },
-                { role: 'assistant', content: reply }
-              ],
-              $slice: -20
+      if (activeChatId) {
+        // Update existing chat session
+        await ChatSession.findByIdAndUpdate(
+          activeChatId,
+          {
+            $push: {
+              messages: {
+                $each: [
+                  { role: 'user', content: prompt },
+                  { role: 'assistant', content: reply }
+                ]
+              }
             }
           }
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
+        );
+      } else {
+        // Create new chat session
+        const title = prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt;
+        const newSession = await ChatSession.create({
+          user: req.user.id,
+          title: title,
+          messages: [
+            { role: 'user', content: prompt },
+            { role: 'assistant', content: reply }
+          ]
+        });
+        activeChatId = newSession._id;
+      }
+
+      // Enforce 10 sessions limit
+      const sessions = await ChatSession.find({ user: req.user.id })
+        .sort({ updatedAt: -1 })
+        .select('_id');
+      
+      if (sessions.length > 10) {
+        const idsToDelete = sessions.slice(10).map(s => s._id);
+        await ChatSession.deleteMany({ _id: { $in: idsToDelete } });
+      }
     } catch (dbError) {
-      console.error('Failed to save chat history to database:', dbError);
+      console.error('Failed to save chat session to database:', dbError);
     }
 
     res.status(200).json({
       success: true,
-      data: { reply }
+      data: { reply, chatId: activeChatId }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user's AI chat sessions
+// @route   GET /api/ai/chat/sessions
+// @access  Private
+exports.getChatSessions = async (req, res, next) => {
+  try {
+    const sessions = await ChatSession.find({ user: req.user.id })
+      .select('_id title updatedAt')
+      .sort({ updatedAt: -1 });
+    
+    res.status(200).json({
+      success: true,
+      data: sessions
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get a specific AI chat session
+// @route   GET /api/ai/chat/sessions/:id
+// @access  Private
+exports.getChatSession = async (req, res, next) => {
+  try {
+    const session = await ChatSession.findOne({ 
+      _id: req.params.id, 
+      user: req.user.id 
+    });
+    
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'Chat session not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: session
     });
   } catch (error) {
     next(error);
