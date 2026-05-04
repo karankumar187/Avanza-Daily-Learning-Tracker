@@ -218,7 +218,9 @@ const AIAssistant = () => {
         },
       ]);
     } catch (error) {
-      toast.error("Failed to get response from AI");
+      console.error("AI Chat Error Details:", error.response?.data || error.message || error);
+      const errorMsg = error.response?.data?.message || error.message || "Unknown error";
+      toast.error(`Failed to get response: ${errorMsg}`);
       setChatMessages((prev) => [
         ...prev,
         {
