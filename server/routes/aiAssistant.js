@@ -7,7 +7,8 @@ const {
   getSuggestion,
   updateSuggestion,
   deleteSuggestion,
-  chatWithAI
+  chatWithAI,
+  getChatHistory
 } = require('../controllers/aiAssistantController');
 const { protect } = require('../middleware/auth');
 
@@ -46,9 +47,11 @@ const chatValidation = [
 ];
 
 // Routes
+// Routes
 router.post('/suggest-schedule', protect, suggestValidation, suggestSchedule);
 router.post('/apply-suggestion/:suggestionId', protect, applyValidation, applySuggestion);
 router.post('/chat', protect, chatValidation, chatWithAI);
+router.get('/chat/history', protect, getChatHistory);
 router.get('/suggestions', protect, getSuggestions);
 router.get('/suggestions/:id', protect, getSuggestion);
 router.put('/suggestions/:id', protect, updateSuggestion);

@@ -39,8 +39,7 @@ const days = [
   "sunday",
 ];
 
-// Module-level cache to persist chat history during SPA routing navigation (resets on hard refresh)
-let cachedChatMessages = null;
+// Module-level cache removed as chat history is now persistent via DB
 
 const AIAssistant = () => {
   const [prompt, setPrompt] = useState("");
@@ -56,21 +55,14 @@ const AIAssistant = () => {
   // Chat State
   const [activeTab, setActiveTab] = useState("schedule"); // 'schedule' or 'chat'
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState(
-    cachedChatMessages || [
-      {
-        role: "assistant",
-        content:
-          "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
-      },
-    ]
-  );
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: "assistant",
+      content:
+        "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
+    },
+  ]);
   const [chatLoading, setChatLoading] = useState(false);
-
-  // Sync state upward to module cache to survive unmounts
-  useEffect(() => {
-    cachedChatMessages = chatMessages;
-  }, [chatMessages]);
 
   // Auto-scroll to bottom of chat
   const messagesEndRef = useRef(null);
@@ -99,7 +91,20 @@ const AIAssistant = () => {
   useEffect(() => {
     fetchSuggestions();
     fetchObjectives();
+    fetchChatHistory();
   }, []);
+
+  const fetchChatHistory = async () => {
+    try {
+      const response = await aiAPI.getChatHistory();
+      if (response.data.data && response.data.data.length > 0) {
+        // Hydrate UI with persistent history
+        setChatMessages(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+    }
+  };
 
   const fetchSuggestions = async () => {
     try {

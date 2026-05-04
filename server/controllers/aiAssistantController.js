@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const AISuggestion = require('../models/AISuggestion');
 const Schedule = require('../models/Schedule');
 const LearningObjective = require('../models/LearningObjective');
+const ChatHistory = require('../models/ChatHistory');
 const { HUGGINGFACE_API_KEY } = require('../config/config');
 
 const { HfInference } = require('@huggingface/inference');
@@ -608,9 +609,46 @@ exports.chatWithAI = async (req, res, next) => {
       reply = `Here's a quick suggestion based on what you asked: ${prompt}\n\nBreak this into small sessions, focus on one clear objective at a time, and always finish by writing down what you learned or what you'll do next.`;
     }
 
+    // Save to ChatHistory (limit to 20 messages / 10 interactions)
+    try {
+      await ChatHistory.findOneAndUpdate(
+        { user: req.user.id },
+        {
+          $push: {
+            messages: {
+              $each: [
+                { role: 'user', content: prompt },
+                { role: 'assistant', content: reply }
+              ],
+              $slice: -20
+            }
+          }
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    } catch (dbError) {
+      console.error('Failed to save chat history to database:', dbError);
+    }
+
     res.status(200).json({
       success: true,
       data: { reply }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user's AI chat history
+// @route   GET /api/ai/chat/history
+// @access  Private
+exports.getChatHistory = async (req, res, next) => {
+  try {
+    const history = await ChatHistory.findOne({ user: req.user.id });
+    
+    res.status(200).json({
+      success: true,
+      data: history ? history.messages : []
     });
   } catch (error) {
     next(error);
