@@ -278,11 +278,9 @@ const AIAssistant = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-
-
+    <div className="flex flex-col animate-fadeIn -m-4 lg:-m-8 h-[calc(100vh-64px)] lg:h-[calc(100vh-73px)] bg-[#F8F4EE] dark:bg-slate-950">
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-slate-800">
+      <div className="flex px-4 lg:px-8 pt-4 lg:pt-8 border-b border-gray-200 dark:border-slate-800 shrink-0">
         <button
           onClick={() => setActiveTab("schedule")}
           className={`px-6 py-3 font-medium text-sm flex items-center gap-2 border-b-2 transition-colors ${activeTab === "schedule"
@@ -305,11 +303,11 @@ const AIAssistant = () => {
         </button>
       </div>
 
-      <div className="tab-content">
+      {/* Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {activeTab === "schedule" ? (
-          <div className="space-y-6">
-            {/* Schedule Generator */}
-            <div className="glass-card rounded-xl p-6">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6">
+            <div className="glass-card rounded-xl p-6 relative overflow-hidden">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -567,9 +565,9 @@ const AIAssistant = () => {
             </div>
           </div>
         ) : (
-          <div className="glass-card rounded-xl flex h-[calc(100vh-140px)] min-h-[400px] overflow-hidden">
+          <div className="flex flex-1 overflow-hidden">
             {/* Sidebar for Chat Sessions */}
-            <div className="w-64 border-r border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex-col hidden md:flex">
+            <div className="w-64 border-r border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex-col hidden md:flex shrink-0">
               <div className="p-4 border-b border-gray-200 dark:border-slate-800">
                 <button 
                   onClick={startNewChat}
@@ -603,8 +601,8 @@ const AIAssistant = () => {
             </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col relative">
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 flex flex-col relative bg-white/30 dark:bg-slate-900/30">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
               {chatMessages.map((msg, idx) => (
                 <div
                   key={idx}
@@ -682,7 +680,7 @@ const AIAssistant = () => {
                 </button>
               </form>
             </div>
-          </div>
+            </div>
           </div>
         )}
       </div>
