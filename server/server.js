@@ -71,6 +71,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Setup Passport strategies
+require('./config/passportConfig')();
+
 // CORS
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
@@ -179,8 +182,6 @@ if (require.main === module) {
     .then(() => {
       console.log('Database connected');
 
-      // Setup Passport strategies
-      require('./config/passportConfig')();
 
       const server = app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
