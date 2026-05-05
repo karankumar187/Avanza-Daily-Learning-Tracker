@@ -111,6 +111,17 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
+// Ensure database is connected for serverless functions
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection failed in middleware:', err);
+    next(err);
+  }
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/objectives', learningObjectiveRoutes);
