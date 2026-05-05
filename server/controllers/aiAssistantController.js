@@ -49,7 +49,10 @@ Preferred Study Time: ${preferredTime || 'morning'}
 ${existingObjectives.length > 0 ? `Existing Learning Objectives:\n${existingObjectives.map(obj => `- ${obj.title} (${obj.category}, ${obj.estimatedTime}min)`).join('\n')}` : ''}
 
 Please create a detailed weekly schedule (Monday to Sunday).
-CRITICAL: If the user requests multiple subjects (e.g. "dbms, dsa, sd"), you MUST mix these subjects every day. Create 2-4 distinct items per day covering different requested subjects.
+CRITICAL INSTRUCTIONS:
+1. If the user requests multiple subjects (e.g. "dbms, dsa, sd"), you MUST mix these subjects every day. 
+2. Create 2-4 distinct items per day covering different requested subjects.
+3. NEVER repeat the exact same topic or description twice in the entire week. Saturday and Sunday MUST have completely new and unique topics.
 
 Format your response as a valid JSON object with this exact structure:
 
@@ -441,6 +444,11 @@ function generateIntelligentSchedule(prompt, studyHoursPerDay = 4, preferredTime
     }
   }
 
+  const subjectCounters = {};
+  for (const sub of subjects) {
+    subjectCounters[sub] = 0;
+  }
+
   // Generate schedule for each day
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
@@ -471,7 +479,12 @@ function generateIntelligentSchedule(prompt, studyHoursPerDay = 4, preferredTime
       };
 
       const topics = learningTopics[subject] || learningTopics['general learning'];
-      const topic = topics[(i + j) % topics.length];
+      
+      const loopCount = Math.floor(subjectCounters[subject] / topics.length);
+      const topicIndex = subjectCounters[subject] % topics.length;
+      subjectCounters[subject]++;
+      
+      const topic = topics[topicIndex] + (loopCount > 0 ? ` (Part ${loopCount + 1})` : '');
 
       const formattedSubject = subject.toUpperCase() === subject || subject.length <= 3
         ? subject.toUpperCase()
