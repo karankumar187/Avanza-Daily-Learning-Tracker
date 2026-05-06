@@ -68,6 +68,14 @@ const AIAssistant = () => {
 
   // Auto-scroll to bottom of chat
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [chatInput]);
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -659,6 +667,7 @@ const AIAssistant = () => {
                 className="flex items-end gap-2"
               >
                 <textarea
+                  ref={textareaRef}
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => {
