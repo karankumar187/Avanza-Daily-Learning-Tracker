@@ -91,7 +91,7 @@ const Footer = () => {
                                             {feedbackType === 'bug' ? 'Report a Bug' : 'Share Feedback'}
                                         </h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {feedbackType === 'bug' ? 'Help us squash errors to improve LearnFlow.' : 'Tell us what you love or what we can do better.'}
+                                            {feedbackType === 'bug' ? 'Help us squash errors to improve Avanza.' : 'Tell us what you love or what we can do better.'}
                                         </p>
                                     </div>
                                 </div>

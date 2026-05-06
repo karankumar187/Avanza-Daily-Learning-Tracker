@@ -92,7 +92,7 @@ const AIAssistant = () => {
     {
       role: "assistant",
       content:
-        "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
+        "Hi! I'm your Avanza AI coach. How can I help you with your learning goals today?",
     },
   ]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -182,7 +182,7 @@ const AIAssistant = () => {
       {
         role: "assistant",
         content:
-          "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
+          "Hi! I'm your Avanza AI coach. How can I help you with your learning goals today?",
       },
     ]);
   };

@@ -49,7 +49,7 @@ exports.register = async (req, res, next) => {
     try {
       await Notification.create({
         user: user._id,
-        title: 'Welcome to LearnFlow!',
+        title: 'Welcome to Avanza!',
         message: `Hi ${name}! Start by creating learning objectives and setting up your weekly schedule. Happy learning!`,
         type: 'info'
       });
