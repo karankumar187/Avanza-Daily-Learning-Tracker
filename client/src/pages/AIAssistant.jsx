@@ -101,6 +101,7 @@ const AIAssistant = () => {
   // Auto-scroll to bottom of chat
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -119,17 +120,22 @@ const AIAssistant = () => {
     }
   }, [activeTab]);
 
-  // Close the three-dot dropdown when clicking anywhere outside
+  // Close dropdown when clicking outside the open menu
   useEffect(() => {
     if (!openMenuId) return;
-    // Use 'click' (not 'mousedown') so dropdown button onClick fires first
-    const close = (e) => {
-      if (!e.target.closest('[data-session-menu]')) {
+    const handleOutsideClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpenMenuId(null);
       }
     };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    // Use setTimeout so the click that OPENED the menu doesn't immediately close it
+    const timerId = setTimeout(() => {
+      document.addEventListener("click", handleOutsideClick);
+    }, 0);
+    return () => {
+      clearTimeout(timerId);
+      document.removeEventListener("click", handleOutsideClick);
+    };
   }, [openMenuId]);
 
   // GSAP animations for tab switching
@@ -187,8 +193,7 @@ const AIAssistant = () => {
     ]);
   };
 
-  const handleStarSession = async (e, sessionId) => {
-    e.stopPropagation();
+  const handleStarSession = async (sessionId) => {
     setOpenMenuId(null);
     try {
       await aiAPI.toggleChatStar(sessionId);
@@ -203,8 +208,7 @@ const AIAssistant = () => {
     }
   };
 
-  const handleDeleteSession = async (e, sessionId) => {
-    e.stopPropagation();
+  const handleDeleteSession = async (sessionId) => {
     setOpenMenuId(null);
     try {
       await aiAPI.deleteChatSession(sessionId);
@@ -694,16 +698,16 @@ const AIAssistant = () => {
                           <MoreVertical className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                         </button>
                         {openMenuId === session._id && (
-                          <div className="absolute right-0 top-10 z-50 w-52 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
+                          <div ref={menuRef} className="absolute right-0 top-10 z-50 w-52 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
                             <button
-                              onClick={(e) => handleStarSession(e, session._id)}
+                              onClick={() => handleStarSession(session._id)}
                               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                             >
                               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                               Unstar Conversation
                             </button>
                             <button
-                              onClick={(e) => handleDeleteSession(e, session._id)}
+                              onClick={() => handleDeleteSession(session._id)}
                               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -742,16 +746,16 @@ const AIAssistant = () => {
                           <MoreVertical className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                         </button>
                         {openMenuId === session._id && (
-                          <div className="absolute right-0 top-10 z-50 w-52 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
+                          <div ref={menuRef} className="absolute right-0 top-10 z-50 w-52 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
                             <button
-                              onClick={(e) => handleStarSession(e, session._id)}
+                              onClick={() => handleStarSession(session._id)}
                               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                             >
                               <Star className="w-4 h-4 text-gray-400" />
                               Star Conversation
                             </button>
                             <button
-                              onClick={(e) => handleDeleteSession(e, session._id)}
+                              onClick={() => handleDeleteSession(session._id)}
                               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
