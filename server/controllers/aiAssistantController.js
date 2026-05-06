@@ -654,8 +654,8 @@ exports.chatWithAI = async (req, res, next) => {
         activeChatId = newSession._id;
       }
 
-      // Enforce 10 sessions limit
-      const sessions = await ChatSession.find({ user: req.user.id })
+      // Enforce 10 sessions limit (excluding starred sessions)
+      const sessions = await ChatSession.find({ user: req.user.id, isStarred: { $ne: true } })
         .sort({ updatedAt: -1 })
         .select('_id');
       
@@ -682,8 +682,8 @@ exports.chatWithAI = async (req, res, next) => {
 exports.getChatSessions = async (req, res, next) => {
   try {
     const sessions = await ChatSession.find({ user: req.user.id })
-      .select('_id title updatedAt')
-      .sort({ updatedAt: -1 });
+      .select('_id title updatedAt isStarred')
+      .sort({ isStarred: -1, updatedAt: -1 });
     
     res.status(200).json({
       success: true,
@@ -711,6 +711,61 @@ exports.getChatSession = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: session
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Toggle star status of an AI chat session
+// @route   PUT /api/ai/chat/sessions/:id/star
+// @access  Private
+exports.toggleChatSessionStar = async (req, res, next) => {
+  try {
+    const session = await ChatSession.findOne({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chat session not found'
+      });
+    }
+
+    session.isStarred = !session.isStarred;
+    await session.save();
+
+    res.status(200).json({
+      success: true,
+      data: session
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete an AI chat session
+// @route   DELETE /api/ai/chat/sessions/:id
+// @access  Private
+exports.deleteChatSession = async (req, res, next) => {
+  try {
+    const session = await ChatSession.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chat session not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {}
     });
   } catch (error) {
     next(error);

@@ -17,6 +17,10 @@ import {
   Plus,
   MessageSquare,
   Send,
+  MoreVertical,
+  Star,
+  Copy,
+  Check,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -40,6 +44,33 @@ const days = [
 ];
 
 // Module-level cache removed as chat history is now persistent via DB
+
+// Reusable code block component with copy-to-clipboard
+const CodeBlock = ({ children, className }) => {
+  const [copied, setCopied] = useState(false);
+  const code = String(children).replace(/\n$/, "");
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <div className="relative group my-3">
+      <pre className={`${className || ""} bg-slate-900 text-gray-100 rounded-xl p-4 text-sm overflow-x-auto`}>
+        <code>{code}</code>
+      </pre>
+      <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-gray-300 text-xs transition-all opacity-0 group-hover:opacity-100"
+        title="Copy code"
+      >
+        {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+        {copied ? "Copied!" : "Copy"}
+      </button>
+    </div>
+  );
+};
 
 const AIAssistant = () => {
   const [prompt, setPrompt] = useState("");
@@ -65,6 +96,7 @@ const AIAssistant = () => {
     },
   ]);
   const [chatLoading, setChatLoading] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   // Auto-scroll to bottom of chat
   const messagesEndRef = useRef(null);
@@ -86,6 +118,14 @@ const AIAssistant = () => {
       setTimeout(scrollToBottom, 100);
     }
   }, [activeTab]);
+
+  // Close the three-dot dropdown when clicking anywhere outside
+  useEffect(() => {
+    if (!openMenuId) return;
+    const close = () => setOpenMenuId(null);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [openMenuId]);
 
   // GSAP animations for tab switching
   useGSAP(() => {
@@ -140,6 +180,37 @@ const AIAssistant = () => {
           "Hi! I'm your LearnFlow AI coach. How can I help you with your learning goals today?",
       },
     ]);
+  };
+
+  const handleStarSession = async (e, sessionId) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    try {
+      await aiAPI.toggleChatStar(sessionId);
+      setChatSessions(prev =>
+        prev.map(s =>
+          s._id === sessionId ? { ...s, isStarred: !s.isStarred } : s
+        ).sort((a, b) => (b.isStarred - a.isStarred) || new Date(b.updatedAt) - new Date(a.updatedAt))
+      );
+      toast.success("Conversation updated!");
+    } catch (error) {
+      toast.error("Failed to update conversation");
+    }
+  };
+
+  const handleDeleteSession = async (e, sessionId) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    try {
+      await aiAPI.deleteChatSession(sessionId);
+      setChatSessions(prev => prev.filter(s => s._id !== sessionId));
+      if (activeChatId === sessionId) {
+        startNewChat();
+      }
+      toast.success("Conversation deleted");
+    } catch (error) {
+      toast.error("Failed to delete conversation");
+    }
   };
 
   const fetchSuggestions = async () => {
@@ -590,20 +661,50 @@ const AIAssistant = () => {
                   <p className="text-center text-sm text-gray-500 mt-4">No recent chats</p>
                 )}
                 {chatSessions.map((session) => (
-                  <button
-                    key={session._id}
-                    onClick={() => loadChatSession(session._id)}
-                    className={`w-full text-left p-3 rounded-xl transition-colors text-sm block ${
-                      activeChatId === session._id 
-                        ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-100 ring-1 ring-green-200 dark:ring-green-800'
-                        : 'hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium truncate">{session.title}</div>
-                    <div className="text-xs opacity-60 mt-1">
-                      {new Date(session.updatedAt).toLocaleDateString()}
-                    </div>
-                  </button>
+                  <div key={session._id} className="relative">
+                    <button
+                      onClick={() => loadChatSession(session._id)}
+                      className={`w-full text-left p-3 pr-9 rounded-xl transition-colors text-sm block ${
+                        activeChatId === session._id 
+                          ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-100 ring-1 ring-green-200 dark:ring-green-800'
+                          : 'hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-medium truncate">
+                        {session.isStarred && <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />}
+                        <span className="truncate">{session.title}</span>
+                      </div>
+                      <div className="text-xs opacity-60 mt-1">
+                        {new Date(session.updatedAt).toLocaleDateString()}
+                      </div>
+                    </button>
+                    {/* Three-dot action button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === session._id ? null : session._id); }}
+                      className="absolute right-1.5 top-2.5 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-slate-700 transition-all [div:hover>&]:opacity-100"
+                    >
+                      <MoreVertical className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                    </button>
+                    {/* Dropdown menu */}
+                    {openMenuId === session._id && (
+                      <div className="absolute right-0 top-10 z-50 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
+                        <button
+                          onClick={(e) => handleStarSession(e, session._id)}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <Star className={`w-4 h-4 ${session.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`} />
+                          {session.isStarred ? 'Unstar Conversation' : 'Star Conversation'}
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteSession(e, session._id)}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete Conversation
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -631,7 +732,16 @@ const AIAssistant = () => {
                     <div className={`prose prose-sm max-w-none text-[15px] leading-relaxed ${
                       msg.role === "user" ? "prose-invert" : "dark:prose-invert"
                     }`}>
-                      <ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          code({ inline, className, children, ...props }) {
+                            if (inline) {
+                              return <code className="bg-slate-800 text-green-300 px-1.5 py-0.5 rounded text-[13px] font-mono" {...props}>{children}</code>;
+                            }
+                            return <CodeBlock className={className}>{children}</CodeBlock>;
+                          }
+                        }}
+                      >
                         {msg.content}
                       </ReactMarkdown>
                     </div>

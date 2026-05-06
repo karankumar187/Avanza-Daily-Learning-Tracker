@@ -9,7 +9,9 @@ const {
   deleteSuggestion,
   chatWithAI,
   getChatSessions,
-  getChatSession
+  getChatSession,
+  toggleChatSessionStar,
+  deleteChatSession
 } = require('../controllers/aiAssistantController');
 const { protect } = require('../middleware/auth');
 
@@ -53,6 +55,8 @@ router.post('/apply-suggestion/:suggestionId', protect, applyValidation, applySu
 router.post('/chat', protect, chatValidation, chatWithAI);
 router.get('/chat/sessions', protect, getChatSessions);
 router.get('/chat/sessions/:id', protect, getChatSession);
+router.put('/chat/sessions/:id/star', protect, toggleChatSessionStar);
+router.delete('/chat/sessions/:id', protect, deleteChatSession);
 router.get('/suggestions', protect, getSuggestions);
 router.get('/suggestions/:id', protect, getSuggestion);
 router.put('/suggestions/:id', protect, updateSuggestion);

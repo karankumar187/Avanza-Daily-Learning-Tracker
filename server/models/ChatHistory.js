@@ -10,6 +10,10 @@ const chatSessionSchema = new mongoose.Schema({
     type: String,
     default: 'New Chat'
   },
+  isStarred: {
+    type: Boolean,
+    default: false
+  },
   messages: [{
     role: { type: String, enum: ['user', 'assistant'], required: true },
     content: { type: String, required: true },
